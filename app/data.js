@@ -189,14 +189,19 @@ window.KPIHUNTER = window.KPIHUNTER || {};
   ];
 
   /* ─── localStorage helpers ─── */
-  var LS_RESULTS = 'kpihunter_results_v1';
-  var LS_META    = 'kpihunter_upload_meta';
+  var LS_RESULTS   = 'kpihunter_results_v1';
+  var LS_META      = 'kpihunter_upload_meta';
+  var LS_UNIT_PERF = 'kpihunter_unit_perf_v1';
 
   ns.saveResults = function() {
     try {
       var out = {};
       ns.kpis.forEach(function(k) { out[k.id] = { result: k.result, passfail: k.passfail }; });
       localStorage.setItem(LS_RESULTS, JSON.stringify(out));
+    } catch(e) {}
+    /* ── บันทึก unitPerformance ด้วย ── */
+    try {
+      localStorage.setItem(LS_UNIT_PERF, JSON.stringify(ns.unitPerformance));
     } catch(e) {}
   };
 
@@ -213,6 +218,16 @@ window.KPIHUNTER = window.KPIHUNTER || {};
           if (ns.trends[k.id]) ns.trends[k.id][5] = k.result;
         }
       });
+    } catch(e) {}
+    /* ── โหลด unitPerformance กลับมา ── */
+    try {
+      var up = localStorage.getItem(LS_UNIT_PERF);
+      if (up) {
+        var parsed = JSON.parse(up);
+        Object.keys(parsed).forEach(function(kpiId) {
+          ns.unitPerformance[kpiId] = parsed[kpiId];
+        });
+      }
     } catch(e) {}
   };
 
@@ -266,6 +281,7 @@ window.KPIHUNTER = window.KPIHUNTER || {};
   ns.clearAllData = function() {
     localStorage.removeItem(LS_RESULTS);
     localStorage.removeItem(LS_META);
+    localStorage.removeItem(LS_UNIT_PERF);
     localStorage.removeItem('kpihunter_csv_meta_v1');
     localStorage.removeItem('kpihunter_unit_quarterly_v1');
   };
