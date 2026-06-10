@@ -76,6 +76,46 @@
           var row = res.data[0];
           return { fileName: row.file_name, uploadDate: row.upload_date, rows: row.rows_count };
         });
+    },
+
+    /* ─── unitPerformance (ผลงานรายหน่วย) ─── */
+    saveUnitPerf: function (unitPerformance) {
+      var rows = Object.keys(unitPerformance).map(function(kpiId) {
+        return {
+          kpi_id: kpiId,
+          unit_data: unitPerformance[kpiId],
+          updated_at: new Date().toISOString()
+        };
+      });
+      if (!rows.length) return Promise.resolve();
+      return db.from('kpi_unit_perf').upsert(rows, { onConflict: 'kpi_id' })
+        .then(function(res) { if (res.error) throw res.error; });
+    },
+
+    loadUnitPerf: function () {
+      return db.from('kpi_unit_perf').select('kpi_id, unit_data')
+        .then(function(res) {
+          if (res.error) throw res.error;
+          var out = {};
+          (res.data || []).forEach(function(row) { out[row.kpi_id] = row.unit_data; });
+          return out;
+        });
+    },
+
+    /* ─── App settings (year/month/district) ─── */
+    saveAppSettings: function (settings) {
+      return db.from('app_settings').upsert(
+        { key: 'meta', value: settings, updated_at: new Date().toISOString() },
+        { onConflict: 'key' }
+      ).then(function(res) { if (res.error) throw res.error; });
+    },
+
+    loadAppSettings: function () {
+      return db.from('app_settings').select('value').eq('key', 'meta').limit(1)
+        .then(function(res) {
+          if (res.error || !res.data || !res.data.length) return null;
+          return res.data[0].value;
+        });
     }
   };
 

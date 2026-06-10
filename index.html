@@ -2711,25 +2711,16 @@ function App() {
     return function() { window.removeEventListener('kpihunter-data-changed', onChanged); };
   }, []);
 
+  const [syncStatus, setSyncStatus] = useState('syncing'); // 'syncing' | 'cloud' | 'local'
+
   useEffect(function() {
-    var db = window.KPIHUNTER_DB;
-    if (db) {
-      db.loadResults().then(function(rows) {
-        if (rows && rows.length > 0) {
-          rows.forEach(function(r) {
-            var k = D7.kpis.find(function(x) { return x.id === r.kpi_id; });
-            if (!k) return;
-            if (r.result !== null && r.result !== undefined) k.result = parseFloat(r.result);
-            if (r.passfail !== undefined) k.passfail = r.passfail || '';
-            k.risk = window._kpiRiskLevel ? window._kpiRiskLevel(k.result, k.targetNum, k.passfail) : k.risk;
-            if (D7.trends[k.id]) D7.trends[k.id][5] = k.result;
-          });
-          D7.saveResults();
-          setDbStatus('supabase');
-        } else { D7.loadSavedResults(); setDbStatus('local'); }
-      }).catch(function() { D7.loadSavedResults(); setDbStatus('local'); })
-      .finally(function() { setDataVersion(function(v) { return v + 1; }); setAppReady(true); });
-    } else { setDbStatus('local'); setAppReady(true); }
+    setSyncStatus('syncing');
+    D7.syncFromSupabase(function(info) {
+      setDbStatus(info.source);
+      setSyncStatus(info.source === 'supabase' ? 'cloud' : 'local');
+      setDataVersion(function(v) { return v + 1; });
+      setAppReady(true);
+    });
   }, []);
 
   const summary = useMemo(() => D7.getSummary(), [dataVersion]);
@@ -2804,8 +2795,12 @@ function App() {
             React.createElement('h1', null, currentNav ? currentNav.label : 'Dashboard'),
             React.createElement('div', { style:{display:'flex', alignItems:'center', gap:8, marginTop:2} },
               React.createElement('span', { className:'topbar-breadcrumb' }, 'เขาค้อ · ปีงบ ' + D7.meta.year + ' · ' + D7.meta.month),
-              dbStatus === 'supabase' && React.createElement('span', { style:{fontSize:10, fontWeight:700, padding:'1px 7px', borderRadius:999, background:'#ECFDF5', color:'#059669', border:'1px solid #A7F3D0', letterSpacing:'0.03em'} }, '● Supabase'),
-              dbStatus === 'local' && React.createElement('span', { style:{fontSize:10, fontWeight:700, padding:'1px 7px', borderRadius:999, background:'#F9FAFB', color:'#9CA3AF', border:'1px solid #E5E7EB', letterSpacing:'0.03em'} }, '○ Local')
+              syncStatus === 'syncing' && React.createElement('span', { style:{fontSize:10, fontWeight:700, padding:'1px 8px', borderRadius:999, background:'#FFF7ED', color:'#D97706', border:'1px solid #FCD34D', letterSpacing:'0.03em', display:'flex', alignItems:'center', gap:4} },
+                React.createElement('span', { style:{display:'inline-block', width:7, height:7, borderRadius:'50%', border:'2px solid #D97706', borderTopColor:'transparent', animation:'spin 0.8s linear infinite'} }),
+                'กำลังซิงค์...'
+              ),
+              syncStatus === 'cloud' && React.createElement('span', { style:{fontSize:10, fontWeight:700, padding:'1px 8px', borderRadius:999, background:'#ECFDF5', color:'#059669', border:'1px solid #A7F3D0', letterSpacing:'0.03em'} }, '☁️ Cloud Sync'),
+              syncStatus === 'local' && React.createElement('span', { style:{fontSize:10, fontWeight:700, padding:'1px 8px', borderRadius:999, background:'#F9FAFB', color:'#9CA3AF', border:'1px solid #E5E7EB', letterSpacing:'0.03em'} }, '💾 Local')
             )
           )
         ),

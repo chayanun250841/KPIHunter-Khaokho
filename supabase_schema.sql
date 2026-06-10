@@ -32,6 +32,29 @@ create policy "public_all" on kpi_results
 create policy "public_all" on upload_sessions
   for all using (true) with check (true);
 
+-- ตาราง: ผลงานรายหน่วยบริการ (unitPerformance)
+create table if not exists kpi_unit_perf (
+  kpi_id     text        primary key,
+  unit_data  jsonb,                       -- array ของ unitData [{unitId,unitName,value,...}]
+  updated_at timestamptz default now()
+);
+
+-- ตาราง: ค่าตั้งค่าระบบ (year/month/district/province)
+create table if not exists app_settings (
+  key        text        primary key,     -- 'meta'
+  value      jsonb,
+  updated_at timestamptz default now()
+);
+
+alter table kpi_unit_perf  enable row level security;
+alter table app_settings   enable row level security;
+
+create policy "public_all" on kpi_unit_perf
+  for all using (true) with check (true);
+
+create policy "public_all" on app_settings
+  for all using (true) with check (true);
+
 -- ═══════════════════════════════════════════════════════════════
 -- ตรวจสอบ: select * from kpi_results limit 5;
 -- ═══════════════════════════════════════════════════════════════

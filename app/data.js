@@ -29,6 +29,10 @@ window.KPIHUNTER = window.KPIHUNTER || {};
     if (settings.district) ns.meta.district = settings.district;
     if (settings.province) ns.meta.province = settings.province;
     try { localStorage.setItem(LS_SETTINGS, JSON.stringify(ns.meta)); } catch(e) {}
+    /* sync settings ขึ้น Supabase */
+    if (window.KPIHUNTER_DB) {
+      window.KPIHUNTER_DB.saveAppSettings(ns.meta).catch(function(e){ console.warn('[Supabase] saveAppSettings:', e); });
+    }
     window.dispatchEvent(new CustomEvent('kpihunter-data-changed'));
   };
 
@@ -199,10 +203,14 @@ window.KPIHUNTER = window.KPIHUNTER || {};
       ns.kpis.forEach(function(k) { out[k.id] = { result: k.result, passfail: k.passfail }; });
       localStorage.setItem(LS_RESULTS, JSON.stringify(out));
     } catch(e) {}
-    /* ── บันทึก unitPerformance ด้วย ── */
+    /* ── บันทึก unitPerformance ── */
     try {
       localStorage.setItem(LS_UNIT_PERF, JSON.stringify(ns.unitPerformance));
     } catch(e) {}
+    /* ── sync unitPerformance ขึ้น Supabase ── */
+    if (window.KPIHUNTER_DB && Object.keys(ns.unitPerformance).length > 0) {
+      window.KPIHUNTER_DB.saveUnitPerf(ns.unitPerformance).catch(function(e){ console.warn('[Supabase] saveUnitPerf:', e); });
+    }
   };
 
   ns.loadSavedResults = function() {
@@ -276,6 +284,67 @@ window.KPIHUNTER = window.KPIHUNTER || {};
 
   ns.getUploadMeta = function() {
     try { var m = localStorage.getItem(LS_META); return m ? JSON.parse(m) : null; } catch(e) { return null; }
+  };
+
+  /* ─── Auto-sync จาก Supabase (เรียกตอน startup) ─── */
+  ns.syncFromSupabase = function(onDone) {
+    if (!window.KPIHUNTER_DB) {
+      if (onDone) onDone({ source: 'local' });
+      return;
+    }
+    var db = window.KPIHUNTER_DB;
+    Promise.all([
+      db.loadResults().catch(function(){ return []; }),
+      db.loadUnitPerf().catch(function(){ return {}; }),
+      db.loadAppSettings().catch(function(){ return null; })
+    ]).then(function(res) {
+      var results   = res[0];
+      var unitPerf  = res[1];
+      var settings  = res[2];
+
+      /* ── Apply settings ── */
+      if (settings) {
+        if (settings.year)     ns.meta.year     = settings.year;
+        if (settings.month)    ns.meta.month    = settings.month;
+        if (settings.district) ns.meta.district = settings.district;
+        if (settings.province) ns.meta.province = settings.province;
+        try { localStorage.setItem(LS_SETTINGS, JSON.stringify(ns.meta)); } catch(e) {}
+      }
+
+      /* ── Apply KPI results ── */
+      if (results && results.length > 0) {
+        var savedMap = {};
+        results.forEach(function(r) { savedMap[r.kpi_id] = r; });
+        ns.kpis.forEach(function(k) {
+          if (savedMap[k.id]) {
+            k.result   = savedMap[k.id].result;
+            k.passfail = savedMap[k.id].passfail;
+            k.risk     = riskLevel(k.result, k.targetNum, k.passfail);
+            if (ns.trends[k.id]) ns.trends[k.id][5] = k.result;
+          }
+        });
+        /* cache ลง localStorage */
+        try {
+          var out = {};
+          ns.kpis.forEach(function(k) { out[k.id] = { result: k.result, passfail: k.passfail }; });
+          localStorage.setItem(LS_RESULTS, JSON.stringify(out));
+        } catch(e) {}
+      }
+
+      /* ── Apply unitPerformance ── */
+      if (unitPerf && Object.keys(unitPerf).length > 0) {
+        Object.keys(unitPerf).forEach(function(kpiId) {
+          ns.unitPerformance[kpiId] = unitPerf[kpiId];
+        });
+        try { localStorage.setItem(LS_UNIT_PERF, JSON.stringify(ns.unitPerformance)); } catch(e) {}
+      }
+
+      window.dispatchEvent(new CustomEvent('kpihunter-data-changed'));
+      if (onDone) onDone({ source: 'supabase', kpiCount: results.length });
+    }).catch(function(err) {
+      console.warn('[KPI Hunter] syncFromSupabase failed:', err);
+      if (onDone) onDone({ source: 'local', error: err });
+    });
   };
 
   ns.clearAllData = function() {
