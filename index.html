@@ -1191,11 +1191,12 @@ function ExplorerPage({ onNavigate }) {
           React.createElement('div', { className: 'detail-stat' }, React.createElement('div', { className: 'detail-stat-label' }, 'หน่วยรับผิดชอบ'), React.createElement('div', { className: 'detail-stat-value' }, React.createElement(TypeBadge, { type: k.type })))
         )
       ),
-      trend && React.createElement('div', { className: 'card' },
-        React.createElement(SectionHeader, { title: 'แนวโน้มรายเดือน', sub: 'ปีงบประมาณ 2569' }),
+      trend && trend.some(v => v > 0) && React.createElement('div', { className: 'card' },
+        React.createElement(SectionHeader, { title: 'แนวโน้มรายเดือน', sub: 'ปีงบประมาณ ' + D3.meta.year + ' · แสดงเฉพาะเดือนที่มีข้อมูล' }),
         React.createElement('div', { className: 'trend-chart' },
           trend.map((v, i) => {
-            const maxV = Math.max(...trend), pct = maxV > 0 ? (v / maxV) * 100 : 0;
+            if (v === 0) return null; // ซ่อนเดือนที่ยังไม่มีข้อมูล
+            const maxV = Math.max(...trend.filter(x => x > 0)), pct = maxV > 0 ? (v / maxV) * 100 : 0;
             const barColor = k.targetNum && v >= k.targetNum ? '#10B981' : v >= (k.targetNum || 80) * 0.8 ? '#F59E0B' : '#EF4444';
             return React.createElement('div', { key: i, className: 'trend-bar-col' },
               React.createElement('div', { className: 'trend-value' }, v.toFixed(1)),
@@ -1203,7 +1204,7 @@ function ExplorerPage({ onNavigate }) {
               React.createElement('div', { className: 'trend-label' }, D3.monthNames[i])
             );
           }),
-          k.targetNum && React.createElement('div', { className: 'trend-target-line', style: { bottom: (k.targetNum / Math.max(...trend) * 100) + '%' } }, React.createElement('span', null, 'เป้า ' + k.targetNum))
+          k.targetNum && Math.max(...trend) > 0 && React.createElement('div', { className: 'trend-target-line', style: { bottom: (k.targetNum / Math.max(...trend.filter(x=>x>0)) * 100) + '%' } }, React.createElement('span', null, 'เป้า ' + k.targetNum))
         )
       ),
       unitData && React.createElement('div', { className: 'card' },
