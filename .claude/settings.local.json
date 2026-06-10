@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:api.anthropic.com)",
+      "PowerShell(python --version)",
+      "PowerShell(node --version)",
+      "PowerShell(php --version 2>$null)",
+      "Bash(cat /tmp/serve.log 2>/dev/null || echo \"No log file yet\")",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "mcp__Claude_in_Chrome__browser_batch",
+      "mcp__Claude_in_Chrome__find",
+      "mcp__Claude_in_Chrome__navigate",
+      "mcp__Claude_in_Chrome__read_page",
+      "Bash(grep -v \"^\\\\s*//\")",
+      "mcp__Claude_in_Chrome__javascript_tool",
+      "Bash(Get-ChildItem \"G:\\\\Other computers\\\\My Laptop\\\\งานของชยานันต์\\\\AI\\\\ChayanunOperating\\\\KPI Hunter\" -Recurse -Filter \"*.txt\")",
+      "Bash(Select-Object FullName, LastWriteTime)",
+      "Bash(Sort-Object LastWriteTime -Descending)",
+      "PowerShell(Get-ChildItem \"G:\\\\Other computers\\\\My Laptop\\\\งานของชยานันต์\\\\AI\\\\ChayanunOperating\\\\KPI Hunter\" -Recurse | Where-Object { -not $_.PSIsContainer } | Sort-Object LastWriteTime -Descending | Select-Object -First 20 | Select-Object Name, LastWriteTime)"
+    ]
+  }
+}

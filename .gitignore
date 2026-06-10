@@ -1,0 +1,21 @@
+# ไฟล์ข้อมูลจริง — ไม่ขึ้น GitHub
+uploads/*.xlsx
+uploads/*.xls
+data/*.xlsx
+data/*.xls
+
+# ไฟล์ temp
+_temp_parse*.html
+*.tmp
+
+# Design extracted (ไม่จำเป็น)
+design_extracted/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+*.swp

@@ -1,0 +1,26 @@
+/* ThaiMED — Border Radius Tokens */
+
+:root {
+  /* ─── Raw Scale ─── */
+  --radius-none: 0;
+  --radius-xs:   2px;
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-2xl:  20px;
+  --radius-3xl:  24px;
+  --radius-full: 9999px;
+
+  /* ─── Semantic Roles ─── */
+  --radius-button:  var(--radius-md);
+  --radius-input:   var(--radius-md);
+  --radius-card:    var(--radius-lg);
+  --radius-badge:   var(--radius-full);
+  --radius-tag:     var(--radius-sm);
+  --radius-dialog:  var(--radius-xl);
+  --radius-tooltip: var(--radius-sm);
+  --radius-avatar:  var(--radius-full);
+  --radius-chip:    var(--radius-full);
+  --radius-tab:     var(--radius-md);
+}

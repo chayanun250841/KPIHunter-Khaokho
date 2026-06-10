@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>รายงาน  · KPI HUNTER 2568 · สสอ.เขาค้อ</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- PDF.js สำหรับแปลง PDF → canvas ก่อน OCR -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Sarabun','Tahoma',Arial,sans-serif;background:#eef2f7;color:#1e293b;font-size:14px;line-height:1.65;}
+#upload-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;background:linear-gradient(160deg,#0d2b5e,#1a3f7c,#1e5799);}
+.dz{width:100%;max-width:500px;border:3px dashed rgba(255,255,255,.35);border-radius:16px;padding:36px 28px;text-align:center;cursor:pointer;background:rgba(255,255,255,.07);position:relative;}
+.dz input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+#loading{display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;background:linear-gradient(160deg,#0d2b5e,#1a3f7c);}
+@keyframes sp{to{transform:rotate(360deg);}}
+.spin{width:50px;height:50px;border:5px solid rgba(255,255,255,.2);border-top-color:#fbbf24;border-radius:50%;animation:sp .8s linear infinite;margin-bottom:16px;}
+#dashboard{display:none;}
+.topbar{background:linear-gradient(135deg,#0d2b5e,#1a3f7c,#1e5799);color:#fff;padding:13px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:100;}
+.con{max-width:1200px;margin:0 auto;padding:18px;}
+.ov-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+.card{background:#fff;border-radius:10px;padding:15px;box-shadow:0 1px 5px rgba(0,0,0,.07);}
+.tabs-wrap{overflow-x:auto;margin-bottom:13px;}
+.tabs{display:flex;gap:3px;min-width:max-content;}
+.tbn{padding:8px 14px;border:2px solid #dde3ec;border-radius:6px;background:#fff;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;color:#64748b;white-space:nowrap;transition:all .15s;}
+.tbn:hover{background:#f1f5f9;}
+.tbn.act{background:#1a3f7c;border-color:#1a3f7c;color:#fff;}
+.tbn.act.gr{background:#16a34a;border-color:#16a34a;}
+.tbn.act.rd{background:#dc2626;border-color:#dc2626;}
+.tbn.act.or{background:#d97706;border-color:#d97706;}
+.tbn.act.pu{background:#7c3aed;border-color:#7c3aed;}
+.tp{display:none;}.tp.act{display:block;}
+table.t1{width:100%;border-collapse:collapse;font-size:12px;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:6px;}
+table.t1 thead tr{background:#1a3f7c;color:#fff;}
+table.t1 th{padding:8px 10px;text-align:left;font-weight:700;font-size:11px;}
+table.t1 td{padding:7px 10px;border-bottom:1px solid #f0f4f9;vertical-align:middle;}
+table.t1 tr:nth-child(even) td{background:#f9fafb;}
+table.t1 tr:hover td{background:#eff6ff;}
+table.t2{width:calc(100% - 28px);margin-left:28px;border-collapse:collapse;font-size:11.5px;box-shadow:0 1px 4px rgba(0,0,0,.06);border-radius:7px;overflow:hidden;margin-bottom:14px;}
+table.t2 thead tr{background:#e0e9f7;}
+table.t2 th{padding:6px 9px;text-align:left;font-size:10.5px;font-weight:700;color:#1e3a6e;}
+table.t2 td{padding:6px 9px;border-bottom:1px solid #f0f4f9;vertical-align:middle;}
+table.t2 tr:nth-child(even) td{background:#f8fafc;}
+table.t2 tr:hover td{background:#eff6ff;}
+.bp{display:inline-block;background:#dcfce7;color:#15803d;padding:2px 9px;border-radius:99px;font-size:10.5px;font-weight:700;}
+.bf{display:inline-block;background:#fee2e2;color:#b91c1c;padding:2px 9px;border-radius:99px;font-size:10.5px;font-weight:700;}
+.bna{display:inline-block;background:#f1f5f9;color:#64748b;padding:2px 9px;border-radius:99px;font-size:10.5px;font-weight:700;}
+.bsso{display:inline-block;background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;}
+.brph{display:inline-block;background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;}
+.bboth{display:inline-block;background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;}
+.up{color:#16a34a;font-size:10px;font-weight:700;}
+.dn{color:#dc2626;font-size:10px;font-weight:700;}
+.eq{color:#64748b;font-size:10px;font-weight:700;}
+.sh{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:10px;margin-bottom:10px;margin-top:20px;}
+.sh h2{color:#fff;font-size:14px;font-weight:700;}
+.sh .cnt{margin-left:auto;display:flex;gap:14px;}
+.sh .cnt>div{text-align:center;color:#fff;}
+.sh .cnt>div .n{font-size:17px;font-weight:800;line-height:1;}
+.sh .cnt>div .l{font-size:9px;opacity:.8;}
+.sh .cnt .sep{width:1px;background:rgba(255,255,255,.3);}
+.stats-row{display:flex;gap:8px;flex-wrap:wrap;font-size:11px;margin:5px 0 8px 28px;}
+.sc{background:#f1f5f9;border-radius:6px;padding:4px 10px;color:#374151;font-weight:600;}
+.sc.hi{background:#dcfce7;color:#166534;}
+.sc.lo{background:#fee2e2;color:#991b1b;}
+.sc.warn{background:#fffbeb;color:#92400e;}
+.note{border-radius:7px;padding:9px 13px;font-size:11.5px;margin:8px 0;}
+.note-b{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;}
+.note-y{background:#fffbeb;border:1px solid #fcd34d;color:#92400e;}
+.note-g{background:#f0fdf4;border:1px solid #86efac;color:#166534;}
+.note-r{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;}
+.dn-wrap{position:relative;flex-shrink:0;}
+.dn-lbl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.det-dz{border:2px dashed #bdd3f0;border-radius:10px;padding:14px 18px;text-align:center;cursor:pointer;position:relative;background:#f8fbff;margin-top:10px;}
+.det-dz input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.det-dz:hover{border-color:#1a3f7c;background:#eff6ff;}
+.fchip{display:inline-flex;align-items:center;gap:5px;background:#dbeafe;border:1px solid #bfdbfe;color:#1e40af;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;margin:3px;cursor:default;}
+.bbar{height:14px;border-radius:7px;background:linear-gradient(90deg,#2458a8,#38bdf8);min-width:4px;}
+.togbtn{background:none;border:1px solid #bdd3f0;border-radius:5px;cursor:pointer;font-size:10.5px;color:#1a3f7c;padding:2px 8px;font-family:inherit;font-weight:700;}
+.togbtn:hover{background:#eff6ff;}
+.kpi-detail-row{display:none;}
+.kpi-detail-row.open{display:table-row;}
+td.det-cell{padding:0!important;border:none!important;}
+.det-inner{padding:8px 12px 12px 28px;background:#f8fbff;border-bottom:2px solid #dde9f8;}
+/* rank medal */
+.medal-1{color:#f59e0b;font-weight:900;}
+.medal-2{color:#9ca3af;font-weight:900;}
+.medal-3{color:#b45309;font-weight:900;}
+.print-modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;}
+.print-modal-box{background:#fff;border-radius:14px;padding:24px;max-width:500px;width:92%;box-shadow:0 10px 40px rgba(0,0,0,.3);}
+.print-modal-box h3{font-size:15px;font-weight:800;color:#0d2b5e;margin-bottom:14px;border-bottom:2px solid #e0e9f7;padding-bottom:10px;}
+.psi{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid #f1f5f9;font-size:13px;cursor:pointer;}
+.psi:last-of-type{border:none;}
+.psi input[type=checkbox]{width:17px;height:17px;cursor:pointer;accent-color:#1a3f7c;flex-shrink:0;}
+.pmb{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;flex-wrap:wrap;}
+.pmb button{padding:8px 20px;border-radius:7px;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+/* paste highlight */
+.det-dz.paste-active{border-color:#1a3f7c!important;background:#eff6ff!important;}
+/* OCR modal */
+.ocr-modal{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:10000;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:16px;}
+.ocr-box{background:#fff;border-radius:14px;padding:22px 24px;width:100%;max-width:820px;margin:auto;box-shadow:0 10px 40px rgba(0,0,0,.3);}
+.ocr-box h3{font-size:14px;font-weight:800;color:#0d2b5e;margin-bottom:4px;}
+.ocr-table-wrap{overflow-x:auto;margin-top:10px;}
+.ocr-tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.ocr-tbl thead tr{background:#1a3f7c;color:#fff;}
+.ocr-tbl th{padding:7px 9px;text-align:left;font-weight:700;font-size:11px;}
+.ocr-tbl td{padding:5px 8px;border-bottom:1px solid #f0f4f9;vertical-align:middle;}
+.ocr-tbl tr.uncertain td{background:#fffbeb;}
+.ocr-inp{width:72px;text-align:center;border:1px solid #dde3ec;border-radius:4px;padding:3px 5px;font-size:11.5px;font-family:inherit;}
+.ocr-inp.warn{border-color:#f59e0b;background:#fffbeb;}
+.ocr-btns{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;flex-wrap:wrap;}
+.ocr-btns button{padding:8px 18px;border-radius:7px;border:none;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+@media print{
+  .topbar button,.tabs-wrap,.det-dz,.det-files,.no-print,.print-modal{display:none!important;}
+  .tp{display:block!important;}
+  .no-print-sec{display:none!important;}
+  body{background:#fff;font-size:11px;}
+  .con{padding:5px;max-width:100%;}
+  .sh{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  #tab-report{display:block!important;}
+}
+@media(max-width:720px){.ov-grid{grid-template-columns:1fr 1fr;}.topbar{flex-direction:column;align-items:flex-start;}}
+/* Admin modal */
+.adm-modal{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:20000;display:none;align-items:center;justify-content:center;padding:12px;}
+.adm-box{background:#fff;border-radius:14px;padding:24px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,.35);}
+.adm-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:2px solid #e0e9f7;padding-bottom:10px;}
+.adm-hdr h3{font-size:15px;font-weight:800;color:#0d2b5e;margin:0;}
+.adm-row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;}
+.adm-row:last-child{border:none;}
+.adm-sel{padding:4px 8px;border:1px solid #dde3ec;border-radius:5px;font-family:inherit;font-size:11.5px;background:#fff;cursor:pointer;}
+.adm-sel.sso{border-color:#1a3f7c;background:#eff6ff;color:#1e40af;font-weight:700;}
+.adm-sel.both{border-color:#16a34a;background:#f0fdf4;color:#166534;font-weight:700;}
+.adm-sel.rph{border-color:#b91c1c;background:#fef2f2;color:#991b1b;font-weight:700;}
+</style>
+</head>
+<body>
+
+<!-- ═══ UPLOAD SCREEN ═══ -->
+<div id="upload-screen">
+  <div style="font-size:52px;margin-bottom:10px">📊</div>
+  <div style="color:#fff;font-size:22px;font-weight:800;text-align:center;margin-bottom:4px">KPI HUNTER 2568 </div>
+  <div style="color:rgba(255,255,255,.7);font-size:13px;text-align:center;margin-bottom:4px">สำนักงานสาธารณสุขอำเภอเขาค้อ · ปีงบประมาณ 2568</div>
+  <div style="color:rgba(255,255,255,.5);font-size:11.5px;text-align:center;margin-bottom:28px">แสดงผลงาน สสอ./รพ.สต. 18 ตัว + ร่วมกัน 7 ตัว แยกรายหน่วยบริการ + วิเคราะห์สถิติ + จัดสรรงบ</div>
+  <div class="dz" id="dz-main">
+    <input type="file" id="fi-main" accept=".xlsx,.xls">
+    <div style="font-size:40px;margin-bottom:10px">📂</div>
+    <div style="color:#fff;font-size:16px;font-weight:700;margin-bottom:4px">อัปโหลดไฟล์ KPI Template หลัก</div>
+    <div style="color:rgba(255,255,255,.6);font-size:12px">ไฟล์ Excel จาก สสจ. ที่มีผลงานเขาค้อ</div>
+    <div style="margin-top:10px;display:inline-block;background:rgba(251,191,36,.2);border:1px solid rgba(251,191,36,.5);color:#fbbf24;font-size:11px;font-weight:700;padding:3px 12px;border-radius:99px">รองรับ .xlsx · ปีงบ 2568</div>
+  </div>
+  <div style="width:100%;max-width:500px;margin-top:16px;background:rgba(255,255,255,.08);border-radius:12px;padding:14px 18px;">
+    <div style="color:#fbbf24;font-size:12px;font-weight:700;margin-bottom:8px">📎 (ไม่บังคับ) ไฟล์ Excel รายตัวชี้วัด — เพื่อแสดงผลรายหน่วยบริการ</div>
+    <div class="det-dz" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.3);">
+      <input type="file" id="fi-detail" accept="*/*" multiple>
+      <div style="color:rgba(255,255,255,.7);font-size:12px">ลาก-วาง · คลิกเลือก · หรือ Ctrl+V วางไฟล์ได้เลย</div>
+      <div style="color:rgba(255,255,255,.45);font-size:10.5px;margin-top:3px">รองรับทุกประเภทไฟล์ — ระบบ detect KPI จากชื่อไฟล์อัตโนมัติ (.xlsx อ่านข้อมูลรายหน่วยได้)</div>
+    </div>
+    <div id="det-chips-up" style="margin-top:8px;min-height:24px"></div>
+  </div>
+  <button id="btn-go" onclick="startLoad()" style="margin-top:20px;background:#fbbf24;color:#0d2b5e;border:none;padding:12px 36px;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;display:none;">🚀 สร้างรายงาน</button>
+  <div style="color:rgba(255,255,255,.4);font-size:11px;margin-top:14px;text-align:center">⚠️ ต้องเชื่อมต่ออินเทอร์เน็ตครั้งแรก เพื่อโหลดไลบรารีอ่าน Excel</div>
+</div>
+
+<!-- ═══ LOADING ═══ -->
+<div id="loading" style="display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;background:linear-gradient(160deg,#0d2b5e,#1a3f7c)">
+  <div class="spin"></div>
+  <div style="color:#fff;font-size:15px;font-weight:600">กำลังประมวลผลข้อมูล...</div>
+  <div id="load-msg" style="color:rgba(255,255,255,.6);font-size:12px;margin-top:6px"></div>
+</div>
+
+<!-- ═══ DASHBOARD ═══ -->
+<div id="dashboard">
+  <div class="topbar">
+    <div>
+      <div id="d-title" style="font-size:16px;font-weight:800">KPI HUNTER 2568 สสอ.เขาค้อ</div>
+      <div id="d-sub" style="font-size:11px;opacity:.65;margin-top:1px"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <div style="background:rgba(255,255,255,.12);border-radius:7px;padding:5px 10px;text-align:center"><div id="s-sso" style="font-size:17px;font-weight:800;line-height:1;color:#7dd3fc">-</div><div style="font-size:9px;opacity:.75">สสอ./รพ.สต.</div></div>
+      <div style="background:rgba(255,255,255,.12);border-radius:7px;padding:5px 10px;text-align:center"><div id="s-both" style="font-size:17px;font-weight:800;line-height:1;color:#6ee7b7">-</div><div style="font-size:9px;opacity:.75">ร่วมกัน</div></div>
+      <div style="background:rgba(255,255,255,.12);border-radius:7px;padding:5px 10px;text-align:center"><div id="s-total" style="font-size:17px;font-weight:800;line-height:1">-</div><div style="font-size:9px;opacity:.75">ทั้งหมด</div></div>
+      <div style="background:rgba(255,255,255,.12);border-radius:7px;padding:5px 10px;text-align:center"><div id="s-rate" style="font-size:17px;font-weight:800;line-height:1;color:#4ade80">-</div><div style="font-size:9px;opacity:.75">อัตราผ่าน</div></div>
+      <button onclick="showPrintDialog()" class="no-print" style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:#fff;padding:7px 12px;border-radius:7px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700">🖨️ พิมพ์</button>
+      <button onclick="showAdminLogin()" class="no-print" id="btn-admin" style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:#fff;padding:7px 12px;border-radius:7px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700" title="ปรับตัวชี้วัด — ต้อง Login Admin">⚙️ Admin</button>
+      <button onclick="goUpload()" class="no-print" style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:#fff;padding:7px 12px;border-radius:7px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700">📂 ไฟล์ใหม่</button>
+    </div>
+  </div>
+  <div class="con">
+    <div id="psec-cards"><div class="ov-grid" id="ov-cards"></div></div>
+    <div class="tabs-wrap no-print"><div class="tabs">
+      <button class="tbn act" onclick="ST('report',this,'')">📑 รายงาน </button>
+      <button class="tbn" onclick="ST('all',this,'')">📋 ภาพรวมทั้งหมด</button>
+      <button class="tbn" onclick="ST('sso',this,'')">🏠 รพ.สต./สสอ.</button>
+      <button class="tbn" onclick="ST('both',this,'')">🤝 ร่วมกัน</button>
+      <button class="tbn" onclick="ST('rph',this,'')">🏥 โรงพยาบาล</button>
+      <button class="tbn" onclick="ST('pass',this,'gr')">✅ ผ่านเกณฑ์</button>
+      <button class="tbn" onclick="ST('fail',this,'rd')">❌ ไม่ผ่านเกณฑ์</button>
+      <button class="tbn" onclick="ST('budget',this,'or')">💰 จัดสรรงบ</button>
+      <button class="tbn" onclick="ST('ctx',this,'pu')">📚 บริบท</button>
+    </div></div>
+    <div id="tab-report" class="tp act"></div>
+    <div id="tab-all" class="tp"></div>
+    <div id="tab-sso" class="tp"></div>
+    <div id="tab-both" class="tp"></div>
+    <div id="tab-rph" class="tp"></div>
+    <div id="tab-pass" class="tp"></div>
+    <div id="tab-fail" class="tp"></div>
+    <div id="tab-budget" class="tp"></div>
+    <div id="tab-ctx" class="tp"></div>
+    <!-- Detail upload inside dashboard -->
+    <div id="det-upload-sec" class="no-print" style="margin-top:18px;border-top:1px solid #dde3ec;padding-top:14px;">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+        <div style="font-size:12.5px;font-weight:700;color:#1a3f7c">📎 เพิ่มไฟล์ Excel รายตัวชี้วัด เพื่อแสดงผลแยกหน่วยบริการ</div>
+        <button id="btn-manual-entry" onclick="openManualEntry()" style="background:#1a3f7c;color:#fff;border:none;border-radius:7px;padding:6px 14px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;opacity:0.5">✏️ เพิ่มข้อมูลเอง</button>
+      </div>
+      <!-- Lock banner (shown when not admin) -->
+      <div id="upload-lock-banner" onclick="requireAdmin(function(){})" style="display:flex;align-items:center;gap:10px;background:#fef3c7;border:1.5px solid #fcd34d;border-radius:9px;padding:9px 14px;margin-bottom:8px;cursor:pointer;max-width:600px;">
+        <span style="font-size:20px">🔒</span>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#92400e">ต้อง Login Admin ก่อนจึงจะอัพโหลดหรือแก้ไขข้อมูลได้</div>
+          <div style="font-size:11px;color:#b45309">คลิกที่นี่หรือกดปุ่ม ⚙️ Admin เพื่อเข้าสู่ระบบ</div>
+        </div>
+      </div>
+      <div class="det-dz" style="max-width:600px;opacity:0.45;pointer-events:none;">
+        <input type="file" id="fi-detail2" accept="*/*" multiple onchange="handleDetailFiles(this.files)">
+        <div style="color:#1a3f7c;font-size:12px;font-weight:600">ลากวาง · คลิกเลือก · หรือ Ctrl+V วางไฟล์ (ทุกประเภท หลายไฟล์พร้อมกัน)</div>
+        <div style="color:#64748b;font-size:11px">ระบบ detect KPI จากชื่อไฟล์อัตโนมัติ — .xlsx = อ่านข้อมูลรายหน่วย | ไฟล์อื่น = OCR อ่านข้อความ</div>
+      </div>
+      <div id="det-files" style="margin-top:6px;min-height:24px"></div>
+    </div>
+  </div>
+  <div id="d-foot" style="text-align:center;padding:12px;font-size:10.5px;color:#64748b;border-top:1px solid #dde3ec;margin-top:8px"></div>
+</div>
+
+<!-- ═══ OCR MODAL ═══ -->
+<div id="ocr-modal" class="ocr-modal" onclick="if(event.target===this)closeOCR()">
+ <div class="ocr-box">
+  <h3>🔍 อ่านข้อมูลจากไฟล์ — ตรวจสอบก่อนยืนยัน</h3>
+  <div id="ocr-fname" style="font-size:11px;color:#64748b;margin-bottom:12px"></div>
+  <!-- Progress -->
+  <div id="ocr-prog" style="text-align:center;padding:28px 0">
+   <div class="spin" style="margin:0 auto 12px"></div>
+   <div id="ocr-status" style="font-size:13px;color:#374151;font-weight:600">กำลังโหลด OCR engine...</div>
+   <div style="font-size:11px;color:#94a3b8;margin-top:5px">ประมวลผลในเครื่องโดยไม่ส่งข้อมูลออก (ครั้งแรกใช้เวลา ~30 วิ)</div>
+   <div id="ocr-pct" style="font-size:11px;color:#1a3f7c;margin-top:6px;font-weight:700"></div>
+  </div>
+  <!-- Result -->
+  <div id="ocr-res" style="display:none">
+   <!-- KPI selector — แสดงเมื่อ detect ไม่ได้ -->
+   <div id="ocr-kpi-selector" style="display:none;margin-bottom:12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px 14px">
+     <div style="font-size:12px;font-weight:700;color:#c2410c;margin-bottom:7px">⚠️ ระบุตัวชี้วัดไม่ได้จากชื่อไฟล์ — กรุณาเลือกตัวชี้วัดที่ต้องการ:</div>
+     <select id="ocr-kpi-select" onchange="ocrSelectKPI(this)" style="width:100%;padding:7px 10px;border:1px solid #fed7aa;border-radius:6px;font-family:inherit;font-size:12.5px;background:#fff;color:#1e293b">
+       <option value="">— เลือกตัวชี้วัด —</option>
+     </select>
+   </div>
+   <div id="ocr-kpi-chip" style="display:none;background:#dbeafe;color:#1e40af;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;margin-bottom:12px"></div>
+   <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+    <div style="flex:0 0 180px;min-width:120px">
+     <div style="font-size:11px;color:#64748b;font-weight:700;margin-bottom:5px">ต้นฉบับ:</div>
+     <img id="ocr-img" style="width:100%;border-radius:6px;border:1px solid #dde3ec;display:none">
+     <canvas id="ocr-canvas" style="width:100%;border-radius:6px;border:1px solid #dde3ec;display:none"></canvas>
+    </div>
+    <div style="flex:1;min-width:280px">
+     <div style="font-size:11px;color:#64748b;font-weight:700;margin-bottom:5px">ข้อมูลที่อ่านได้ — <span style="color:#d97706">แก้ไขได้ก่อนยืนยัน</span> · <span style="color:#f59e0b">🟡 = ไม่แน่ใจ</span></div>
+     <div class="ocr-table-wrap">
+      <table class="ocr-tbl">
+       <thead><tr><th>หน่วยบริการ</th><th style="width:72px;text-align:center">ผลงาน</th><th style="width:72px;text-align:center">เป้าหมาย</th><th style="width:80px;text-align:center">ร้อยละ (%)</th></tr></thead>
+       <tbody id="ocr-tbody"></tbody>
+      </table>
+     </div>
+     <div style="font-size:10.5px;color:#94a3b8;margin-top:6px">💡 กรอก "ร้อยละ" อย่างน้อยก็พอ · ระบบคำนวณร้อยละจาก ผลงาน÷เป้าหมาย×100 ให้อัตโนมัติ</div>
+    </div>
+   </div>
+  </div>
+  <div class="ocr-btns">
+   <button onclick="closeOCR()" style="background:#f1f5f9;color:#374151">ยกเลิก</button>
+   <button id="ocr-dl" onclick="ocrDownloadExcel()" style="background:#e0e9f7;color:#1a3f7c;display:none">⬇️ ดาวน์โหลด Excel</button>
+   <button id="ocr-ok" onclick="confirmOCR()" style="background:#1a3f7c;color:#fff;display:none">✅ ยืนยัน & อัพเดต Dashboard</button>
+  </div>
+ </div>
+</div>
+
+<!-- ═══ ADMIN LOGIN ═══ -->
+<div id="adm-login" class="adm-modal" onclick="if(event.target===this){this.style.display='none';ADMIN_PENDING_FN=null;}">
+ <div class="adm-box" style="max-width:360px">
+  <div class="adm-hdr"><h3>🔐 Admin Login</h3></div>
+  <div style="margin-bottom:10px">
+   <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:4px">Username</label>
+   <input id="adm-user" type="text" placeholder="Username" autocomplete="username" style="width:100%;padding:9px 12px;border:1px solid #dde3ec;border-radius:7px;font-family:inherit;font-size:13px">
+  </div>
+  <div style="margin-bottom:14px">
+   <label style="font-size:12px;font-weight:700;color:#374151;display:block;margin-bottom:4px">Password</label>
+   <input id="adm-pass" type="password" placeholder="Password" autocomplete="current-password" style="width:100%;padding:9px 12px;border:1px solid #dde3ec;border-radius:7px;font-family:inherit;font-size:13px" onkeydown="if(event.key==='Enter')doAdmLogin()">
+  </div>
+  <div id="adm-err" style="display:none;color:#dc2626;font-size:12px;margin-bottom:10px;background:#fef2f2;padding:7px 10px;border-radius:6px">❌ Username หรือ Password ไม่ถูกต้อง</div>
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+   <button onclick="document.getElementById('adm-login').style.display='none';ADMIN_PENDING_FN=null;" style="padding:8px 18px;border-radius:7px;border:1px solid #dde3ec;background:#f1f5f9;color:#374151;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">ยกเลิก</button>
+   <button onclick="doAdmLogin()" style="padding:8px 20px;border-radius:7px;border:none;background:#0d2b5e;color:#fff;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">🔓 เข้าสู่ระบบ</button>
+  </div>
+ </div>
+</div>
+
+<!-- ═══ ADMIN PANEL ═══ -->
+<div id="adm-panel" class="adm-modal" onclick="if(event.target===this)this.style.display='none'">
+ <div class="adm-box" style="max-width:880px">
+  <div class="adm-hdr">
+   <h3>⚙️ Admin — ปรับการจัดกลุ่มตัวชี้วัด</h3>
+   <div style="display:flex;gap:7px;flex-wrap:wrap">
+    <button onclick="admResetAll()" style="padding:6px 13px;border-radius:6px;border:1px solid #fcd34d;background:#fffbeb;color:#92400e;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">🔄 รีเซต</button>
+    <button onclick="admSave()" style="padding:6px 13px;border-radius:6px;border:none;background:#0d2b5e;color:#fff;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">💾 บันทึก</button>
+    <button onclick="document.getElementById('adm-panel').style.display='none'" style="padding:6px 13px;border-radius:6px;border:1px solid #dde3ec;background:#f1f5f9;color:#374151;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">✕ ปิด</button>
+   </div>
+  </div>
+  <div class="note note-b" style="font-size:11.5px;margin-bottom:10px">💡 <b>วิธีใช้:</b> เลือกหน่วยงานที่รับผิดชอบตัวชี้วัดแต่ละตัวตามที่ตกลงกันในพื้นที่ แล้วกด <b>💾 บันทึก</b> — ระบบจำค่าไว้แม้ปิดเบราว์เซอร์</div>
+  <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+   <button onclick="admFilterType('all')" id="admf-all" style="padding:4px 12px;border-radius:20px;border:2px solid #1a3f7c;background:#1a3f7c;color:#fff;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">ทั้งหมด</button>
+   <button onclick="admFilterType('sso')" id="admf-sso" style="padding:4px 12px;border-radius:20px;border:2px solid #dde3ec;background:#fff;color:#64748b;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">🏠 สสอ./รพ.สต.</button>
+   <button onclick="admFilterType('both')" id="admf-both" style="padding:4px 12px;border-radius:20px;border:2px solid #dde3ec;background:#fff;color:#64748b;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">🤝 ร่วมกัน</button>
+   <button onclick="admFilterType('rph')" id="admf-rph" style="padding:4px 12px;border-radius:20px;border:2px solid #dde3ec;background:#fff;color:#64748b;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer">🏥 โรงพยาบาล</button>
+   <input id="adm-search" type="text" placeholder="🔍 ค้นหาตัวชี้วัด..." oninput="admRender()" style="padding:4px 10px;border:1px solid #dde3ec;border-radius:20px;font-family:inherit;font-size:11px;flex:1;min-width:140px">
+  </div>
+  <div style="display:grid;grid-template-columns:36px 1fr 176px;gap:0;background:#1a3f7c;color:#fff;font-size:11px;font-weight:700;padding:6px 10px;border-radius:7px 7px 0 0">
+   <span>#</span><span>ตัวชี้วัด</span><span style="text-align:center">หน่วยรับผิดชอบ</span>
+  </div>
+  <div id="adm-list" style="max-height:55vh;overflow-y:auto;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 7px 7px"></div>
+  <div id="adm-msg" style="display:none;margin-top:10px;padding:9px 14px;background:#f0fdf4;border:1px solid #86efac;border-radius:7px;color:#166534;font-size:12px;font-weight:700"></div>
+ </div>
+</div>
+
+<!-- ═══ PRINT DIALOG ═══ -->
+<div id="print-modal" class="print-modal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="print-modal-box">
+    <h3>🖨️ เลือกส่วนที่ต้องการพิมพ์</h3>
+    <label class="psi"><input type="checkbox" id="prn-cards" checked><span>📊 ภาพรวมสรุป (Overview Cards)</span></label>
+    <label class="psi"><input type="checkbox" id="prn-sso" checked><span>🏠 ส่วนที่ 1 : ตัวชี้วัด สสอ./รพ.สต.</span></label>
+    <label class="psi"><input type="checkbox" id="prn-both" checked><span>🤝 ส่วนที่ 2 : ตัวชี้วัดร่วมกัน</span></label>
+    <label class="psi"><input type="checkbox" id="prn-rph" checked><span>🏥 สรุปโรงพยาบาล</span></label>
+    <label class="psi"><input type="checkbox" id="prn-pass"><span>✅ รายการที่ผ่านเกณฑ์ทั้งหมด</span></label>
+    <label class="psi"><input type="checkbox" id="prn-fail"><span>❌ รายการที่ไม่ผ่านเกณฑ์</span></label>
+    <label class="psi"><input type="checkbox" id="prn-budget"><span>💰 จัดสรรงบประมาณ</span></label>
+    <div class="pmb">
+      <button onclick="document.getElementById('print-modal').style.display='none'" style="background:#f1f5f9;color:#374151">ยกเลิก</button>
+      <button onclick="selectAllPrint(true)" style="background:#e0e9f7;color:#1a3f7c">เลือกทั้งหมด</button>
+      <button onclick="selectAllPrint(false)" style="background:#f8fafc;color:#64748b">ล้างทั้งหมด</button>
+      <button onclick="doPrint()" style="background:#1a3f7c;color:#fff">🖨️ พิมพ์เลย</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ KPI CLASSIFICATION DB ══
+var DB=[
+  {w:'อัตราส่วนการตายมารดา',t:'rph',r:'',f:''},
+  {w:'มีพัฒนาการสมวัย',t:'sso',r:'รพ.สต.คัดกรอง DSPM ใน Well Child Visit',f:'KPI ข้อ 2.1'},
+  {w:'ฟันดีไม่มีผุ',t:'sso',r:'ทันตสาธารณสุขชุมชน/รพ.สต.',f:'KPI ข้อ 2.2'},
+  {w:'Cavity Free',t:'sso',r:'ทันตสาธารณสุขชุมชน/รพ.สต.',f:'KPI ข้อ 2.2'},
+  {w:'ได้รับการตรวจฟัน',t:'sso',r:'ทีมทันตชุมชน/รพ.สต.',f:'Area-based'},
+  {w:'พัฒนาการล่าช้า',t:'sso',r:'รพ.สต.ค้นหาและส่งต่อ',f:'KPI ข้อ 2'},
+  {w:'ดำเนินการจัดการสุขภาพที่เหมาะสม',t:'sso',r:'สสอ./รพ.สต. ตาม พ.ร.บ.ปฐมภูมิ 2562 ม.29',f:'KPI ข้อ 3'},
+  {w:'ความรอบรู้ด้านสุขภาพของประชาชนไทย',t:'sso',r:'รพ.สต.จัดกิจกรรม HLC ให้ความรู้ชุมชน',f:'KPI ข้อ 4'},
+  {w:'ตรวจติดตามยืนยันวินิจฉัยกลุ่มสงสัยป่วยโรคเบาหวาน',t:'sso',r:'รพ.สต.เจาะเลือด FPG ซ้ำกลุ่มสงสัยป่วย DM',f:'KPI ข้อ 6.1'},
+  {w:'คัดกรองผู้ป่วยโรคเบาหวาน',t:'sso',r:'รพ.สต.คัดกรองประชากร 35+ ผ่าน NCDSCREEN HDC43',f:'HDC43'},
+  {w:'ตรวจติดตามยืนยันวินิจฉัยกลุ่มสงสัยป่วยโรคความดัน',t:'sso',r:'รพ.สต.วัดความดันซ้ำกลุ่มสงสัย HT',f:'KPI ข้อ 6.3'},
+  {w:'คัดกรองผู้ป่วยโรคความดันโลหิตสูง',t:'sso',r:'รพ.สต.คัดกรองประชากร 35+ ผ่าน NCDSCREEN',f:'HDC43'},
+  {w:'เสียชีวิตและบาดเจ็บจากอุบัติเหตุทางถนน',t:'both',r:'รพ.รักษา + สสอ./รพ.สต.ป้องกัน D-RTI',f:'KPI ข้อ 7'},
+  {w:'ขับเคลื่อนความปลอดภัยทางถนน',t:'both',r:'สสอ.ขับเคลื่อน D-RTI รพ.ร่วมทีม DHS',f:'Road Safety'},
+  {w:'MMR2',t:'sso',r:'รพ.สต.เป็น EPI Provider หลัก',f:'KPI ข้อ 8'},
+  {w:'วัคซีนป้องกันหัด',t:'sso',r:'รพ.สต.เป็น EPI Provider หลัก',f:'KPI ข้อ 8'},
+  {w:'GREEN & CLEAN',t:'rph',r:'Hospital ในชื่อ = รพ.ชัดเจน',f:'KPI ข้อ 9'},
+  {w:'หน่วยบริการปฐมภูมิ',t:'sso',r:'รพ.สต. = PCU ตาม พ.ร.บ.ปฐมภูมิ 2562',f:'KPI ข้อ 10'},
+  {w:'ปฐมภูมิและเครือข่าย',t:'sso',r:'รพ.สต. = PCU ตาม พ.ร.บ.ปฐมภูมิ 2562',f:'KPI ข้อ 10'},
+  {w:'หลอดเลือดสมอง',t:'rph',r:'Stroke Outcome รพ. ต้องมี CT/MRI',f:'KPI ข้อ 11'},
+  {w:'คัดกรองวัณโรคกลุ่มเสี่ยง',t:'sso',r:'รพ.สต. Active Case Finding ในชุมชน ตาม NTP',f:'NTP'},
+  {w:'ความครอบคลุมการขึ้นทะเบียนของผู้ป่วยวัณโรค',t:'rph',r:'TBCM = ระบบขึ้นทะเบียน รพ.',f:'TBCM'},
+  {w:'ความสำเร็จการรักษาผู้ป่วยวัณโรค',t:'rph',r:'Treatment Outcome รพ. เป็น Case holder DOTS',f:'WHO DOTS'},
+  {w:'การตายและการขาดยาของผู้ป่วยวัณโรค',t:'rph',r:'Outcome รพ. เป็น Case holder',f:'NTP'},
+  {w:'ตายทารกแรกเกิด',t:'rph',r:'NICU/หอผู้ป่วยทารก รพ.',f:'KPI ข้อ 13'},
+  {w:'คัดกรองการได้ยินของทารกแรกเกิด',t:'rph',r:'OAE/AABR ในห้องคลอด รพ.',f:'Hearing Screening'},
+  {w:'Palliative Care',t:'rph',r:'Palliative team รพ. เป็น Clinical service',f:'Palliative'},
+  {w:'ดูแลต่อเนื่องที่บ้าน',t:'both',r:'รพ.ส่งออก รพ.สต.ดูแลที่บ้าน ต้องร่วมมือ',f:'Palliative'},
+  {w:'Home ward',t:'both',r:'รพ.ส่ง รพ.สต.ดูแล Home ward',f:'Palliative'},
+  {w:'Family Meeting',t:'rph',r:'Clinical process รพ. ต้องมีแพทย์',f:'Palliative'},
+  {w:'มะเร็งระยะประคับประคอง',t:'rph',r:'Cancer+Palliative = รพ.',f:'Cancer Service Plan'},
+  {w:'รับบริการในระดับปฐมภูมิได้รับการรักษาด้วยการแพทย์แผนไทย',t:'sso',r:'KPI ข้อ 14 ระบุ "ระดับปฐมภูมิ" = รพ.สต.',f:'KPI ข้อ 14'},
+  {w:'แผนไทยและการแพทย์ทางเลือก',t:'sso',r:'รพ.สต.ให้บริการแพทย์แผนไทยระดับปฐมภูมิ',f:'KPI ข้อ 14'},
+  {w:'มูลค่าการใช้ยาสมุนไพร',t:'both',r:'ทั้ง รพ. และ รพ.สต.สั่งจ่ายยาสมุนไพร',f:'KPI ข้อ 15'},
+  {w:'อัตราการฆ่าตัวตายสำเร็จ',t:'both',r:'Outcome อำเภอ รพ.รักษา สสอ./รพ.สต.ดูแลชุมชน',f:'KPI ข้อ 16'},
+  {w:'ผู้พยายามฆ่าตัวตายเข้าถึงบริการ',t:'both',r:'รพ.รักษาฉุกเฉิน รพ.สต./สสอ.ติดตามชุมชน',f:'KPI ข้อ 16.2'},
+  {w:'การฆ่าตัวตายสำเร็จกลุ่มอายุน้อยกว่า 20',t:'sso',r:'สสอ./รพ.สต.เฝ้าระวังดูแลกลุ่มเสี่ยงในชุมชน',f:'Mental Health'},
+  {w:'SMI-V',t:'rph',r:'จิตแพทย์/ทีมจิตเวช รพ.',f:'KPI ข้อ 17'},
+  {w:'จิตเวชยาเสพติดก่อความรุนแรง',t:'rph',r:'จิตแพทย์/ทีมจิตเวช รพ.',f:'KPI ข้อ 17'},
+  {w:'ผู้บริจาคอวัยวะ',t:'rph',r:'KPI ข้อ 21 เฉพาะ รพ.P+/P/A+/A',f:'KPI ข้อ 21'},
+  {w:'Donor Card',t:'rph',r:'KPI ข้อ 21 เฉพาะโรงพยาบาลระดับสูง',f:'KPI ข้อ 21'},
+  {w:'ผู้ป่วยมะเร็งได้รับการรักษา',t:'rph',r:'Cancer treatment = รพ.',f:'Cancer Service Plan'},
+  {w:'Retention Rate',t:'rph',r:'Retention = คุณภาพการรักษา รพ. เป็น Case holder',f:'KPI ข้อ 23'},
+  {w:'บำบัดรักษา ได้รับการดูแลอย่างมีคุณภาพ',t:'rph',r:'Retention Rate = Outcome คุณภาพ รพ.',f:'KPI ข้อ 23'},
+  {w:'ผู้ป่วยวิกฤต เข้าถึงบริการการแพทย์ฉุกเฉิน',t:'rph',r:'EMS hub = รพ.',f:'KPI ข้อ 24'},
+  {w:'พระบรมราชานุเคราะห์',t:'rph',r:'บริการพิเศษระดับ รพ.',f:'KPI ข้อ 25'},
+  {w:'ความมั่นคงปลอดภัยไซเบอร์',t:'both',r:'ทุกหน่วยงาน รพ. รพ.สต. สสอ.',f:'KPI ข้อ 27'},
+  {w:'โรงพยาบาลชุมชน สังกัด',t:'rph',r:'HA = รพ. โดยตรง',f:'KPI ข้อ 29.2'},
+  {w:'HbA1c',t:'rph',r:'ห้องแล็บ รพ.',f:'KPI ข้อ 30'},
+  {w:'LDL',t:'rph',r:'ห้องแล็บ รพ.',f:'KPI ข้อ 30'},
+  {w:'Creatinine',t:'rph',r:'ห้องแล็บ รพ.',f:'KPI ข้อ 30'},
+  {w:'Total-Cholesterol',t:'rph',r:'ห้องแล็บ รพ.',f:'KPI ข้อ 30'},
+  {w:'Triglycerides',t:'rph',r:'ห้องแล็บ รพ.',f:'KPI ข้อ 30'},
+  {w:'Total Performance Score',t:'rph',r:'TPS = Performance รพ.',f:'KPI ข้อ 33'},
+  {w:'ป่วยไข้เลือดออกลดลง',t:'sso',r:'สสอ./รพ.สต.ควบคุมพาหะยุงลายในชุมชน',f:'DHF/VBD'},
+  {w:'ป่วยตายด้วยโรคไข้เลือดออก',t:'sso',r:'สสอ./รพ.สต.ส่งต่อรายด่วน Area-based',f:'DHF'},
+  {w:'ADL',t:'sso',r:'รพ.สต.ประเมิน ADL ผู้สูงอายุทุกคนในพื้นที่',f:'Elderly Care'},
+  {w:'คัดกรองความเสี่ยงครบ 9 ด้าน',t:'sso',r:'รพ.สต. Comprehensive Geriatric Assessment 9 ด้าน',f:'Elderly Care'},
+  {w:'Mental Health Cheak in',t:'sso',r:'รพ.สต.คัดกรองเชิงรุกในชุมชน/โรงเรียน',f:'Mental Health'},
+  {w:'Mental Health Check',t:'sso',r:'รพ.สต.คัดกรองสุขภาพจิตในชุมชน',f:'Mental Health'},
+  {w:'คัดกรองสุขภาพจิต',t:'sso',r:'รพ.สต.คัดกรองสุขภาพจิตอายุน้อยกว่า 20 ปี',f:'Mental Health'},
+  {w:'ความเสี่ยงฆ่าตัวตายเข้าถึงบริการ',t:'both',r:'รพ.สต.ค้นหา รพ.รักษา ต้องร่วมมือ',f:'Mental Health'},
+  {w:'คัดกรองมะเร็งลำไส้ใหญ่',t:'sso',r:'รพ.สต.แจกชุด FOBT คัดกรองเชิงรุก',f:'Cancer Screening'},
+  {w:'ส่องกล้อง Colonoscopy',t:'rph',r:'Colonoscopy = หัตถการ รพ.',f:'Cancer Service'},
+  {w:'คัดกรองมะเร็งปากมดลูก',t:'sso',r:'รพ.สต.เก็บตัวอย่าง HPV DNA/Pap smear',f:'Cancer Screening'},
+  {w:'ส่องกล้อง Colposcopy',t:'rph',r:'Colposcopy = หัตถการ รพ.',f:'Cancer Service'},
+  {w:'คัดกรองมะเร็งเต้านม',t:'sso',r:'รพ.สต./อสม.ทำ CBE เชิงรุกในชุมชน',f:'Cancer Screening'},
+  {w:'หญิงตั้งครรภ์ที่ใช้สารเสพติดเข้าสู่กระบวนการบำบัดยาเสพติด',t:'rph',r:'Clinical action แพทย์วินิจฉัย รพ.',f:'Drug Abuse'},
+  {w:'ฝากครรภ์คุณภาพ',t:'sso',r:'รพ.สต.รับฝากครรภ์และติดตาม ANC',f:'MCH'},
+  {w:'พัฒนาสู่จังหวัดใช้ยาอย่างสมเหตุผล',t:'rph',r:'รพ. เป็น Hub ปริมาณยาหลัก',f:'RDU'},
+  {w:'RDU',t:'rph',r:'รพ.เป็น Hub ปริมาณยาหลัก',f:'RDU'},
+  {w:'องค์กรแห่งความสุข',t:'both',r:'ทุกหน่วยงาน รพ. รพ.สต. สสอ.',f:'People Excellence'},
+  {w:'ผลงานวิชาการ',t:'both',r:'ทุกหน่วยงานต้องผลิตงานวิชาการ',f:'People Excellence'},
+  {w:'คัดกรองสุขภาพเจ้าหน้าที่',t:'sso',r:'สสอ.กำกับเจ้าหน้าที่ทุกคนในอำเภอ',f:'People Excellence'},
+  {w:'ภาวะวิกฤตทางการเงิน',t:'rph',r:'วิกฤตการเงิน = รพ.',f:'Finance'},
+  {w:'ประเมินศูนย์จัดเก็บรายได้',t:'rph',r:'ศูนย์จัดเก็บรายได้อยู่ที่ รพ.',f:'Finance'},
+  {w:'บริหารแผนรายรับ เงินบำรุงของ รพ.สต',t:'sso',r:'ชื่อระบุ "รพ.สต./สสอ." โดยตรง',f:'Finance SSO'},
+  {w:'บริหารแผนรายจ่าย เงินบำรุงของ รพ.สต',t:'sso',r:'ชื่อระบุ "รพ.สต./สสอ." โดยตรง',f:'Finance SSO'},
+  {w:'TeleMed/Tele Health ภาพรวม',t:'rph',r:'รพ.เป็นศูนย์กลาง Telemedicine',f:'Digital Health'},
+  {w:'รพ.สต. ทุกแห่งสมัครใช้งาน',t:'sso',r:'ชื่อระบุ "รพ.สต.ทุกแห่ง"',f:'Digital Health'},
+  {w:'รพ.สต. ทุกแห่งมีการให้บริการด้วยระบบ',t:'sso',r:'ชื่อระบุ "รพ.สต.ทุกแห่ง"',f:'Digital Health'},
+  {w:'Smart Hospital',t:'rph',r:'Smart Hospital = รพ.',f:'Smart Hospital'},
+  {w:'คุณภาพระบบเทคโนโลยีสารสนเทศ',t:'rph',r:'HAIT = Hospital Accreditation IT',f:'IT Governance'},
+  {w:'เด็ก 0-2 ปี เคลือบ',t:'sso',r:'รพ.สต./ทีมทันตชุมชน ทำฟลูออไรด์เด็กเล็ก',f:'Dental Plan'},
+  {w:'ฟลูออไรด์',t:'sso',r:'ทันตสาธารณสุขชุมชน/รพ.สต.',f:'Dental Plan'},
+  {w:'ฟันเทียมพระราชทาน',t:'rph',r:'ทันตแพทย์ รพ. Secondary Dental Care',f:'Dental Plan'},
+  {w:'พระภิกษุสงฆ์',t:'sso',r:'สสอ./รพ.สต.ออกคัดกรอง NCD ในวัดเชิงรุก',f:'NCD Screening'},
+  {w:'อายุ 9 เดือน',t:'sso',r:'รพ.สต. Well Child Visit เด็ก 9 เดือน',f:'Child Health'},
+  {w:'อายุ 4 ปี',t:'sso',r:'รพ.สต. Well Child Visit เด็ก 4 ปี',f:'Child Health'},
+  {w:'ยาน้ำเสริมธาตุเหล็ก',t:'sso',r:'รพ.สต.จ่ายยาเสริมธาตุเหล็กใน Well Child Visit',f:'Nutrition'},
+  {w:'หญิงตั้งครรภ์(รายใหม่)ได้รับการตรวจปัสสาวะ',t:'rph',r:'ห้องแล็บ รพ. ตรวจปัสสาวะหาสารเสพติด',f:'Drug Abuse'},
+  {w:'หญิิงมาคลอด',t:'rph',r:'ระบุ "ณ โรงพยาบาลที่คลอด"',f:'Drug Abuse'},
+  {w:'หญิงมาคลอด',t:'rph',r:'ระบุ "ณ โรงพยาบาลที่คลอด"',f:'Drug Abuse'},
+  {w:'ออกกลางคัน (Drop out',t:'rph',r:'Drop out Rate = Outcome การรักษา รพ.',f:'Drug Abuse'},
+  {w:'พัฒนาคุณภาพองค์กร',t:'rph',r:'PMQA = คุณภาพบริหาร รพ.',f:'PMQA'},
+  {w:'Refer back',t:'both',r:'รพ.ส่ง Refer back รพ.สต.รับดูแลต่อ',f:'Referral'},
+  {w:'SumAdjRW',t:'rph',r:'ปริมาณงาน IPD มีเฉพาะ รพ.',f:'Hospital Finance'},
+  {w:'คัดกรองไวรัสตับอับเสบบี',t:'sso',r:'รพ.สต.เก็บเลือดส่งตรวจ "คัดกรอง"',f:'Hepatitis'},
+  {w:'คัดกรองไวรัสตับอับเสบซี',t:'sso',r:'รพ.สต.เก็บเลือดกลุ่มเป้าหมายส่งตรวจ',f:'Hepatitis'},
+  {w:'ติดเชื้อไวรัสตับอักเสบบี ได้รับการรักษา',t:'rph',r:'Antiviral รพ.',f:'Hepatitis'},
+  {w:'ติดเชื้อไวรัสตับอักเสบซี ได้รับการรักษา',t:'rph',r:'DAA drugs รพ.',f:'Hepatitis'},
+  {w:'U/S โดยนัก sonographer',t:'rph',r:'เครื่อง US + sonographer อยู่ที่ รพ.',f:'Hospital Service'},
+  {w:'Psychicorner',t:'rph',r:'ระบบ IT จิตเวช รพ.',f:'Mental Health IT'},
+  {w:'NCD Clinic Plus',t:'sso',r:'ชื่อระบุ "ใน รพ.สต." โดยตรง',f:'NCD Clinic Plus'},
+  {w:'อสม.ได้รับการตรวจสุขภาพ',t:'sso',r:'สสอ./รพ.สต.จัด อสม.ตรวจสุขภาพ',f:'CHW Program'},
+  {w:'MOPH Refer',t:'both',r:'ทั้ง รพ. และ รพ.สต.ใช้ MOPH Refer',f:'Digital Health'},
+  {w:'3Refer',t:'rph',r:'3Refer = Referral ระหว่าง รพ.',f:'Referral'},
+  {w:'D-RTI',t:'both',r:'สสอ.ขับเคลื่อน D-RTI รพ.ร่วมทีม DHS',f:'Road Safety'},
+];
+
+// ══ FILE→KPI MAP ══
+var FILE_MAP=[
+  {keys:['เบาหวาน'],kw:'ตรวจติดตามยืนยันวินิจฉัยกลุ่มสงสัยป่วยโรคเบาหวาน',lbl:'DM ยืนยันวินิจฉัย',tgt:90},
+  {keys:['ความดัน'],kw:'ตรวจติดตามยืนยันวินิจฉัยกลุ่มสงสัยป่วยโรคความดัน',lbl:'HT ยืนยันวินิจฉัย',tgt:90},
+  {keys:['MMR','วัคซีน','หัด','คางทูม'],kw:'MMR2',lbl:'วัคซีน MMR2',tgt:95},
+  {keys:['แผนไทย','สมุนไพร'],kw:'รับบริการในระดับปฐมภูมิได้รับการรักษาด้วยการแพทย์แผนไทย',lbl:'แพทย์แผนไทย',tgt:25},
+  {keys:['ฝากครรภ์'],kw:'ฝากครรภ์คุณภาพ',lbl:'ฝากครรภ์คุณภาพ',tgt:60},
+  {keys:['ฟลูออไรด์','เคลือบ','ทาฟลู'],kw:'เด็ก 0-2 ปี เคลือบ',lbl:'ฟลูออไรด์เด็ก 0-2 ปี',tgt:80},
+  {keys:['DSPM','พัฒนาการ'],kw:'มีพัฒนาการสมวัย',lbl:'DSPM พัฒนาการสมวัย',tgt:90},
+  {keys:['มะเร็งลำไส้','FOBT'],kw:'คัดกรองมะเร็งลำไส้ใหญ่',lbl:'คัดกรองมะเร็งลำไส้',tgt:20},
+  {keys:['ปากมดลูก','HPV'],kw:'คัดกรองมะเร็งปากมดลูก',lbl:'คัดกรองมะเร็งปากมดลูก',tgt:70},
+  {keys:['เต้านม'],kw:'คัดกรองมะเร็งเต้านม',lbl:'คัดกรองมะเร็งเต้านม',tgt:80},
+  {keys:['ADL','ผู้สูงอายุ'],kw:'ADL',lbl:'ADL ผู้สูงอายุ',tgt:80},
+  {keys:['ไข้เลือดออก','DHF'],kw:'ป่วยไข้เลือดออกลดลง',lbl:'ไข้เลือดออก',tgt:80},
+];
+
+// ══ CANONICAL UNITS 11 หน่วย สสอ.เขาค้อ ══
+// จับคู่ชื่อหน่วยใน HDC → ชื่อมาตรฐาน (รวม aliases / รพ.สต. / บ้านห้วยน้ำขาว)
+var CANONICAL_UNITS=[
+  // เสลียงแห้ง ต้องมาก่อน หนองแม่นา เพราะทั้งคู่อยู่ ต.หนองแม่นา
+  {name:'07851:โรงพยาบาลส่งเสริมสุขภาพตำบลเสลียงแห้ง',keys:['07851','เสลียงแห้ง']},
+  {name:'07852:โรงพยาบาลส่งเสริมสุขภาพตำบลหนองแม่นา',keys:['07852','หนองแม่นา']},
+  {name:'07845:โรงพยาบาลส่งเสริมสุขภาพตำบลปานสุขุม',keys:['07845','ปานสุขุม']},
+  // ห้วยน้ำขาว (77569) → รวมกับเข็กน้อย (07853) ไม่แสดงชื่อ 77569
+  {name:'07853:โรงพยาบาลส่งเสริมสุขภาพตำบลเข็กน้อย',keys:['07853','เข็กน้อย','ห้วยน้ำขาว','77569','สถานบริการสาธารณสุขชุมชนบ้านห้วยน้ำขาว']},
+  {name:'07846:โรงพยาบาลส่งเสริมสุขภาพตำบลนายาว',keys:['07846','นายาว','ทุ่งสมอ']},
+  {name:'07844:โรงพยาบาลส่งเสริมสุขภาพตำบลป่าแดง',keys:['07844','ป่าแดง']},
+  {name:'07849:โรงพยาบาลส่งเสริมสุขภาพตำบลพัฒนวรพงษ์',keys:['07849','พัฒนวรพงษ์','ริมสีม่วง']},
+  {name:'11272:โรงพยาบาลเขาค้อ',keys:['11272','โรงพยาบาลเขาค้อ','รพ.เขาค้อ','รพช.เขาค้อ','hospital เขาค้อ']},
+  {name:'07847:โรงพยาบาลส่งเสริมสุขภาพตำบลเหล่าหญ้า',keys:['07847','เหล่าหญ้า']},
+  {name:'07848:โรงพยาบาลส่งเสริมสุขภาพตำบลป่าคา',keys:['07848','ป่าคา']},
+  {name:'07850:โรงพยาบาลส่งเสริมสุขภาพตำบลรื่นฤดี',keys:['07850','รื่นฤดี','สะเดาะพง']},
+];
+function normalizeUnit(n){
+  var s=n.trim();
+  for(var i=0;i<CANONICAL_UNITS.length;i++){
+    var cu=CANONICAL_UNITS[i];
+    for(var j=0;j<cu.keys.length;j++)
+      if(s.indexOf(cu.keys[j])>=0)return cu.name;
+  }
+  return s;
+}
+
+// ══ GLOBALS ══
+var G_KPIS=[],G_YEAR='2568',G_FNAME='',UNIT_DATA={},STAGED=[],KEY='kpi_sso_v2',UKEY='kpi_sso_units_v2',OKEY='kpi_sso_ov_v2';
+var TYPE_OVERRIDES={};   // {kpiName: 'sso'|'rph'|'both'} — ปรับโดย Admin
+var ADMIN_LOGGED=false;  // session flag
+var ADM_FILTER='all';
+var ADMIN_PENDING_FN=null; // function waiting for admin login
+
+// ══ HELPERS ══
+function CL(n){
+  // Admin override ก่อนเสมอ
+  for(var on in TYPE_OVERRIDES){if(n===on||n.indexOf(on)>=0)return{t:TYPE_OVERRIDES[on],r:'(ปรับโดย Admin)',f:''};}
+  for(var i=0;i<DB.length;i++)if(n.indexOf(DB[i].w)>=0)return DB[i];return{t:'rph',r:'',f:''};
+}
+function isP(k){return k.passfail&&k.passfail.indexOf('ผ่าน')>=0&&k.passfail.indexOf('ไม่')<0;}
+function isF(k){return k.passfail&&k.passfail.indexOf('ไม่ผ่าน')>=0;}
+function evaled(k){return isP(k)||isF(k);}
+function RT(a){var p=0,t=0;for(var i=0;i<a.length;i++){if(!evaled(a[i]))continue;t++;if(isP(a[i]))p++;}return t?(p/t*100).toFixed(1):0;}
+function PC(a){var c=0;for(var i=0;i<a.length;i++)if(isP(a[i]))c++;return c;}
+function FC(a){var c=0;for(var i=0;i<a.length;i++)if(isF(a[i]))c++;return c;}
+function RC(p){if(!p)return'#64748b';if(p.indexOf('ผ่าน')>=0&&p.indexOf('ไม่')<0)return'#16a34a';if(p.indexOf('ไม่ผ่าน')>=0)return'#dc2626';return'#64748b';}
+function PF(p){if(!p||!p.trim())return'<span class="bna">—</span>';if(p.indexOf('ผ่าน')>=0&&p.indexOf('ไม่')<0)return'<span class="bp">✅ ผ่าน</span>';if(p.indexOf('ไม่ผ่าน')>=0)return'<span class="bf">❌ ไม่ผ่าน</span>';return'<span class="bna">'+p+'</span>';}
+function TB(t){if(t==='sso')return'<span class="bsso">รพ.สต.</span>';if(t==='both')return'<span class="bboth">ร่วมกัน</span>';return'<span class="brph">รพ.</span>';}
+function DN(pct,color,sz){sz=sz||90;var r=sz*.38,c=sz/2,ci=2*Math.PI*r,ff=ci*Math.min(parseFloat(pct),100)/100;return'<svg viewBox="0 0 '+sz+' '+sz+'" width="'+sz+'" height="'+sz+'" style="display:block"><circle cx="'+c+'" cy="'+c+'" r="'+r+'" fill="none" stroke="#e8edf4" stroke-width="12"/><circle cx="'+c+'" cy="'+c+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="12" stroke-dasharray="'+ff+' '+(ci-ff)+'" transform="rotate(-90 '+c+' '+c+')"/></svg>';}
+function SH(bg,ic,lb,p,f,r){return'<div class="sh" style="background:'+bg+'"><div style="font-size:18px">'+ic+'</div><h2>'+lb+'</h2><div class="cnt"><div><div class="n" style="color:#4ade80">'+p+'</div><div class="l">ผ่าน</div></div><div class="sep"></div><div><div class="n" style="color:#f87171">'+f+'</div><div class="l">ไม่ผ่าน</div></div><div class="sep"></div><div><div class="n">'+r+'%</div><div class="l">อัตรา</div></div></div></div>';}
+
+// ══ STATS ══
+function calcStats(units){
+  if(!units||!units.length)return null;
+  var vals=units.map(function(u){return u.result;}).filter(function(v){return!isNaN(v);});
+  if(!vals.length)return null;
+  var n=vals.length,sum=vals.reduce(function(a,b){return a+b;},0),mean=sum/n;
+  var vr=vals.reduce(function(s,v){return s+Math.pow(v-mean,2);},0)/n;
+  var sd=Math.sqrt(vr),cv=mean>0?sd/mean*100:0;
+  var sorted=vals.slice().sort(function(a,b){return a-b;});
+  return{mean:mean,sd:sd,min:sorted[0],max:sorted[n-1],n:n,cv:cv};
+}
+function statsHtml(units,tgt){
+  var st=calcStats(units);if(!st)return'';
+  var mc=st.mean>=tgt?'hi':'warn';
+  var cvLbl=st.cv<15?'สม่ำเสมอ✅':st.cv<30?'ปานกลาง⚠️':'ต่างกันมาก❗';
+  var cvCl=st.cv<15?'hi':st.cv<30?'warn':'lo';
+  var passing=units.filter(function(u){return tgt>0&&u.result>=tgt;}).length;
+  return'<div class="stats-row">'+
+    '<span class="sc '+mc+'">📊 ค่าเฉลี่ย: '+st.mean.toFixed(1)+'%</span>'+
+    '<span class="sc">±SD: '+st.sd.toFixed(1)+'%</span>'+
+    '<span class="sc hi">🏆 สูงสุด: '+st.max.toFixed(1)+'%</span>'+
+    '<span class="sc lo">⚠️ ต่ำสุด: '+st.min.toFixed(1)+'%</span>'+
+    '<span class="sc '+cvCl+'">CV: '+st.cv.toFixed(1)+'% ('+cvLbl+')</span>'+
+    (tgt>0?'<span class="sc">หน่วยผ่าน '+passing+'/'+units.length+'</span>':'')+'</div>';
+}
+
+// ══ PARSE MAIN KPI FILE ══
+function parseXL(data){
+  var wb=XLSX.read(data,{type:'array'});
+  var sh='';for(var i=0;i<wb.SheetNames.length;i++)if(wb.SheetNames[i].indexOf('ประเมิน KPI')>=0){sh=wb.SheetNames[i];break;}
+  if(!sh)sh=wb.SheetNames[0];
+  var ws=wb.Sheets[sh];
+  var rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
+  var ym=sh.match(/\d{2}/);var year=ym?'25'+ym[0]:'2568';
+  var rc=4,pc=5;
+  var hr1=rows[1]||[];
+  var kc=[];for(var i=0;i<hr1.length;i++)if(hr1[i]==='เขาค้อ')kc.push(i);
+  if(kc.length>=2){rc=kc[0];pc=kc[kc.length-1];}else if(kc.length===1){rc=kc[0];pc=kc[0]+1;}
+  var kpis=[];
+  for(var i=2;i<rows.length;i++){
+    var row=rows[i];if(!row)continue;
+    var c0=row[0],c1=row[1];
+    if(c0===null||c0===undefined||!c1)continue;
+    var s0=String(c0).trim();
+    var clean=s0.replace(/\./g,'');if(clean===''||isNaN(parseInt(clean,10)))continue;
+    var nm=String(c1).trim();if(nm.length<4)continue;
+    var res=row[rc],pf=row[pc],tgt=row[2]||'';
+    var cl=CL(nm);
+    kpis.push({num:s0,name:nm,target:String(tgt),result:res!=null?String(res):'',
+      passfail:pf?String(pf).trim():'',type:cl.t,reason:cl.r||'',ref:cl.f||''});
+  }
+  return{kpis:kpis,year:year};
+}
+
+// ══ PARSE INDIVIDUAL KPI FILE (HDC format) ══
+function parseHDC(data){
+  var wb=XLSX.read(data,{type:'array'});
+  var units=[];
+  for(var si=0;si<wb.SheetNames.length;si++){
+    var ws=wb.Sheets[wb.SheetNames[si]];
+    var rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
+    var hdr=-1,nc=-1,rc=-1,numc=-1,denc=-1;
+    for(var i=0;i<Math.min(rows.length,8);i++){
+      var row=rows[i];if(!row)continue;
+      for(var j=0;j<row.length;j++){
+        var c=String(row[j]||'').trim();
+        if((c.indexOf('หน่วยบริการ')>=0||c.indexOf('สถานบริการ')>=0||c.indexOf('ชื่อ')>=0)&&nc<0){nc=j;hdr=i;}
+        if((c.indexOf('ร้อยละ')>=0||c==='%'||c.indexOf('อัตรา')>=0)&&rc<0){rc=j;if(hdr<0)hdr=i;}
+        if((c.indexOf('ผลงาน')>=0||c.indexOf('ตัวเศษ')>=0)&&numc<0)numc=j;
+        if((c.indexOf('เป้าหมาย')>=0||c.indexOf('ตัวส่วน')>=0)&&denc<0)denc=j;
+      }
+      if(hdr>=0&&nc>=0&&rc>=0)break;
+    }
+    if(nc<0)nc=1;
+    if(rc<0){
+      var fr=Math.max(0,hdr+1);
+      for(var j=(rows[fr]||[]).length-1;j>=0;j--)if(typeof (rows[fr]||[])[j]==='number'){rc=j;break;}
+    }
+    var st=Math.max(hdr+1,1);
+    for(var i=st;i<rows.length;i++){
+      var row=rows[i];if(!row)continue;
+      var nm=String(row[nc]||'').trim();
+      if(nm.length<3)continue;
+      if(/รวม|ทั้งหมด|อำเภอ|จังหวัด|ภาค|ประเทศ/.test(nm))continue;
+      var res=rc>=0?row[rc]:null;
+      if(res==null)continue;
+      var rv=parseFloat(String(res).replace('%','').trim());
+      if(isNaN(rv))continue;
+      units.push({name:nm,result:rv,
+        num:(numc>=0&&row[numc]!=null&&!isNaN(parseFloat(row[numc])))?parseFloat(row[numc]):null,
+        den:(denc>=0&&row[denc]!=null&&!isNaN(parseFloat(row[denc])))?parseFloat(row[denc]):null});
+    }
+    if(units.length>0)break;
+  }
+  return units;
+}
+
+function matchFile(fname){
+  fname=fname.toLowerCase();
+  for(var i=0;i<FILE_MAP.length;i++)
+    for(var j=0;j<FILE_MAP[i].keys.length;j++)
+      if(fname.indexOf(FILE_MAP[i].keys[j].toLowerCase())>=0)return FILE_MAP[i];
+  return null;
+}
+
+// ══ UNIT DATA LOOKUP ══
+// ใช้ exact → substring (>=8 ตัว) → ตัดคำยาว (>=10 ตัว)
+// ไม่ตัดคำสั้น เพื่อป้องกัน false-positive เช่น "ตาย" match ผิด KPI
+function findUnitData(kpiName){
+  // 1. exact match
+  if(UNIT_DATA[kpiName])return{kw:kpiName,units:UNIT_DATA[kpiName]};
+  // 2. key เป็น substring ของ kpiName (key ยาว >= 8 ตัว)
+  for(var k in UNIT_DATA){
+    if(k.length>=8&&kpiName.indexOf(k)>=0)return{kw:k,units:UNIT_DATA[k]};
+  }
+  // 3. kpiName เป็น substring ของ key (kpiName ยาว >= 8 ตัว)
+  for(var k in UNIT_DATA){
+    if(kpiName.length>=8&&k.indexOf(kpiName)>=0)return{kw:k,units:UNIT_DATA[k]};
+  }
+  // 4. แบ่งคำจาก key ยาว >= 10 ตัว (กัน false-positive จากคำสั้น)
+  for(var k in UNIT_DATA){
+    var words=k.split(/[\s,\/\-\(\)]+/);
+    for(var i=0;i<words.length;i++)
+      if(words[i].length>=10&&kpiName.indexOf(words[i])>=0)return{kw:k,units:UNIT_DATA[k]};
+  }
+  return null;
+}
+
+// ══ BUILD UNIT TABLE ══
+function buildUnitTable(kpiName,tgt,rid){
+  var fd=findUnitData(kpiName);
+  if(!fd)return null;
+  var units=fd.units,kw=fd.kw;
+  var tgtNum=parseFloat(String(tgt||'').replace(/[^0-9.]/g,''));
+  if(isNaN(tgtNum))tgtNum=0;
+  var mean=calcStats(units)?calcStats(units).mean:0;
+  var ranked=units.slice().sort(function(a,b){return b.result-a.result;});
+  var rows='';
+  ranked.forEach(function(u,idx){
+    var pass=tgtNum>0&&u.result>=tgtNum;
+    var badge=tgtNum>0?(pass?'<span class="bp">✅</span>':'<span class="bf">❌</span>'):'<span class="bna">—</span>';
+    var diff=u.result-mean;
+    var diffH=diff>0.5?'<span class="up">▲'+diff.toFixed(1)+'%</span>':diff<-0.5?'<span class="dn">▼'+Math.abs(diff).toFixed(1)+'%</span>':'<span class="eq">=</span>';
+    var nd=u.num!=null&&u.den!=null?'<small style="color:#94a3b8;margin-left:3px">('+u.num+'/'+u.den+')</small>':'';
+    var rc2=tgtNum>0?(u.result>=tgtNum?'#15803d':u.result>=tgtNum*0.8?'#d97706':'#b91c1c'):'#374151';
+    var medal=idx===0?'🥇 ':idx===1?'🥈 ':idx===2?'🥉 ':''
+    rows+='<tr><td style="color:#64748b;font-size:10px;text-align:center">'+(idx+1)+'</td>'+
+      '<td>'+medal+u.name+'</td>'+
+      '<td style="font-weight:700;color:'+rc2+'">'+u.result.toFixed(1)+'%'+nd+'</td>'+
+      '<td style="color:#64748b">'+(tgtNum>0?tgtNum+'%':'—')+'</td>'+
+      '<td>'+badge+'</td>'+
+      '<td>'+diffH+'</td></tr>';
+  });
+  var safeKw=kw.replace(/'/g,"\\'");
+  var leg='<div class="note note-b" style="font-size:10.5px;margin:4px 0 6px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">'+
+    '<span>📏 เป้าหมาย '+(tgtNum>0?tgtNum+'%':'—')+' | ค่าเฉลี่ยอำเภอ '+mean.toFixed(1)+'% | '+units.length+' หน่วยบริการ | ไฟล์: '+kw+'</span>'+
+    '<button onclick="editOCRChip(\''+safeKw+'\')" style="background:#1a3f7c;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:10.5px;font-family:inherit;font-weight:700;cursor:pointer;white-space:nowrap">✏️ แก้ไขข้อมูล</button>'+
+    '</div>';
+  return'<tr class="kpi-detail-row" id="kdr-'+rid+'"><td class="det-cell" colspan="7"><div class="det-inner">'+
+    leg+statsHtml(units,tgtNum)+
+    '<table class="t2"><thead><tr><th>#</th><th>หน่วยบริการ</th><th>ผลงาน</th><th>เป้าหมาย</th><th>ผ่าน</th><th>เทียบค่าเฉลี่ย</th></tr></thead>'+
+    '<tbody>'+rows+'</tbody></table></div></td></tr>';
+}
+
+// ══ EXPANDABLE KPI TABLE ══
+function buildKPITable(kpis,tid){
+  if(!kpis.length)return'<p style="color:#64748b;padding:16px;font-size:13px">ไม่พบข้อมูล</p>';
+  var h='<table class="t1" id="'+tid+'"><thead><tr><th style="width:26px">#</th><th>ตัวชี้วัด</th><th style="width:120px">ผลงาน</th><th style="width:120px">เป้าหมาย</th><th style="width:80px">ประเมิน</th><th style="width:80px" class="no-print">รายละเอียด</th></tr></thead><tbody>';
+  kpis.forEach(function(k,i){
+    var rid=tid+'-'+i;
+    var hasD=findUnitData(k.name)!=null;
+    var btn=hasD?'<button class="togbtn" onclick="toggleDet(\''+rid+'\')">📊 ขยาย</button>':'<span style="color:#cbd5e1;font-size:10px">—</span>';
+    var bg=i%2===0?'#fff':'#f9fafb';
+    h+='<tr style="background:'+bg+'" id="kr-'+rid+'">'+
+      '<td style="color:#64748b;font-size:10px">'+k.num+'</td>'+
+      '<td style="font-size:12px">'+k.name+'</td>'+
+      '<td style="font-weight:700;color:'+RC(k.passfail)+'">'+( k.result||'—')+'</td>'+
+      '<td style="font-size:11px;color:#64748b">'+(k.target||'—')+'</td>'+
+      '<td>'+PF(k.passfail)+'</td>'+
+      '<td class="no-print">'+btn+'</td></tr>';
+    if(hasD){var d=buildUnitTable(k.name,k.target,rid);if(d)h+=d;}
+  });
+  return h+'</tbody></table>';
+}
+function toggleDet(rid){
+  var row=document.getElementById('kdr-'+rid);if(!row)return;
+  var open=row.classList.toggle('open');
+  var btn=document.querySelector('#kr-'+rid+' .togbtn');
+  if(btn)btn.textContent=open?'🔼 ย่อ':'📊 ขยาย';
+}
+
+// ══ SIMPLE TABLE ══
+function BT(kpis,hc,showType){
+  if(!kpis.length)return'<p style="color:#64748b;padding:16px;font-size:13px">ไม่พบข้อมูล</p>';
+  var h='<table class="t1"><thead style="background:'+hc+'"><tr><th>#</th><th>ตัวชี้วัด</th>'+(showType?'<th>หน่วยงาน</th>':'')+'<th>ผลงาน</th><th>เป้าหมาย</th><th>ประเมิน</th></tr></thead><tbody>';
+  kpis.forEach(function(k,i){h+='<tr><td style="color:#64748b;font-size:10px">'+k.num+'</td><td style="font-size:12px">'+k.name+'</td>'+(showType?'<td>'+TB(k.type)+'</td>':'')+'<td style="font-weight:700;color:'+RC(k.passfail)+'">'+( k.result||'—')+'</td><td style="font-size:11px;color:#64748b">'+(k.target||'—')+'</td><td>'+PF(k.passfail)+'</td></tr>';});
+  return h+'</tbody></table>';
+}
+
+// ══ BUDGET TAB ══
+function buildBudget(sso,both){
+  var unitMap={};
+  for(var kw in UNIT_DATA){
+    var mp=FILE_MAP.filter(function(m){return kw===m.kw||kw.indexOf(m.kw)>=0||m.kw.indexOf(kw)>=0;})[0];
+    UNIT_DATA[kw].forEach(function(u){
+      var nm=normalizeUnit(u.name); // map to canonical unit name
+      if(!unitMap[nm])unitMap[nm]={name:nm,total:0,count:0,pass:0};
+      unitMap[nm].total+=u.result;unitMap[nm].count++;
+      if(mp&&u.result>=mp.tgt)unitMap[nm].pass++;
+    });
+  }
+  var units=[];for(var nm in unitMap){var u=unitMap[nm];u.avg=u.count>0?u.total/u.count:0;units.push(u);}
+  if(!units.length)return'<div class="note note-b" style="margin:16px 0">📎 ยังไม่มีข้อมูลรายหน่วยบริการ — อัปโหลดไฟล์ Excel รายตัวชี้วัดด้านล่างเพื่อเปิดใช้งานส่วนนี้</div>';
+  units.sort(function(a,b){return b.avg-a.avg;});
+  var maxA=Math.max.apply(null,units.map(function(u){return u.avg;}));
+  var totS=units.reduce(function(s,u){return s+u.avg;},0);
+  var rows='';
+  units.forEach(function(u,i){
+    var pct=maxA>0?u.avg/maxA*100:0;
+    var share=totS>0?u.avg/totS*100:0;
+    var c=u.avg>=80?'#16a34a':u.avg>=60?'#d97706':'#dc2626';
+    var medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+    rows+='<tr><td style="font-size:10px;color:#64748b;text-align:center">'+(i+1)+' '+medal+'</td>'+
+      '<td style="font-weight:600">'+u.name+'</td>'+
+      '<td style="font-weight:700;color:'+c+'">'+u.avg.toFixed(1)+'%</td>'+
+      '<td>'+u.pass+'/'+u.count+'</td>'+
+      '<td><div style="display:flex;align-items:center;gap:6px"><div class="bbar" style="width:'+Math.round(pct)+'px"></div><span style="font-size:10.5px;color:#64748b">'+pct.toFixed(0)+'</span></div></td>'+
+      '<td style="font-weight:700;color:#1a3f7c">'+share.toFixed(1)+'%</td></tr>';
+  });
+  return SH('linear-gradient(135deg,#78350f,#d97706)','💰','จัดสรรงบประมาณตามผลงาน',0,0,0)+
+    '<div class="note note-y">💡 <b>หลักการคำนวณ:</b> สัดส่วนงบที่แนะนำ = ค่าเฉลี่ยผลงานของหน่วยบริการ ÷ ผลรวมค่าเฉลี่ยทั้งหมด × 100 | ข้อมูลจาก '+Object.keys(UNIT_DATA).length+' ตัวชี้วัด</div>'+
+    '<table class="t1"><thead><tr><th>#</th><th>หน่วยบริการ</th><th>ค่าเฉลี่ย</th><th>ผ่าน/ทั้งหมด</th><th>ดัชนีผลงาน</th><th>สัดส่วนงบแนะนำ</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+    '<div class="note note-g" style="margin-top:8px">📌 ข้อมูลจาก '+Object.keys(UNIT_DATA).length+' ตัวชี้วัด | '+units.length+' หน่วยบริการ | หน่วยที่มีดัชนีผลงานสูง = ผลลัพธ์ดี ควรได้รับงบสนับสนุนในสัดส่วนที่มากขึ้น</div>';
+}
+
+// ══ BUILD CONTEXT TAB ══
+function buildCtx(ev){
+  var sso=[],rph=[],both=[];
+  for(var i=0;i<ev.length;i++){if(ev[i].type==='sso')sso.push(ev[i]);else if(ev[i].type==='rph')rph.push(ev[i]);else both.push(ev[i]);}
+  function rows(arr,bg){var h='';arr.forEach(function(k,i){h+='<div style="padding:5px 8px;margin-bottom:3px;border-radius:4px;font-size:11px;background:'+bg+'"><b>'+(i+1)+'. '+k.name+'</b>'+(k.reason?' — '+k.reason:'')+(k.ref?' <span style="font-size:10px;background:#f3f4f6;color:#6b7280;padding:1px 5px;border-radius:3px">'+k.ref+'</span>':'')+'</div>';});return h;}
+  return'<div class="card" style="margin-bottom:12px"><h3 style="font-size:13px;font-weight:700;color:#1a3f7c;margin-bottom:10px">📚 เหตุผลการจำแนกตัวชี้วัด</h3>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
+    '<div style="border-left:4px solid #1a3f7c;padding-left:10px"><h4 style="font-size:12px;font-weight:700;margin-bottom:6px">🏠 สสอ./รพ.สต. ('+sso.length+')</h4>'+rows(sso,'#eff6ff')+'</div>'+
+    '<div style="border-left:4px solid #7b241c;padding-left:10px"><h4 style="font-size:12px;font-weight:700;margin-bottom:6px">🏥 โรงพยาบาล ('+rph.length+')</h4>'+rows(rph,'#fef2f2')+'</div>'+
+    '</div>'+(both.length?'<div style="border-left:4px solid #166534;padding-left:10px;margin-top:10px"><h4 style="font-size:12px;font-weight:700;margin-bottom:6px">🤝 ร่วมกัน ('+both.length+')</h4>'+rows(both,'#f0fdf4')+'</div>':'')+'</div>';
+}
+
+// ══ RENDER OVERVIEW CARDS ══
+function renderCards(ev,sso,both,rph){
+  var defs=[
+    {ic:'🏠',lbl:'สสอ./รพ.สต.',a:sso,c:'#2458a8'},
+    {ic:'🤝',lbl:'ร่วมกัน',a:both,c:'#16a34a'},
+    {ic:'🏥',lbl:'โรงพยาบาล',a:rph,c:'#7b241c'},
+    {ic:'📊',lbl:'ภาพรวมทั้งหมด',a:ev,c:'#374151'},
+  ];
+  var h='';
+  defs.forEach(function(d){
+    h+='<div class="card" style="border-top:3px solid '+d.c+'">'+
+      '<div style="font-size:12px;font-weight:700;margin-bottom:9px">'+d.ic+' '+d.lbl+' ('+d.a.length+')</div>'+
+      '<div style="display:flex;gap:10px;align-items:center">'+
+      '<div class="dn-wrap">'+DN(RT(d.a),d.c,76)+'<div class="dn-lbl"><div style="font-size:13px;font-weight:800;color:'+d.c+'">'+RT(d.a)+'%</div><div style="font-size:8px;color:#64748b">ผ่าน</div></div></div>'+
+      '<div style="font-size:11px"><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px"><span style="width:8px;height:8px;border-radius:50%;background:'+d.c+';display:inline-block"></span>ผ่าน <b>'+PC(d.a)+'</b></div>'+
+      '<div style="display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:#dc2626;display:inline-block"></span>ไม่ผ่าน <b>'+FC(d.a)+'</b></div></div>'+
+      '</div></div>';
+  });
+  document.getElementById('ov-cards').innerHTML=h;
+}
+
+// ══ MAIN RENDER ══
+function render(kpis,year,fname){
+  G_KPIS=kpis;G_YEAR=year;G_FNAME=fname;
+  var ev=kpis.filter(evaled);
+  var sso=ev.filter(function(k){return k.type==='sso';});
+  var rph=ev.filter(function(k){return k.type==='rph';});
+  var both=ev.filter(function(k){return k.type==='both';});
+  var pass=ev.filter(isP),fail=ev.filter(isF);
+  document.getElementById('d-title').textContent='KPI HUNTER 2568 สสอ.เขาค้อ  '+year;
+  document.getElementById('d-sub').textContent='ไฟล์: '+fname+' · สร้างเมื่อ: '+new Date().toLocaleString('th-TH');
+  document.getElementById('s-sso').textContent=RT(sso)+'%';
+  document.getElementById('s-both').textContent=RT(both)+'%';
+  document.getElementById('s-total').textContent=ev.length+' ตัว';
+  document.getElementById('s-rate').textContent=RT(ev)+'%';
+  renderCards(ev,sso,both,rph);
+  renderAllTabs(ev,sso,both,rph,pass,fail);
+  document.getElementById('d-foot').textContent='KPI สสอ.เขาค้อ · ปีงบ '+year+' · '+fname;
+  document.getElementById('loading').style.display='none';
+  document.getElementById('upload-screen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  updateAdminUI();
+}
+
+function renderAllTabs(ev,sso,both,rph,pass,fail){
+  var detNote=Object.keys(UNIT_DATA).length>0
+    ?'<div class="note note-g no-print">✅ โหลดข้อมูลรายหน่วยบริการแล้ว '+Object.keys(UNIT_DATA).length+' ตัวชี้วัด — กดปุ่ม 📊 ขยาย เพื่อดูรายละเอียดได้เลย</div>'
+    :'<div class="note note-b no-print">📎 กดปุ่ม 📊 ขยาย เพื่อดูผลรายหน่วยบริการ (ต้องอัปโหลดไฟล์ Excel รายตัวชี้วัดที่ด้านล่างก่อน)</div>';
+
+  // ── รายงาน ──
+  document.getElementById('tab-report').innerHTML=
+    '<div class="card" style="margin-bottom:14px;border-left:5px solid #0d2b5e">'+
+    '<div style="font-size:15px;font-weight:800;color:#0d2b5e;text-align:center;margin-bottom:4px">📑 รายงานผลงานตัวชี้วัด KPI HUNTER 2568</div>'+
+    '<div style="font-size:12px;color:#64748b;text-align:center">สำนักงานสาธารณสุขอำเภอเขาค้อ — ตัวชี้วัด สสอ./รพ.สต. + ร่วมกัน เรียงรายหน่วยบริการ</div></div>'+
+    detNote+
+    '<div id="psec-sso">'+
+    SH('linear-gradient(135deg,#0d2b5e,#1a3f7c)','🏠','ส่วนที่ 1 : ตัวชี้วัดของ สสอ./รพ.สต. ('+sso.length+' ตัวชี้วัด)',PC(sso),FC(sso),RT(sso))+
+    buildKPITable(sso,'tbl-r-sso')+'</div>'+
+    '<div id="psec-both">'+
+    SH('linear-gradient(135deg,#166534,#16a34a)','🤝','ส่วนที่ 2 : ตัวชี้วัดร่วมกัน สสอ.+รพ. ('+both.length+' ตัวชี้วัด)',PC(both),FC(both),RT(both))+
+    buildKPITable(both,'tbl-r-both')+'</div>'+
+    '<div id="psec-rph"><div class="note note-y" style="margin-top:14px">🏥 <b>ตัวชี้วัดโรงพยาบาล '+rph.length+' ตัว:</b> ผ่าน '+PC(rph)+' | ไม่ผ่าน '+FC(rph)+' | อัตราผ่าน '+RT(rph)+'% — ไม่แสดงรายละเอียดรายหน่วยตามคำสั่ง ผอ.</div></div>';
+
+  // ── ภาพรวม ──
+  document.getElementById('tab-all').innerHTML=
+    SH('linear-gradient(135deg,#374151,#4b5563)','📋','ภาพรวมทั้งหมด '+ev.length+' ตัวชี้วัด',pass.length,fail.length,RT(ev))+
+    BT(sso,'#1a3f7c',true)+BT(both,'#166534',true)+BT(rph,'#7b241c',true);
+
+  // ── สสอ. ──
+  document.getElementById('tab-sso').innerHTML=
+    SH('linear-gradient(135deg,#1a3f7c,#2458a8)','🏠','สสอ./รพ.สต. '+sso.length+' ตัวชี้วัด',PC(sso),FC(sso),RT(sso))+
+    buildKPITable(sso,'tbl-t-sso');
+
+  // ── ร่วมกัน ──
+  document.getElementById('tab-both').innerHTML=
+    SH('linear-gradient(135deg,#166534,#16a34a)','🤝','ร่วมกัน '+both.length+' ตัวชี้วัด',PC(both),FC(both),RT(both))+
+    buildKPITable(both,'tbl-t-both')+
+    '<div class="note note-g">ℹ️ ต้องการความร่วมมือระหว่าง สสอ./รพ.สต. และโรงพยาบาลเขาค้อ</div>';
+
+  // ── โรงพยาบาล ──
+  document.getElementById('tab-rph').innerHTML=
+    SH('linear-gradient(135deg,#7b241c,#a93226)','🏥','โรงพยาบาลเขาค้อ '+rph.length+' ตัวชี้วัด',PC(rph),FC(rph),RT(rph))+
+    BT(rph,'#7b241c',false)+
+    '<div class="note note-y">🏥 แสดงเฉพาะผลภาพรวม ไม่แยกรายหน่วยบริการตามคำสั่ง ผอ.</div>';
+
+  // ── ผ่าน ──
+  document.getElementById('tab-pass').innerHTML=
+    '<div id="psec-pass">'+
+    SH('linear-gradient(135deg,#14532d,#16a34a)','✅','ผ่านเกณฑ์ '+pass.length+' ตัว',pass.length,0,RT(ev))+
+    BT(pass,'#14532d',true)+'</div>';
+
+  // ── ไม่ผ่าน ──
+  var sf=fail.filter(function(k){return k.type==='sso';}),
+      rf=fail.filter(function(k){return k.type==='rph';}),
+      bf=fail.filter(function(k){return k.type==='both';});
+  document.getElementById('tab-fail').innerHTML=
+    '<div id="psec-fail">'+
+    '<div class="note note-r">❌ ไม่ผ่านเกณฑ์ทั้งหมด '+fail.length+' ตัว — สสอ./รพ.สต. '+sf.length+' · โรงพยาบาล '+rf.length+' · ร่วมกัน '+bf.length+'</div>'+
+    (sf.length?SH('linear-gradient(135deg,#1a3f7c,#2458a8)','🏠','สสอ./รพ.สต. ไม่ผ่าน '+sf.length+' ตัว',0,sf.length,'')+BT(sf,'#1a3f7c',false):'')+
+    (rf.length?SH('linear-gradient(135deg,#7b241c,#a93226)','🏥','โรงพยาบาล ไม่ผ่าน '+rf.length+' ตัว',0,rf.length,'')+BT(rf,'#7b241c',false):'')+
+    (bf.length?SH('linear-gradient(135deg,#166534,#16a34a)','🤝','ร่วมกัน ไม่ผ่าน '+bf.length+' ตัว',0,bf.length,'')+BT(bf,'#166534',false):'')+
+    '</div>';
+
+  // ── งบประมาณ ──
+  document.getElementById('tab-budget').innerHTML='<div id="psec-budget">'+buildBudget(sso,both)+'</div>';
+
+  // ── บริบท ──
+  document.getElementById('tab-ctx').innerHTML=buildCtx(ev);
+}
+
+// ══ HANDLE DETAIL FILES (ทุกประเภท) ══
+function handleDetailFiles(files){
+  if(!files||!files.length)return;
+  if(!ADMIN_LOGGED){requireAdmin(function(){handleDetailFiles(files);});return;}
+  var ch=document.getElementById('det-files');
+  Array.from(files).forEach(function(file){
+    var mp=matchFile(file.name);
+    var lbl=mp?mp.lbl:file.name;
+    var ext=(file.name.match(/\.(\w+)$/)||['','']).pop().toLowerCase();
+    var extLbl=ext?'.'+ext:'';
+
+    // ไฟล์ที่ไม่ใช่ Excel → ลอง OCR
+    if(!file.name.match(/\.(xlsx|xls)$/i)){
+      var canOCR=file.name.match(/\.(png|jpg|jpeg|gif|bmp|webp|pdf)$/i);
+      if(canOCR){
+        ch.innerHTML+='<span class="fchip" style="background:#fef3c7;color:#92400e" id="chip-ocr-'+Date.now()+'">🔍 กำลังอ่าน '+lbl+' '+extLbl+'...</span>';
+        processNonExcelFile(file,mp);
+      }else if(mp){
+        ch.innerHTML+='<span class="fchip" style="background:#fef9c3;color:#854d0e">📎 '+lbl+' '+extLbl+' (ไม่รองรับ OCR)</span>';
+      }else{
+        ch.innerHTML+='<span class="fchip" style="background:#f1f5f9;color:#64748b">❓ '+extLbl+' — ไม่พบ KPI</span>';
+      }
+      return;
+    }
+
+    // Excel → parse หน่วยบริการ
+    var rdr=new FileReader();
+    rdr.onload=function(e){
+      try{
+        var units=parseHDC(new Uint8Array(e.target.result));
+        if(units.length){
+          var kw=mp?mp.kw:file.name.replace(/\.xlsx?$/i,'');
+          UNIT_DATA[kw]=units;
+          saveUnits();
+          var eid='chip-kw-'+kw.replace(/[^a-zA-Z0-9ก-ฮ]/g,'_');
+          var old=document.getElementById(eid);if(old)old.remove();
+          var safeKw2=kw.replace(/'/g,"\\'");
+          ch.innerHTML+='<span class="fchip" id="'+eid+'">✅ '+lbl+' ('+units.length+' หน่วย) <button onclick="editOCRChip(\''+safeKw2+'\')" style="background:none;border:none;cursor:pointer;font-size:11px;padding:0 0 0 4px;color:#1e40af" title="แก้ไขข้อมูล">✏️</button></span>';
+          if(document.getElementById('dashboard').style.display!=='none'){
+            var ev=G_KPIS.filter(evaled);
+            var sso=ev.filter(function(k){return k.type==='sso';});
+            var rph=ev.filter(function(k){return k.type==='rph';});
+            var both=ev.filter(function(k){return k.type==='both';});
+            renderAllTabs(ev,sso,both,rph,ev.filter(isP),ev.filter(isF));
+          }
+        }else{ch.innerHTML+='<span class="fchip" style="background:#fff7ed;color:#c2410c">⚠️ '+lbl+' (ไม่พบข้อมูลรายหน่วย — ลองเปิดไฟล์ตรวจสอบ format)</span>';}
+      }catch(e2){ch.innerHTML+='<span class="fchip" style="background:#fee2e2;color:#991b1b">❌ '+file.name+' — '+e2.message+'</span>';}
+    };
+    rdr.readAsArrayBuffer(file);
+  });
+}
+
+// ══ STAGED DETAIL FILES ══
+var STAGED=[];
+function addToStaged(files){
+  Array.from(files).forEach(function(f){STAGED.push(f);});
+  var uc=document.getElementById('det-chips-up');uc.innerHTML='';
+  STAGED.forEach(function(f){
+    var mp=matchFile(f.name);
+    var isXl=f.name.match(/\.(xlsx|xls)$/i);
+    var lbl=mp?(isXl?'📊 ':' 📎 ')+mp.lbl:'❓ '+f.name;
+    uc.innerHTML+='<span class="fchip" style="'+(mp?'':'background:#f1f5f9;color:#64748b')+'">'+lbl+'</span>';
+  });
+}
+document.getElementById('fi-detail').addEventListener('change',function(e){addToStaged(e.target.files);});
+
+// ══ MAIN FILE EVENTS ══
+var MAIN_FILE=null;
+document.getElementById('fi-main').addEventListener('change',function(e){MAIN_FILE=e.target.files[0];if(MAIN_FILE)document.getElementById('btn-go').style.display='inline-block';});
+var dz=document.getElementById('dz-main');
+dz.addEventListener('dragover',function(e){e.preventDefault();this.style.borderColor='#fbbf24';});
+dz.addEventListener('dragleave',function(){this.style.borderColor='rgba(255,255,255,.35)';});
+dz.addEventListener('drop',function(e){e.preventDefault();this.style.borderColor='rgba(255,255,255,.35)';MAIN_FILE=e.dataTransfer.files[0];if(MAIN_FILE)document.getElementById('btn-go').style.display='inline-block';});
+
+// Upload screen detail zone — drag-drop all types
+(function(){
+  var ud=document.querySelector('#upload-screen .det-dz');
+  if(!ud)return;
+  ud.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('paste-active');});
+  ud.addEventListener('dragleave',function(){this.classList.remove('paste-active');});
+  ud.addEventListener('drop',function(e){
+    e.preventDefault();this.classList.remove('paste-active');
+    if(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files.length){
+      addToStaged(e.dataTransfer.files);
+      document.getElementById('btn-go').style.display='inline-block';
+    }
+  });
+})();
+
+function startLoad(){
+  if(!MAIN_FILE){alert('กรุณาเลือกไฟล์ KPI Template หลักก่อน');return;}
+  if(!MAIN_FILE.name.match(/\.(xlsx|xls)$/i)){alert('กรุณาเลือกไฟล์ .xlsx หรือ .xls');return;}
+  document.getElementById('upload-screen').style.display='none';
+  document.getElementById('loading').style.display='flex';
+  document.getElementById('load-msg').textContent='กำลังอ่านไฟล์ '+MAIN_FILE.name+'...';
+  var rdr=new FileReader();
+  rdr.onload=function(e){
+    try{
+      if(typeof XLSX==='undefined')throw new Error('ไม่สามารถโหลดไลบรารี XLSX ได้ กรุณาเชื่อมต่ออินเทอร์เน็ต');
+      var res=parseXL(new Uint8Array(e.target.result));
+      if(STAGED.length){
+        var xlFiles=STAGED.filter(function(f){return f.name.match(/\.(xlsx|xls)$/i);});
+        document.getElementById('load-msg').textContent='กำลังอ่านไฟล์รายตัวชี้วัด '+(xlFiles.length)+' ไฟล์ (.xlsx)...';
+        if(!xlFiles.length){save(res.kpis,res.year,MAIN_FILE.name);render(res.kpis,res.year,MAIN_FILE.name);}
+        else{
+        var done=0;
+        xlFiles.forEach(function(f){
+          var r2=new FileReader();
+          r2.onload=function(ev2){
+            try{var mp=matchFile(f.name);var us=parseHDC(new Uint8Array(ev2.target.result));if(us.length&&mp)UNIT_DATA[mp.kw]=us;}catch(e2){}
+            done++;if(done===xlFiles.length){save(res.kpis,res.year,MAIN_FILE.name);saveUnits();render(res.kpis,res.year,MAIN_FILE.name);}
+          };r2.readAsArrayBuffer(f);
+        });}
+      }else{save(res.kpis,res.year,MAIN_FILE.name);render(res.kpis,res.year,MAIN_FILE.name);}
+    }catch(err){document.getElementById('loading').style.display='none';document.getElementById('upload-screen').style.display='flex';alert('เกิดข้อผิดพลาด: '+err.message);}
+  };
+  rdr.readAsArrayBuffer(MAIN_FILE);
+}
+document.getElementById('fi-detail2').addEventListener('change',function(e){handleDetailFiles(e.target.files);});
+
+// ══ PASTE SUPPORT (Ctrl+V วางไฟล์) ══
+document.addEventListener('paste',function(e){
+  var files=e.clipboardData&&e.clipboardData.files;
+  if(!files||!files.length)return;
+  e.preventDefault();
+  var inDash=document.getElementById('dashboard').style.display!=='none';
+  if(inDash){
+    handleDetailFiles(files);
+    // Visual feedback
+    var dz=document.getElementById('fi-detail2');
+    if(dz){var p=dz.closest('.det-dz');if(p){p.classList.add('paste-active');setTimeout(function(){p.classList.remove('paste-active');},600);}}
+  }else{
+    addToStaged(files);
+    document.getElementById('btn-go').style.display='inline-block';
+  }
+});
+
+// Drag-and-drop for detail zone in dashboard
+(function(){
+  var dz2=document.querySelector('#det-upload-sec .det-dz');
+  if(!dz2)return;
+  dz2.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('paste-active');});
+  dz2.addEventListener('dragleave',function(){this.classList.remove('paste-active');});
+  dz2.addEventListener('drop',function(e){
+    e.preventDefault();this.classList.remove('paste-active');
+    if(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files.length)
+      handleDetailFiles(e.dataTransfer.files);
+  });
+})();
+
+// ══ OCR ENGINE ══
+var OCR_FILE=null,OCR_MP=null,OCR_UNITS=[];
+
+// เปิด modal เพิ่มข้อมูลแบบกรอกเอง (ไม่ต้องมีไฟล์)
+function openManualEntry(){
+  if(!ADMIN_LOGGED){requireAdmin(openManualEntry);return;}
+  if(!G_KPIS||!G_KPIS.length){alert('กรุณาโหลดไฟล์ KPI Template ก่อน');return;}
+  OCR_FILE=null;OCR_MP=null;OCR_UNITS=[];
+  var modal=document.getElementById('ocr-modal');modal.style.display='flex';
+  document.getElementById('ocr-fname').textContent='✏️ เพิ่มข้อมูลแบบกรอกเอง — เลือกตัวชี้วัดก่อน แล้วกรอกข้อมูลรายหน่วย';
+  document.getElementById('ocr-prog').style.display='none';
+  document.getElementById('ocr-img').style.display='none';
+  document.getElementById('ocr-canvas').style.display='none';
+  showOCRResult([]);
+}
+
+function loadScript(src,cb){var s=document.createElement('script');s.src=src;s.onload=cb;document.head.appendChild(s);}
+
+function closeOCR(){document.getElementById('ocr-modal').style.display='none';OCR_FILE=null;OCR_UNITS=[];}
+
+function processNonExcelFile(file,mp){
+  OCR_FILE=file;OCR_MP=mp;OCR_UNITS=[];
+  var modal=document.getElementById('ocr-modal');modal.style.display='flex';
+  document.getElementById('ocr-fname').textContent='📎 '+file.name;
+  document.getElementById('ocr-prog').style.display='block';
+  document.getElementById('ocr-res').style.display='none';
+  document.getElementById('ocr-dl').style.display='none';
+  document.getElementById('ocr-ok').style.display='none';
+  document.getElementById('ocr-pct').textContent='';
+  document.getElementById('ocr-status').textContent='กำลังเตรียม OCR...';
+
+  if(file.name.match(/\.pdf$/i)){
+    // PDF → render with PDF.js → OCR
+    if(typeof pdfjsLib==='undefined'||!pdfjsLib.getDocument){
+      document.getElementById('ocr-status').textContent='โหลด PDF.js...';
+      // already in head, just set worker
+      setTimeout(function(){doOCRfromPDF(file);},300);
+    }else doOCRfromPDF(file);
+  }else{
+    // Image
+    var url=URL.createObjectURL(file);
+    var img=document.getElementById('ocr-img');
+    img.src=url;img.style.display='block';
+    document.getElementById('ocr-canvas').style.display='none';
+    startOCR(url);
+  }
+}
+
+function doOCRfromPDF(file){
+  document.getElementById('ocr-status').textContent='กำลัง render PDF...';
+  try{
+    pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    var reader=new FileReader();
+    reader.onload=function(e){
+      pdfjsLib.getDocument({data:e.target.result}).promise.then(function(pdf){
+        pdf.getPage(1).then(function(page){
+          var vp=page.getViewport({scale:2});
+          var canvas=document.getElementById('ocr-canvas');
+          canvas.width=vp.width;canvas.height=vp.height;
+          canvas.style.display='block';
+          document.getElementById('ocr-img').style.display='none';
+          page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise.then(function(){
+            startOCR(canvas.toDataURL('image/png'));
+          });
+        });
+      }).catch(function(err){showOCRManual('PDF render ล้มเหลว: '+err.message);});
+    };
+    reader.readAsArrayBuffer(file);
+  }catch(e){showOCRManual('PDF error: '+e.message);}
+}
+
+function startOCR(src){
+  document.getElementById('ocr-status').textContent='กำลังโหลด OCR engine (Tesseract.js)...';
+  if(typeof Tesseract==='undefined'){
+    loadScript('https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js',function(){runTesseract(src);});
+  }else runTesseract(src);
+}
+
+async function runTesseract(src){
+  try{
+    document.getElementById('ocr-status').textContent='โหลดข้อมูลภาษาไทย+อังกฤษ...';
+    var worker=await Tesseract.createWorker(['tha','eng'],1,{
+      logger:function(m){
+        if(m.status==='recognizing text'){
+          document.getElementById('ocr-status').textContent='กำลังอ่านข้อความ...';
+          document.getElementById('ocr-pct').textContent=Math.round(m.progress*100)+'%';
+        }else if(m.status){
+          document.getElementById('ocr-status').textContent=m.status.substring(0,60);
+        }
+      }
+    });
+    var res=await worker.recognize(src);
+    await worker.terminate();
+    showOCRResult(parseOCRText(res.data.text));
+  }catch(err){
+    showOCRManual('OCR ล้มเหลว ('+err.message+') — กรอกข้อมูลเองด้านล่าง');
+  }
+}
+
+function parseOCRText(text){
+  var lines=text.split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>3;});
+  var results=[];
+  CANONICAL_UNITS.forEach(function(cu){
+    var found=null;
+    for(var i=0;i<lines.length;i++){
+      for(var j=0;j<cu.keys.length;j++){
+        if(lines[i].indexOf(cu.keys[j])>=0){found=lines[i];break;}
+      }
+      if(found)break;
+    }
+    var entry={name:cu.name,result:null,num:null,den:null,uncertain:true,raw:found||''};
+    if(found){
+      // Extract all numbers
+      var nums=(found.match(/\d+\.?\d*/g)||[]).map(parseFloat).filter(function(v){return!isNaN(v);});
+      // Look for explicit % value
+      var pctM=found.match(/(\d+\.?\d*)\s*%/g);
+      if(pctM&&pctM.length>0){
+        entry.result=parseFloat(pctM[0]);entry.uncertain=false;
+        if(nums.length>=2){entry.den=nums[0];entry.num=nums[1];}
+      }else if(nums.length>=3){
+        // Heuristic: 3rd numeric is often %, first is target, second is actual
+        entry.den=nums[0];entry.num=nums[1];
+        entry.result=nums[2];entry.uncertain=true;
+      }else if(nums.length===1){entry.result=nums[0];entry.uncertain=true;}
+    }
+    results.push(entry);
+  });
+  return results;
+}
+
+function showOCRManual(msg){
+  document.getElementById('ocr-status').textContent=msg;
+  showOCRResult([]);
+}
+
+function showOCRResult(units){
+  OCR_UNITS=units.length?units:CANONICAL_UNITS.map(function(cu){return{name:cu.name,result:null,num:null,den:null,uncertain:true,raw:''};});
+  document.getElementById('ocr-prog').style.display='none';
+  document.getElementById('ocr-res').style.display='block';
+  document.getElementById('ocr-dl').style.display='inline-block';
+  document.getElementById('ocr-ok').style.display='inline-block';
+
+  var sel=document.getElementById('ocr-kpi-selector');
+  var chip=document.getElementById('ocr-kpi-chip');
+  if(OCR_MP){
+    sel.style.display='none';
+    chip.style.display='inline-block';
+    chip.textContent='📊 ตัวชี้วัด: '+OCR_MP.lbl+' (เป้าหมาย '+OCR_MP.tgt+'%)';
+  }else{
+    chip.style.display='none';
+    sel.style.display='block';
+    // Populate dropdown — top-down ทุกตัวชี้วัดจาก G_KPIS
+    var dd=document.getElementById('ocr-kpi-select');
+    buildKPIDropdown(dd);
+    // Disable confirm until selection made
+    document.getElementById('ocr-ok').disabled=true;
+    document.getElementById('ocr-ok').style.opacity='0.4';
+  }
+
+  var tbody=document.getElementById('ocr-tbody');tbody.innerHTML='';
+  OCR_UNITS.forEach(function(u,i){
+    var unc=u.uncertain||(u.result==null);
+    var shortName=u.name.replace(/^\d+:/,'');
+    tbody.innerHTML+='<tr class="'+(unc?'uncertain':'')+'">'+
+      '<td style="font-size:11.5px">'+shortName+'</td>'+
+      '<td><input class="ocr-inp" data-field="num" data-i="'+i+'" value="'+(u.num!=null?u.num:'')+'" oninput="ocrInput(this)"></td>'+
+      '<td><input class="ocr-inp" data-field="den" data-i="'+i+'" value="'+(u.den!=null?u.den:'')+'" oninput="ocrInput(this)"></td>'+
+      '<td><input class="ocr-inp'+(unc?' warn':'')+'" data-field="result" data-i="'+i+'" value="'+(u.result!=null?u.result.toFixed(2):'')+'" oninput="ocrInput(this)"></td>'+
+      '</tr>';
+  });
+}
+
+// สร้าง dropdown แบบ top-down grouped จาก G_KPIS (ทุกตัว) + fallback FILE_MAP
+// ★ ใช้ index จริงใน G_KPIS เป็น value ไม่ใช่ k.num เพราะ k.num อาจซ้ำกันได้
+function buildKPIDropdown(dd){
+  dd.innerHTML='<option value="">— เลือกตัวชี้วัด —</option>';
+  if(G_KPIS&&G_KPIS.length){
+    var grpLbl={sso:'🏠 สสอ./รพ.สต.',both:'🤝 ร่วมกัน',rph:'🏥 โรงพยาบาล'};
+    var grps={sso:[],both:[],rph:[]};
+    // วนจาก G_KPIS โดยตรงเพื่อให้ index ตรงกับ G_KPIS[gi]
+    G_KPIS.forEach(function(k,gi){
+      if(!evaled(k))return;
+      var t=k.type||'rph';
+      if(!grps[t])grps[t]=[];
+      grps[t].push({k:k,gi:gi}); // gi = index จริงใน G_KPIS
+    });
+    ['sso','both','rph'].forEach(function(t){
+      if(!grps[t]||!grps[t].length)return;
+      var og=document.createElement('optgroup');og.label=grpLbl[t];
+      grps[t].forEach(function(item){
+        var k=item.k,gi=item.gi;
+        var fm=null;for(var j=0;j<FILE_MAP.length;j++){if(k.name.indexOf(FILE_MAP[j].kw)>=0){fm=FILE_MAP[j];break;}}
+        var tgtStr=fm?' (เป้า '+fm.tgt+'%)':k.target?' (เป้า '+k.target+')':'';
+        var opt=document.createElement('option');
+        opt.value='kpi:'+gi;          // ★ ใช้ gi (index จริง) ไม่ใช่ k.num
+        opt.textContent=k.num+'. '+k.name.substring(0,50)+tgtStr;
+        og.appendChild(opt);
+      });
+      dd.appendChild(og);
+    });
+  } else {
+    // fallback ถ้า G_KPIS ยังไม่ได้โหลด
+    FILE_MAP.forEach(function(m,i){
+      var opt=document.createElement('option');opt.value='fm:'+i;
+      opt.textContent=m.lbl+' (เป้าหมาย '+m.tgt+'%)';dd.appendChild(opt);
+    });
+  }
+}
+
+function ocrSelectKPI(dd){
+  var val=dd.value;
+  if(!val){
+    document.getElementById('ocr-ok').disabled=true;
+    document.getElementById('ocr-ok').style.opacity='0.4';
+    return;
+  }
+  var kpi=null;
+  if(val.indexOf('kpi:')===0){
+    var gi=parseInt(val.substring(4),10);  // ★ index จริง → ไม่มี ambiguity
+    kpi=G_KPIS[gi]||null;
+    if(kpi){
+      var fm=null;
+      for(var j=0;j<FILE_MAP.length;j++){if(kpi.name.indexOf(FILE_MAP[j].kw)>=0){fm=FILE_MAP[j];break;}}
+      var tgt=parseFloat(String(kpi.target||'0').replace(/[^0-9.]/g,''))||0;
+      if(fm){
+        // ใช้ FILE_MAP entry แต่เพิ่ม kpiExactName เพื่อ key เก็บข้อมูลให้ตรง
+        OCR_MP=Object.assign({},fm,{kpiExactName:kpi.name,tgt:fm.tgt||tgt});
+      }else{
+        OCR_MP={kw:kpi.name,kpiExactName:kpi.name,lbl:kpi.name.substring(0,50),tgt:tgt};
+      }
+    }
+  }else if(val.indexOf('fm:')===0){
+    OCR_MP=FILE_MAP[parseInt(val.substring(3),10)]||null;
+  }else{
+    OCR_MP=FILE_MAP[parseInt(val,10)]||null;
+  }
+  if(!OCR_MP||!kpi&&val.indexOf('kpi:')===0){
+    alert('ไม่พบตัวชี้วัดที่เลือก กรุณาลองใหม่');return;
+  }
+  // แสดง chip ยืนยัน (ชื่อเต็ม)
+  var chip=document.getElementById('ocr-kpi-chip');
+  chip.style.display='inline-block';
+  var showName=kpi?kpi.name:(OCR_MP.lbl||OCR_MP.kw);
+  chip.textContent='✅ ตัวชี้วัด: '+showName+' (เป้าหมาย '+OCR_MP.tgt+'%)';
+  chip.style.background='#d1fae5';chip.style.color='#065f46';chip.style.borderRadius='7px';
+  chip.style.padding='6px 12px';chip.style.fontSize='12px';chip.style.fontWeight='700';
+  var ok=document.getElementById('ocr-ok');ok.disabled=false;ok.style.opacity='1';
+}
+
+function ocrInput(inp){
+  var i=parseInt(inp.getAttribute('data-i'));
+  var f=inp.getAttribute('data-field');
+  var v=parseFloat(inp.value);
+  if(!isNaN(v)&&OCR_UNITS[i])OCR_UNITS[i][f]=v;
+  // Auto-calc result from num/den
+  if((f==='num'||f==='den')&&OCR_UNITS[i]&&OCR_UNITS[i].num&&OCR_UNITS[i].den&&OCR_UNITS[i].den>0){
+    var computed=OCR_UNITS[i].num/OCR_UNITS[i].den*100;
+    OCR_UNITS[i].result=computed;
+    var ri=document.querySelector('[data-field="result"][data-i="'+i+'"]');
+    if(ri)ri.value=computed.toFixed(2);
+  }
+}
+
+function confirmOCR(){
+  var inputs=document.querySelectorAll('#ocr-tbody [data-field="result"]');
+  var valid=[];
+  inputs.forEach(function(inp,i){
+    var v=parseFloat(inp.value);
+    if(!isNaN(v)&&OCR_UNITS[i])
+      valid.push({name:OCR_UNITS[i].name,result:v,num:OCR_UNITS[i].num||null,den:OCR_UNITS[i].den||null});
+  });
+  if(!valid.length){alert('ยังไม่มีข้อมูลที่สมบูรณ์ กรุณากรอกค่า "ร้อยละ" อย่างน้อย 1 หน่วย');return;}
+  // ถ้า MP ยังไม่ได้เลือก (detect ไม่ได้ และยังไม่เลือก dropdown)
+  if(!OCR_MP){
+    var dd=document.getElementById('ocr-kpi-select');
+    if(!dd.value){alert('กรุณาเลือกตัวชี้วัดที่ dropdown ก่อนยืนยัน');return;}
+  }
+  // ใช้ kpiExactName เป็น key หลัก (เมื่อเลือกจาก G_KPIS dropdown) เพื่อให้ findUnitData match ได้ตรง 100%
+  var kw=OCR_MP?(OCR_MP.kpiExactName||OCR_MP.kw):(OCR_FILE?OCR_FILE.name.replace(/\.\w+$/,''):'ocr_data');
+  UNIT_DATA[kw]=valid;
+  saveUnits();
+  closeOCR();
+  var lbl=OCR_MP?OCR_MP.lbl:kw;
+  var ch=document.getElementById('det-files');
+  // ลบ chip เดิมของ kw นี้ถ้ามี แล้วเพิ่มใหม่
+  var oldId='chip-kw-'+kw.replace(/[^a-zA-Z0-9ก-ฮ]/g,'_');
+  var old=document.getElementById(oldId);
+  if(old)old.remove();
+  ch.innerHTML+='<span class="fchip" id="'+oldId+'" style="background:#d1fae5;color:#065f46">✅ '+lbl+
+    ' ('+valid.length+' หน่วย) <button onclick="editOCRChip(\''+kw+'\')" style="background:none;border:none;cursor:pointer;font-size:11px;padding:0 0 0 4px;color:#065f46" title="แก้ไขข้อมูล">✏️</button></span>';
+  if(document.getElementById('dashboard').style.display!=='none'){
+    var ev=G_KPIS.filter(evaled);
+    renderAllTabs(ev,ev.filter(function(k){return k.type==='sso';}),ev.filter(function(k){return k.type==='both';}),ev.filter(function(k){return k.type==='rph';}),ev.filter(isP),ev.filter(isF));
+  }
+}
+
+// เปิด modal แก้ไขข้อมูลที่ยืนยันไปแล้ว
+function editOCRChip(kw){
+  if(!ADMIN_LOGGED){requireAdmin(function(){editOCRChip(kw);});return;}
+  var existing=UNIT_DATA[kw];
+  if(!existing||!existing.length){alert('ไม่พบข้อมูลของ '+kw);return;}
+  // หา FILE_MAP entry ที่ตรงกัน
+  var mp=null;
+  for(var i=0;i<FILE_MAP.length;i++){
+    if(FILE_MAP[i].kw===kw||kw.indexOf(FILE_MAP[i].kw)>=0||FILE_MAP[i].kw.indexOf(kw)>=0){mp=FILE_MAP[i];break;}
+  }
+  OCR_MP=mp;OCR_FILE=null;OCR_UNITS=[];
+  var modal=document.getElementById('ocr-modal');modal.style.display='flex';
+  document.getElementById('ocr-fname').textContent='✏️ แก้ไข: '+kw;
+  document.getElementById('ocr-prog').style.display='none';
+  document.getElementById('ocr-res').style.display='block';
+  document.getElementById('ocr-dl').style.display='inline-block';
+  document.getElementById('ocr-ok').style.display='inline-block';
+  document.getElementById('ocr-ok').disabled=false;
+  document.getElementById('ocr-ok').style.opacity='1';
+  document.getElementById('ocr-img').style.display='none';
+  document.getElementById('ocr-canvas').style.display='none';
+
+  // แสดง KPI chip
+  var sel=document.getElementById('ocr-kpi-selector');
+  var chip=document.getElementById('ocr-kpi-chip');
+  if(mp){
+    sel.style.display='none';chip.style.display='inline-block';
+    chip.textContent='📊 ตัวชี้วัด: '+mp.lbl+' (เป้าหมาย '+mp.tgt+'%)';
+  }else{
+    sel.style.display='block';chip.style.display='none';
+    var dd=document.getElementById('ocr-kpi-select');
+    buildKPIDropdown(dd);
+  }
+
+  // โหลดข้อมูลเดิมลงตาราง
+  OCR_UNITS=CANONICAL_UNITS.map(function(cu){
+    var found=null;
+    for(var i=0;i<existing.length;i++){
+      if(existing[i].name===cu.name||normalizeUnit(existing[i].name)===cu.name){found=existing[i];break;}
+    }
+    return found?{name:cu.name,result:found.result,num:found.num,den:found.den,uncertain:false}
+                :{name:cu.name,result:null,num:null,den:null,uncertain:true};
+  });
+  document.getElementById('ocr-kpi-chip').style.display= mp?'inline-block':'none';
+
+  var tbody=document.getElementById('ocr-tbody');tbody.innerHTML='';
+  OCR_UNITS.forEach(function(u,i){
+    var unc=u.uncertain||(u.result==null);
+    var shortName=u.name.replace(/^\d+:/,'');
+    tbody.innerHTML+='<tr class="'+(unc?'uncertain':'')+'">'+
+      '<td style="font-size:11.5px">'+shortName+'</td>'+
+      '<td><input class="ocr-inp" data-field="num" data-i="'+i+'" value="'+(u.num!=null?u.num:'')+'" oninput="ocrInput(this)"></td>'+
+      '<td><input class="ocr-inp" data-field="den" data-i="'+i+'" value="'+(u.den!=null?u.den:'')+'" oninput="ocrInput(this)"></td>'+
+      '<td><input class="ocr-inp'+(unc?' warn':'')+'" data-field="result" data-i="'+i+'" value="'+(u.result!=null?u.result.toFixed(2):'')+'" oninput="ocrInput(this)"></td>'+
+      '</tr>';
+  });
+}
+
+function ocrDownloadExcel(){
+  var inputs=document.querySelectorAll('#ocr-tbody [data-field="result"]');
+  var rows=[['หน่วยบริการ','ผลงาน(คน)','เป้าหมาย(คน)','ร้อยละ']];
+  inputs.forEach(function(inp,i){
+    if(OCR_UNITS[i])rows.push([OCR_UNITS[i].name,OCR_UNITS[i].num||'',OCR_UNITS[i].den||'',parseFloat(inp.value)||'']);
+  });
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:40},{wch:15},{wch:15},{wch:12}];
+  var wb=XLSX.utils.book_new();
+  // ★ ใช้ kpiExactName เป็นชื่อไฟล์ + sheet เพื่อให้ตรงกับชื่อจริงใน Dashboard
+  var exactName=OCR_MP?(OCR_MP.kpiExactName||OCR_MP.lbl):'OCR_data';
+  var sname=exactName.substring(0,31);
+  XLSX.utils.book_append_sheet(wb,ws,sname);
+  XLSX.writeFile(wb,exactName.substring(0,80)+'.xlsx');
+}
+
+// ══ PRINT FUNCTIONS ══
+function showPrintDialog(){document.getElementById('print-modal').style.display='flex';}
+function selectAllPrint(v){
+  ['prn-cards','prn-sso','prn-both','prn-rph','prn-pass','prn-fail','prn-budget']
+  .forEach(function(id){var cb=document.getElementById(id);if(cb)cb.checked=v;});
+}
+function doPrint(){
+  document.getElementById('print-modal').style.display='none';
+
+  // 1. Expand ALL per-unit detail rows
+  document.querySelectorAll('.kpi-detail-row').forEach(function(r){r.classList.add('open');});
+  document.querySelectorAll('.togbtn').forEach(function(b){b.textContent='🔼 ย่อ';});
+
+  // 2. บันทึก state แท็บเดิม แล้วซ่อนทุกแท็บก่อน
+  var allTabs=document.querySelectorAll('.tp');
+  var wasAct=[];
+  allTabs.forEach(function(t){wasAct.push(t.classList.contains('act'));t.classList.remove('act');});
+
+  // 3. แสดงเฉพาะ tab-report (มี psec-sso + psec-both + psec-rph ข้างใน)
+  document.getElementById('tab-report').classList.add('act');
+
+  // 4. ซ่อนส่วนที่ไม่ได้เลือกใน tab-report
+  var inner={'cards':'psec-cards','sso':'psec-sso','both':'psec-both','rph':'psec-rph'};
+  for(var k in inner){
+    var cb=document.getElementById('prn-'+k);
+    var el=document.getElementById(inner[k]);
+    if(el){el.classList[cb&&cb.checked?'remove':'add']('no-print-sec');}
+  }
+
+  // 5. แสดงแท็บแยก (pass / fail / budget) ถ้าเลือก
+  if(document.getElementById('prn-pass').checked)document.getElementById('tab-pass').classList.add('act');
+  if(document.getElementById('prn-fail').checked)document.getElementById('tab-fail').classList.add('act');
+  if(document.getElementById('prn-budget').checked)document.getElementById('tab-budget').classList.add('act');
+
+  setTimeout(function(){
+    window.print();
+    // 6. Restore tabs + no-print-sec + detail rows
+    allTabs.forEach(function(t,i){t.classList[wasAct[i]?'add':'remove']('act');});
+    ['psec-cards','psec-sso','psec-both','psec-rph'].forEach(function(id){
+      var el=document.getElementById(id);if(el)el.classList.remove('no-print-sec');
+    });
+    document.querySelectorAll('.kpi-detail-row').forEach(function(r){r.classList.remove('open');});
+    document.querySelectorAll('.togbtn').forEach(function(b){b.textContent='📊 ขยาย';});
+  },200);
+}
+
+// ══ ADMIN GATE ══
+function requireAdmin(fn){
+  if(ADMIN_LOGGED){fn();return;}
+  ADMIN_PENDING_FN=fn;
+  // Show login modal with a note that action requires admin
+  document.getElementById('adm-user').value='';
+  document.getElementById('adm-pass').value='';
+  document.getElementById('adm-err').style.display='none';
+  var loginBox=document.getElementById('adm-login');
+  // add/update note
+  var note=document.getElementById('adm-gate-note');
+  if(!note){
+    note=document.createElement('div');note.id='adm-gate-note';
+    note.style.cssText='background:#fef3c7;color:#92400e;border-radius:7px;padding:8px 12px;font-size:12px;font-weight:700;margin-bottom:12px;text-align:center;';
+    var box=loginBox.querySelector('.adm-box');
+    if(box)box.insertBefore(note,box.querySelector('label')||box.firstChild.nextSibling||box.firstChild);
+  }
+  note.textContent='🔒 การดำเนินการนี้ต้องใช้สิทธิ์ Admin — กรุณาเข้าสู่ระบบก่อน';
+  note.style.display='block';
+  loginBox.style.display='flex';
+  setTimeout(function(){document.getElementById('adm-user').focus();},100);
+}
+function updateAdminUI(){
+  var lock=document.getElementById('upload-lock-banner');
+  var dz=document.querySelector('#det-upload-sec .det-dz');
+  var manBtn=document.getElementById('btn-manual-entry');
+  if(ADMIN_LOGGED){
+    if(lock)lock.style.display='none';
+    if(dz)dz.style.opacity='1';
+    if(dz)dz.style.pointerEvents='auto';
+    if(manBtn)manBtn.style.opacity='1';
+  }else{
+    if(lock)lock.style.display='flex';
+    if(dz)dz.style.opacity='0.45';
+    if(dz)dz.style.pointerEvents='none';
+    if(manBtn)manBtn.style.opacity='0.5';
+  }
+}
+// ══ ADMIN ══
+function showAdminLogin(){
+  if(ADMIN_LOGGED){showAdminPanel();return;}
+  ADMIN_PENDING_FN=null; // clear pending when manually opening
+  document.getElementById('adm-user').value='';
+  document.getElementById('adm-pass').value='';
+  document.getElementById('adm-err').style.display='none';
+  var note=document.getElementById('adm-gate-note');if(note)note.style.display='none';
+  document.getElementById('adm-login').style.display='flex';
+  setTimeout(function(){document.getElementById('adm-user').focus();},100);
+}
+function doAdmLogin(){
+  var u=document.getElementById('adm-user').value.trim();
+  var p=document.getElementById('adm-pass').value;
+  if(u==='SSOKK'&&p==='056728080'){
+    ADMIN_LOGGED=true;
+    document.getElementById('adm-login').style.display='none';
+    document.getElementById('btn-admin').textContent='🔓 Admin';
+    updateAdminUI();
+    if(ADMIN_PENDING_FN){
+      var fn=ADMIN_PENDING_FN;ADMIN_PENDING_FN=null;
+      setTimeout(fn,100);
+    }else{
+      showAdminPanel();
+    }
+  }else{
+    document.getElementById('adm-err').style.display='block';
+    document.getElementById('adm-pass').value='';
+    document.getElementById('adm-pass').focus();
+  }
+}
+function admFilterType(t){
+  ADM_FILTER=t;
+  ['all','sso','both','rph'].forEach(function(x){
+    var btn=document.getElementById('admf-'+x);
+    if(!btn)return;
+    if(x===t){btn.style.background='#1a3f7c';btn.style.color='#fff';btn.style.borderColor='#1a3f7c';}
+    else{btn.style.background='#fff';btn.style.color='#64748b';btn.style.borderColor='#dde3ec';}
+  });
+  admRender();
+}
+function admRender(){
+  var list=document.getElementById('adm-list');if(!list)return;
+  var q=(document.getElementById('adm-search').value||'').trim().toLowerCase();
+  var ev=G_KPIS.filter(evaled);
+  list.innerHTML='';
+  ev.forEach(function(k){
+    var curType=TYPE_OVERRIDES[k.name]||k.type;
+    if(ADM_FILTER!=='all'&&curType!==ADM_FILTER)return;
+    if(q&&k.name.toLowerCase().indexOf(q)<0&&k.num.indexOf(q)<0)return;
+    var bg=curType==='sso'?'#f0f7ff':curType==='both'?'#f0fdf4':'#fff5f5';
+    var safeName=k.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+    list.innerHTML+='<div class="adm-row" style="background:'+bg+'">'+
+      '<span style="flex:0 0 36px;color:#94a3b8;font-size:10px">'+k.num+'</span>'+
+      '<span style="flex:1;font-size:11.5px;line-height:1.4">'+k.name+'</span>'+
+      '<span style="flex:0 0 176px;text-align:center">'+
+        '<select class="adm-sel '+curType+'" data-kname="'+safeName+'" onchange="admSelChange(this)">'+
+          '<option value="sso"'+(curType==='sso'?' selected':'')+'>🏠 สสอ./รพ.สต.</option>'+
+          '<option value="both"'+(curType==='both'?' selected':'')+'>🤝 ร่วมกัน</option>'+
+          '<option value="rph"'+(curType==='rph'?' selected':'')+'>🏥 โรงพยาบาล</option>'+
+        '</select>'+
+      '</span></div>';
+  });
+  if(!list.innerHTML)list.innerHTML='<div style="padding:20px;text-align:center;color:#94a3b8;font-size:12px">ไม่พบตัวชี้วัดที่ตรงเงื่อนไข</div>';
+}
+function admSelChange(sel){
+  sel.className='adm-sel '+sel.value;
+  // Update row background immediately
+  sel.closest('.adm-row').style.background=sel.value==='sso'?'#f0f7ff':sel.value==='both'?'#f0fdf4':'#fff5f5';
+}
+function showAdminPanel(){
+  if(!G_KPIS||!G_KPIS.length){alert('กรุณาโหลดไฟล์ KPI Template ก่อน');return;}
+  ADM_FILTER='all';
+  admFilterType('all');
+  admRender();
+  document.getElementById('adm-msg').style.display='none';
+  document.getElementById('adm-panel').style.display='flex';
+}
+function admResetAll(){
+  if(!confirm('รีเซตการจัดกลุ่มทั้งหมดกลับค่าเริ่มต้น?'))return;
+  TYPE_OVERRIDES={};
+  try{localStorage.removeItem(OKEY);}catch(e){}
+  G_KPIS.forEach(function(k){var cl=CL(k.name);k.type=cl.t;});
+  admRender();
+  reRenderAll();
+}
+function admSave(){
+  var sels=document.querySelectorAll('.adm-sel[data-kname]');
+  var newOv={};
+  sels.forEach(function(sel){newOv[sel.getAttribute('data-kname')]=sel.value;});
+  TYPE_OVERRIDES=newOv;
+  try{localStorage.setItem(OKEY,JSON.stringify(TYPE_OVERRIDES));}catch(e){}
+  // Re-apply types
+  G_KPIS.forEach(function(k){var cl=CL(k.name);k.type=cl.t;});
+  reRenderAll();
+  var msg=document.getElementById('adm-msg');
+  msg.textContent='✅ บันทึกสำเร็จ! ปรับ '+Object.keys(TYPE_OVERRIDES).length+' ตัวชี้วัด — ระบบจำค่าไว้แล้ว';
+  msg.style.display='block';
+  setTimeout(function(){msg.style.display='none';document.getElementById('adm-panel').style.display='none';},1800);
+}
+function reRenderAll(){
+  var ev=G_KPIS.filter(evaled);
+  var sso=ev.filter(function(k){return k.type==='sso';});
+  var both=ev.filter(function(k){return k.type==='both';});
+  var rph=ev.filter(function(k){return k.type==='rph';});
+  renderCards(ev,sso,both,rph);
+  renderAllTabs(ev,sso,both,rph,ev.filter(isP),ev.filter(isF));
+  document.getElementById('s-sso').textContent=RT(sso)+'%';
+  document.getElementById('s-both').textContent=RT(both)+'%';
+}
+function saveOverrides(){try{localStorage.setItem(OKEY,JSON.stringify(TYPE_OVERRIDES));}catch(e){}}
+function restoreOverrides(){
+  try{
+    var so=localStorage.getItem(OKEY);
+    if(!so)return;
+    TYPE_OVERRIDES=JSON.parse(so)||{};
+  }catch(e){}
+}
+
+// ══ TABS ══
+function ST(id,btn,cc){
+  document.querySelectorAll('.tp').forEach(function(t){t.classList.remove('act');});
+  document.querySelectorAll('.tbn').forEach(function(b){b.classList.remove('act','gr','rd','or','pu');});
+  document.getElementById('tab-'+id).classList.add('act');
+  btn.classList.add('act');if(cc)btn.classList.add(cc);
+}
+
+// ══ SAVE/LOAD ══
+function save(kpis,year,fname){
+  try{localStorage.setItem(KEY,JSON.stringify({kpis:kpis,year:year,fname:fname}));}catch(e){}
+}
+function saveUnits(){
+  try{
+    // เก็บ UNIT_DATA รวม metadata (lbl, tgt) สำหรับ restore chip
+    var meta={};
+    for(var kw in UNIT_DATA){
+      var mp=null;
+      for(var i=0;i<FILE_MAP.length;i++){
+        if(FILE_MAP[i].kw===kw||kw.indexOf(FILE_MAP[i].kw)>=0||FILE_MAP[i].kw.indexOf(kw)>=0){mp=FILE_MAP[i];break;}
+      }
+      meta[kw]={lbl:mp?mp.lbl:kw,tgt:mp?mp.tgt:0};
+    }
+    localStorage.setItem(UKEY,JSON.stringify({data:UNIT_DATA,meta:meta}));
+  }catch(e){}
+}
+function goUpload(){
+  try{localStorage.removeItem(KEY);localStorage.removeItem(UKEY);}catch(e){}
+  MAIN_FILE=null;STAGED=[];UNIT_DATA={};G_KPIS=[];
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('upload-screen').style.display='flex';
+  document.getElementById('btn-go').style.display='none';
+  document.getElementById('det-chips-up').innerHTML='';
+  document.getElementById('det-files').innerHTML='';
+}
+function restoreUnits(){
+  try{
+    var su=localStorage.getItem(UKEY);
+    if(!su)return;
+    var parsed=JSON.parse(su);
+    if(!parsed||!parsed.data)return;
+    UNIT_DATA=parsed.data;
+    var meta=parsed.meta||{};
+    var ch=document.getElementById('det-files');
+    if(!ch)return;
+    ch.innerHTML='';
+    for(var kw in UNIT_DATA){
+      var units=UNIT_DATA[kw];
+      if(!units||!units.length)continue;
+      var lbl=meta[kw]?meta[kw].lbl:kw;
+      var safeKw=kw.replace(/'/g,"\\'");
+      var eid='chip-kw-'+kw.replace(/[^a-zA-Z0-9ก-ฮ]/g,'_');
+      ch.innerHTML+='<span class="fchip" id="'+eid+'">✅ '+lbl+' ('+units.length+' หน่วย) <button onclick="editOCRChip(\''+safeKw+'\')" style="background:none;border:none;cursor:pointer;font-size:11px;padding:0 0 0 4px;color:#1e40af" title="แก้ไขข้อมูล">✏️</button></span>';
+    }
+  }catch(e){}
+}
+// Restore overrides ก่อน CL() ทำงาน
+restoreOverrides();
+try{
+  var sv=localStorage.getItem(KEY);
+  if(sv){var d=JSON.parse(sv);if(d&&d.kpis&&d.kpis.length){
+    d.kpis.forEach(function(k){var cl=CL(k.name);k.type=cl.t;k.reason=cl.r||'';k.ref=cl.f||'';});
+    document.getElementById('upload-screen').style.display='none';
+    restoreUnits(); // โหลด UNIT_DATA ก่อน render
+    render(d.kpis,d.year,d.fname);
+  }}
+}catch(ex){}
+</script>
+</body>
+</html>

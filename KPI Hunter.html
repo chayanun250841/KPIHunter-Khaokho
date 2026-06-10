@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KPI HUNTER — Command Center · สสอ.เขาค้อ</title>
+<link rel="stylesheet" href="_ds/thaimed-design-system-f64170a4-485c-43f6-8028-5d83949c4936/tokens/colors.css">
+<link rel="stylesheet" href="_ds/thaimed-design-system-f64170a4-485c-43f6-8028-5d83949c4936/tokens/typography.css">
+<link rel="stylesheet" href="_ds/thaimed-design-system-f64170a4-485c-43f6-8028-5d83949c4936/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/thaimed-design-system-f64170a4-485c-43f6-8028-5d83949c4936/tokens/shadows.css">
+<link rel="stylesheet" href="_ds/thaimed-design-system-f64170a4-485c-43f6-8028-5d83949c4936/tokens/radii.css">
+<link rel="stylesheet" href="_ds/thaimed-design-system-f64170a4-485c-43f6-8028-5d83949c4936/tokens/base.css">
+<style>
+/* ═══ KPI HUNTER — Local Token Overrides ═══ */
+:root {
+  --radius-card:   12px;
+  --radius-badge:  6px;
+  --radius-button: 8px;
+  --radius-full:   9999px;
+  --shadow-card:       0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-card-hover: 0 4px 14px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-sm:         0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md:         0 4px 16px rgba(0,0,0,0.10);
+  --color-herb-700: #245740;
+  --color-herb-50:  #F0F9F3;
+}
+
+/* ═══ App Shell ═══ */
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+.app-shell { display: flex; height: 100vh; overflow: hidden; background: var(--color-bg-base); }
+
+/* ─── Sidebar ─── */
+.sidebar {
+  width: 240px; min-width: 240px; background: var(--color-bg-sidebar);
+  display: flex; flex-direction: column;
+  transition: width 0.2s ease, min-width 0.2s ease;
+  flex-shrink: 0;
+}
+.sidebar.collapsed { width: 64px; min-width: 64px; }
+.sidebar-header {
+  padding: var(--space-4) var(--space-4) var(--space-4);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  min-height: 64px; display: flex; align-items: center;
+}
+.sidebar-logo { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+.logo-mark {
+  width: 36px; height: 36px; border-radius: 10px; background: var(--color-herb-500);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 17px; flex-shrink: 0; letter-spacing: -0.5px;
+}
+.logo-text { min-width: 0; overflow: hidden; }
+.logo-title { color: #fff; font-weight: 800; font-size: 13px; letter-spacing: 0.08em; white-space: nowrap; }
+.logo-sub { color: rgba(255,255,255,0.4); font-size: 10px; font-weight: 500; margin-top: 1px; }
+
+.sidebar-nav {
+  flex: 1; padding: var(--space-3) var(--space-2);
+  display: flex; flex-direction: column; gap: 2px; overflow-y: auto;
+}
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: 9px var(--space-3); border-radius: var(--radius-md);
+  border: none; background: transparent;
+  color: rgba(255,255,255,0.55); font-family: var(--font-sans); font-size: var(--text-sm);
+  font-weight: 500; cursor: pointer; transition: all 0.15s;
+  white-space: nowrap; width: 100%; text-align: left;
+}
+.nav-item svg { flex-shrink: 0; opacity: 0.8; }
+.nav-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+.nav-item:hover svg { opacity: 1; }
+.nav-item.active { background: rgba(255,255,255,0.13); color: #fff; font-weight: 600; }
+.nav-item.active svg { opacity: 1; }
+.sidebar-footer {
+  padding: var(--space-4); border-top: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; gap: var(--space-3);
+}
+.sf-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #4ade80; flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(74,222,128,0.25);
+}
+.sf-district { color: rgba(255,255,255,0.8); font-size: var(--text-sm); font-weight: 600; }
+.sf-year { color: rgba(255,255,255,0.4); font-size: 11px; }
+
+/* ─── Main Area ─── */
+.main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.topbar {
+  height: 60px; padding: 0 var(--space-6); display: flex;
+  align-items: center; justify-content: space-between;
+  background: #fff; border-bottom: 1px solid var(--color-border-default);
+  flex-shrink: 0; gap: var(--space-4);
+}
+.topbar-left { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+.menu-btn {
+  background: none; border: none; color: var(--color-text-secondary);
+  padding: 6px; cursor: pointer; border-radius: var(--radius-md);
+  display: flex; align-items: center; flex-shrink: 0;
+}
+.menu-btn:hover { background: var(--color-neutral-100); }
+.topbar-title { min-width: 0; }
+.topbar-title h1 { font-size: var(--text-lg); font-weight: 700; line-height: 1.2; margin: 0; }
+.topbar-breadcrumb { font-size: var(--text-xs); color: var(--color-text-muted); display: block; margin-top: 1px; }
+.topbar-right { display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0; }
+.topbar-divider { width: 1px; height: 24px; background: var(--color-border-default); }
+.topbar-kpi-stat { text-align: center; }
+.ts-label { display: block; font-size: 10px; color: var(--color-text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.ts-value { font-size: var(--text-lg); font-weight: 800; line-height: 1.1; }
+.btn-topbar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px var(--space-3); border-radius: var(--radius-button);
+  border: 1px solid var(--color-border-default); background: #fff;
+  color: var(--color-text-secondary); font-size: var(--text-xs);
+  font-weight: 600; cursor: pointer; font-family: var(--font-sans); white-space: nowrap;
+  height: 36px;
+}
+.btn-topbar:hover { background: var(--color-neutral-50); border-color: var(--color-border-emphasis); }
+.btn-topbar.ai-btn {
+  background: var(--color-herb-600); color: #fff;
+  border-color: var(--color-herb-600);
+}
+.btn-topbar.ai-btn:hover { opacity: 0.88; }
+
+.main-content { flex: 1; overflow-y: auto; background: var(--color-bg-base); }
+.page-content { padding: var(--space-6); max-width: 1440px; }
+
+/* ─── Cards ─── */
+.card {
+  background: var(--color-bg-surface); border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card); padding: var(--space-6); margin-bottom: var(--space-4);
+}
+.card:hover { box-shadow: var(--shadow-card-hover); }
+
+/* ─── Summary Cards ─── */
+.cards-grid-4 {
+  display: grid; grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: var(--space-4); margin-bottom: var(--space-4);
+}
+.summary-card {
+  background: #fff; border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card); padding: var(--space-5);
+  transition: box-shadow 0.15s, transform 0.15s;
+  border-top: 3px solid transparent;
+}
+.summary-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-1px); }
+.sc-header { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); }
+.sc-icon {
+  width: 36px; height: 36px; border-radius: 10px; color: #fff;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.sc-label { font-size: var(--text-sm); color: var(--color-text-secondary); font-weight: 500; }
+.sc-value { font-size: var(--text-3xl); font-weight: 800; line-height: 1; margin-bottom: var(--space-1); font-variant-numeric: tabular-nums; }
+.sc-sub { font-size: var(--text-xs); color: var(--color-text-muted); line-height: 1.4; }
+
+/* ─── Grid Layouts ─── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-bottom: var(--space-4); }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-4); margin-bottom: var(--space-4); }
+
+/* ─── Section Header ─── */
+.section-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-4); }
+.section-title { font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary); margin: 0; }
+.section-sub { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px; }
+
+/* ─── Badges ─── */
+.badge {
+  display: inline-flex; align-items: center; padding: 3px 9px;
+  border-radius: var(--radius-badge); font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.badge-pass { background: #ECFDF5; color: #065F46; }
+.badge-fail { background: #FEF2F2; color: #991B1B; }
+.badge-neutral { background: var(--color-neutral-100); color: var(--color-neutral-500); }
+
+/* ─── Stat Rows (in donut card) ─── */
+.stat-row { display: flex; align-items: center; gap: var(--space-2); padding: 8px 0; font-size: var(--text-sm); border-bottom: 1px solid var(--color-border-subtle); }
+.stat-row:last-child { border-bottom: none; }
+.stat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.stat-num { margin-left: auto; font-weight: 800; font-size: var(--text-xl); }
+.stat-num.green { color: #059669; }
+.stat-num.red { color: #DC2626; }
+
+/* ─── Type breakdown cards ─── */
+.type-card {
+  flex: 1; padding: var(--space-4); border-radius: var(--radius-lg);
+  background: var(--color-neutral-50); text-align: center;
+  border-top: 3px solid;
+}
+
+/* ─── Tables ─── */
+.table-wrap { overflow-x: auto; border-radius: var(--radius-md); }
+.data-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.data-table thead tr { border-bottom: 2px solid var(--color-border-default); }
+.data-table th {
+  padding: 10px var(--space-3); text-align: left; font-weight: 600;
+  font-size: 11px; color: var(--color-text-secondary);
+  text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
+  background: var(--color-neutral-50);
+}
+.data-table td { padding: 10px var(--space-3); border-bottom: 1px solid var(--color-border-subtle); vertical-align: middle; }
+.data-table tbody tr:hover td { background: var(--color-herb-50); }
+.data-table.compact th, .data-table.compact td { padding: 7px var(--space-2-5); }
+.td-num { color: var(--color-text-muted); font-size: 11px; font-weight: 600; }
+.td-name { font-weight: 500; line-height: var(--leading-snug); }
+.td-result { font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.td-result.red, .red { color: #DC2626; }
+.td-result.green, .green { color: #059669; }
+.td-target { font-size: var(--text-xs); color: var(--color-text-muted); }
+.clickable-row { cursor: pointer; }
+.clickable-row:hover td { background: var(--color-herb-50) !important; }
+
+/* ─── Progress Bar ─── */
+.progress-wrap { display: flex; align-items: center; gap: var(--space-2); }
+.progress-bar { flex: 1; height: 5px; background: var(--color-neutral-200); border-radius: 3px; overflow: hidden; min-width: 50px; }
+.progress-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
+.progress-label { font-size: 11px; font-weight: 700; min-width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ─── HBar Chart ─── */
+.hbar-chart { display: flex; flex-direction: column; gap: 6px; padding: var(--space-2) 0; }
+.hbar-row { display: flex; align-items: center; gap: var(--space-3); }
+.hbar-label { width: 200px; flex-shrink: 0; font-size: 12px; color: var(--color-text-secondary); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hbar-track { flex: 1; height: 18px; background: var(--color-neutral-100); border-radius: var(--radius-sm); overflow: hidden; }
+.hbar-fill { height: 100%; border-radius: var(--radius-sm); transition: width 0.5s ease; min-width: 4px; }
+.hbar-value { width: 48px; font-size: 11px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ─── Search ─── */
+.search-wrap {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: 9px var(--space-3); background: var(--color-neutral-50);
+  border: 1px solid var(--color-border-default); border-radius: var(--radius-md);
+  color: var(--color-text-muted); margin-bottom: var(--space-3);
+}
+.search-wrap:focus-within { border-color: var(--color-herb-600); background: #fff; }
+.search-input {
+  border: none; background: none; flex: 1; font-family: var(--font-sans);
+  font-size: var(--text-sm); outline: none; color: var(--color-text-primary);
+}
+
+/* ─── Filter Pills ─── */
+.filter-card { margin-bottom: var(--space-4); }
+.filter-row { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); flex-wrap: wrap; }
+.filter-label { font-size: 11px; color: var(--color-text-muted); font-weight: 600; min-width: 60px; text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill {
+  padding: 4px 12px; border-radius: var(--radius-full); border: 1px solid var(--color-border-default);
+  background: #fff; font-size: 12px; font-weight: 600; cursor: pointer;
+  font-family: var(--font-sans); color: var(--color-text-secondary);
+  transition: all 0.15s; white-space: nowrap; height: 28px; display: inline-flex; align-items: center;
+}
+.pill:hover { border-color: var(--color-herb-600); color: var(--color-herb-600); background: var(--color-herb-50); }
+.pill-active { background: var(--color-herb-600); color: #fff; border-color: var(--color-herb-600); }
+
+/* ─── Back Button ─── */
+.back-btn {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  background: none; border: none; color: var(--color-herb-600);
+  font-family: var(--font-sans); font-size: var(--text-sm); font-weight: 600;
+  cursor: pointer; padding: var(--space-2) 0; margin-bottom: var(--space-3);
+}
+.back-btn:hover { text-decoration: underline; }
+
+/* ─── KPI Detail ─── */
+.kpi-detail-header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); }
+.kpi-detail-name { font-size: var(--text-xl); font-weight: 700; margin: var(--space-2) 0; line-height: 1.4; }
+.kpi-detail-meta { display: flex; gap: var(--space-4); font-size: var(--text-xs); color: var(--color-text-muted); flex-wrap: wrap; }
+.kpi-detail-score { position: relative; flex-shrink: 0; }
+.kpi-detail-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4);
+  margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--color-border-subtle);
+}
+.detail-stat-label { font-size: 11px; color: var(--color-text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-1); }
+.detail-stat-value { font-size: var(--text-sm); font-weight: 700; }
+
+/* ─── Trend Chart ─── */
+.trend-chart { display: flex; gap: var(--space-3); align-items: flex-end; height: 200px; padding: var(--space-2) 0 var(--space-1); position: relative; }
+.trend-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; }
+.trend-value { font-size: 11px; font-weight: 700; color: var(--color-text-secondary); font-variant-numeric: tabular-nums; }
+.trend-bar-wrap { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.trend-bar { width: 65%; max-width: 44px; border-radius: 4px 4px 0 0; transition: height 0.4s ease; min-height: 4px; }
+.trend-label { font-size: 11px; color: var(--color-text-muted); font-weight: 600; }
+
+/* ─── Unit Performance ─── */
+.unit-ranking-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: var(--space-3); margin-bottom: var(--space-4);
+}
+.unit-rank-card {
+  background: #fff; border-radius: var(--radius-card); box-shadow: var(--shadow-card);
+  padding: var(--space-4); display: flex; gap: var(--space-3);
+  cursor: pointer; transition: all 0.15s;
+}
+.unit-rank-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-1px); }
+.urc-rank-num { font-size: 11px; font-weight: 800; color: var(--color-text-muted); padding-top: 2px; }
+.urc-body { flex: 1; min-width: 0; }
+.urc-name { font-size: var(--text-sm); font-weight: 700; margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.urc-score { font-size: var(--text-xl); font-weight: 800; margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+.urc-meta { display: flex; gap: var(--space-3); font-size: 11px; margin-bottom: var(--space-2); }
+.unit-detail-header { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+.unit-detail-stats { display: flex; gap: var(--space-6); }
+.uds-item { text-align: center; }
+.uds-value { font-size: var(--text-2xl); font-weight: 800; font-variant-numeric: tabular-nums; }
+.uds-value.green { color: #059669; }
+.uds-value.red { color: #DC2626; }
+.uds-label { font-size: var(--text-xs); color: var(--color-text-muted); }
+
+/* ─── Heatmap ─── */
+.heatmap-wrap { overflow-x: auto; }
+.heatmap-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.heatmap-table th {
+  padding: 6px 4px; font-weight: 600; font-size: 10px; text-align: center;
+  white-space: nowrap; background: var(--color-neutral-50);
+  border-bottom: 2px solid var(--color-border-default);
+}
+.hm-kpi-col { text-align: left !important; min-width: 220px; }
+.hm-unit-col { min-width: 55px; }
+.hm-kpi-name { font-weight: 500; padding: 5px 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px; border-bottom: 1px solid var(--color-border-subtle); font-size: 12px; }
+.hm-cell { text-align: center; padding: 4px 3px; border-bottom: 1px solid rgba(0,0,0,0.04); cursor: default; }
+.hm-val { font-weight: 700; font-size: 10px; display: block; font-variant-numeric: tabular-nums; }
+
+/* ─── AI Insight ─── */
+.ai-disclaimer {
+  display: flex; align-items: flex-start; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4); background: var(--color-status-waiting-bg);
+  border: 1px solid var(--color-status-waiting-border); border-radius: var(--radius-md);
+  color: var(--color-status-waiting-text); font-size: var(--text-xs); font-weight: 500;
+  margin-bottom: var(--space-4); line-height: 1.6;
+}
+.quick-questions { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); flex-wrap: wrap; }
+.qq-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px var(--space-4); border-radius: var(--radius-button);
+  border: 1px solid var(--color-border-default); background: #fff;
+  font-family: var(--font-sans); font-size: var(--text-sm); font-weight: 600;
+  cursor: pointer; transition: all 0.15s; color: var(--color-text-secondary);
+}
+.qq-btn:hover { border-color: var(--color-herb-600); color: var(--color-herb-600); background: var(--color-herb-50); }
+.qq-btn.active { background: var(--color-herb-600); color: #fff; border-color: var(--color-herb-600); }
+.insight-card {
+  border-radius: var(--radius-card); background: #fff; box-shadow: var(--shadow-card);
+  margin-bottom: var(--space-3); overflow: hidden; border-left: 3px solid transparent;
+  transition: box-shadow 0.15s;
+}
+.insight-card.active { box-shadow: var(--shadow-md); }
+.insight-header {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-4) var(--space-5); cursor: pointer;
+}
+.insight-header:hover { background: var(--color-neutral-50); }
+.insight-icon { display: flex; align-items: center; flex-shrink: 0; }
+.insight-title { flex: 1; font-weight: 700; font-size: var(--text-sm); }
+.insight-toggle { color: var(--color-text-muted); font-size: var(--text-xs); font-weight: 600; }
+.insight-body { padding: var(--space-4) var(--space-5) var(--space-5); border-top: 1px solid var(--color-border-subtle); }
+.insight-text { font-size: var(--text-sm); line-height: var(--leading-thai); color: var(--color-text-secondary); }
+.insight-text p { margin: 0 0 var(--space-3); }
+.insight-list { padding-left: var(--space-5); margin: var(--space-2) 0; }
+.insight-list li { margin-bottom: var(--space-2); font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-thai); }
+.insight-stats { display: flex; gap: var(--space-3); margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-border-subtle); }
+.is-item { flex: 1; text-align: center; padding: var(--space-3); border-radius: var(--radius-md); }
+.is-item.green { background: #ECFDF5; }
+.is-item.red { background: #FEF2F2; }
+.is-item.amber { background: #FFFBEB; }
+.is-item.blue { background: #EFF6FF; }
+.is-num { font-size: var(--text-2xl); font-weight: 800; font-variant-numeric: tabular-nums; }
+.is-label { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
+.risk-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.risk-item { padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: var(--color-neutral-50); border: 1px solid var(--color-border-subtle); }
+.risk-item-header { display: flex; align-items: center; gap: var(--space-2); margin-bottom: 4px; }
+.risk-item-name { font-weight: 600; font-size: var(--text-sm); line-height: 1.4; }
+.risk-item-detail { font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: 4px; }
+.risk-item-reason { font-size: var(--text-xs); color: var(--color-status-waiting-text); font-weight: 500; }
+.action-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.action-item { display: flex; gap: var(--space-3); padding: var(--space-3); background: var(--color-neutral-50); border-radius: var(--radius-md); }
+.action-num {
+  width: 26px; height: 26px; border-radius: 50%; background: var(--color-herb-600);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; flex-shrink: 0;
+}
+.action-body { flex: 1; min-width: 0; }
+.action-kpi { font-weight: 600; font-size: var(--text-sm); line-height: 1.4; }
+.action-detail { font-size: var(--text-xs); color: var(--color-text-muted); margin: 3px 0; }
+.action-plan { font-size: var(--text-sm); color: var(--color-herb-700); font-weight: 500; }
+.meeting-summary { margin-top: var(--space-5); padding: var(--space-4); background: var(--color-bg-subtle); border-radius: var(--radius-md); }
+.meeting-summary h4 { font-size: var(--text-sm); font-weight: 700; margin: 0 0 var(--space-2); }
+.meeting-text { font-size: var(--text-sm); line-height: var(--leading-thai); color: var(--color-text-secondary); margin-bottom: var(--space-3); }
+.copy-btn {
+  padding: 6px var(--space-4); border-radius: var(--radius-button);
+  border: 1px solid var(--color-herb-600); background: #fff; color: var(--color-herb-600);
+  font-family: var(--font-sans); font-size: var(--text-xs); font-weight: 600; cursor: pointer;
+}
+.copy-btn:hover { background: var(--color-herb-50); }
+
+/* ─── Upload ─── */
+.upload-area-wrap { max-width: 620px; margin: 0 auto; }
+.upload-area {
+  position: relative; border: 2px dashed var(--color-border-emphasis);
+  border-radius: var(--radius-card); padding: var(--space-12) var(--space-8);
+  text-align: center; cursor: pointer; background: var(--color-bg-surface); transition: all 0.15s;
+}
+.upload-area:hover, .upload-area.drag-over {
+  border-color: var(--color-herb-600); background: var(--color-herb-50);
+}
+.upload-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-icon { display: flex; justify-content: center; margin-bottom: var(--space-4); }
+.upload-text { font-size: var(--text-lg); font-weight: 700; color: var(--color-text-primary); margin-bottom: var(--space-2); }
+.upload-hint { font-size: var(--text-sm); color: var(--color-text-muted); }
+.upload-tag {
+  display: inline-block; margin-top: var(--space-3); padding: 4px 14px;
+  border-radius: var(--radius-full); background: var(--color-herb-50);
+  color: var(--color-herb-700); font-size: var(--text-xs); font-weight: 600;
+}
+.upload-tips { margin-top: var(--space-5); padding: var(--space-5); background: var(--color-bg-surface); border-radius: var(--radius-card); box-shadow: var(--shadow-card); }
+.upload-tips h4 { font-size: var(--text-sm); font-weight: 700; margin: 0 0 var(--space-3); }
+.upload-tips ul { margin: 0; padding-left: var(--space-5); }
+.upload-tips li { font-size: var(--text-sm); color: var(--color-text-secondary); margin-bottom: var(--space-2); line-height: var(--leading-thai); }
+.upload-success { text-align: center; padding: var(--space-12) 0; }
+.upload-success-check {
+  width: 68px; height: 68px; border-radius: 50%; background: #ECFDF5;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto var(--space-5);
+}
+.upload-success h2 { font-size: var(--text-2xl); margin: 0 0 var(--space-2); }
+.upload-success p { color: var(--color-text-muted); margin: 0 0 var(--space-6); }
+.upload-success-stats {
+  display: flex; justify-content: center; gap: var(--space-10);
+  margin-bottom: var(--space-6); font-size: var(--text-sm); color: var(--color-text-secondary);
+}
+.upload-success-stats strong { display: block; font-size: var(--text-2xl); color: var(--color-text-primary); font-weight: 800; }
+.upload-actions { display: flex; gap: var(--space-3); justify-content: flex-end; margin-top: var(--space-4); }
+.file-info-grid { display: flex; flex-direction: column; }
+.fi-row {
+  display: flex; justify-content: space-between; font-size: var(--text-sm);
+  padding: 9px 0; border-bottom: 1px solid var(--color-border-subtle); gap: var(--space-4);
+}
+.fi-row:last-child { border: none; }
+.fi-row span:first-child { color: var(--color-text-secondary); flex-shrink: 0; }
+.fi-row span:last-child { font-weight: 600; text-align: right; }
+.dq-row { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); margin-bottom: var(--space-2); }
+.dq-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dq-dot.green { background: #10B981; }
+.dq-dot.amber { background: #F59E0B; }
+.dq-dot.red { background: #EF4444; }
+.dq-score { margin-top: var(--space-3); font-size: var(--text-sm); font-weight: 600; display: flex; align-items: center; gap: var(--space-2); }
+.mapping-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); margin-top: var(--space-2); }
+.mapping-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 7px var(--space-3); background: var(--color-neutral-50);
+  border-radius: var(--radius-md); font-size: var(--text-sm);
+}
+.mapping-status { color: #059669; font-weight: 600; font-size: 11px; display: flex; align-items: center; gap: 3px; }
+
+/* ─── Report Builder ─── */
+.report-layout { display: grid; grid-template-columns: 270px 1fr; gap: var(--space-4); align-items: start; }
+.report-types { display: flex; flex-direction: column; gap: var(--space-2); }
+.report-type-card {
+  display: flex; gap: var(--space-3); padding: var(--space-4);
+  border-radius: var(--radius-lg); border: 1px solid var(--color-border-default);
+  background: #fff; cursor: pointer; transition: all 0.15s; align-items: flex-start;
+}
+.report-type-card:hover { border-color: var(--color-herb-600); background: var(--color-herb-50); }
+.report-type-card.active {
+  border-color: var(--color-herb-600); background: var(--color-herb-50);
+  box-shadow: 0 0 0 1px var(--color-herb-600);
+}
+.rtc-icon { display: flex; align-items: center; padding-top: 2px; flex-shrink: 0; }
+.rtc-title { font-size: var(--text-sm); font-weight: 700; }
+.rtc-desc { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; line-height: 1.5; }
+.report-preview { min-height: 400px; }
+.report-toolbar {
+  display: flex; gap: var(--space-2); margin-bottom: var(--space-4);
+  padding-bottom: var(--space-4); border-bottom: 2px solid var(--color-border-default);
+  align-items: center;
+}
+.report-toolbar-title { font-size: var(--text-base); font-weight: 700; flex: 1; }
+.report-header { margin-bottom: var(--space-5); padding-bottom: var(--space-4); border-bottom: 1px solid var(--color-border-subtle); }
+.report-header h2 { font-size: var(--text-xl); font-weight: 800; margin: 0 0 4px; }
+.report-header p { font-size: var(--text-sm); color: var(--color-text-muted); margin: 0; }
+.report-section-title {
+  font-size: var(--text-sm); font-weight: 700; margin: var(--space-5) 0 var(--space-3);
+  color: var(--color-herb-700);
+}
+.report-stats { display: flex; gap: var(--space-4); margin-bottom: var(--space-5); }
+.report-stats > div {
+  flex: 1; text-align: center; padding: var(--space-4);
+  border-radius: var(--radius-md); background: var(--color-neutral-50);
+  border: 1px solid var(--color-border-subtle);
+}
+.rs-num { font-size: var(--text-2xl); font-weight: 800; font-variant-numeric: tabular-nums; }
+.rs-num.green { color: #059669; }
+.rs-num.red { color: #DC2626; }
+.rs-label { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px; }
+.action-report-item { display: flex; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--color-border-subtle); }
+.action-report-item:last-child { border: none; }
+.ari-num { width: 22px; height: 22px; border-radius: 50%; background: var(--color-herb-100); color: var(--color-herb-700); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; margin-top: 2px; }
+.ari-name { font-weight: 600; font-size: var(--text-sm); line-height: 1.4; }
+.ari-meta { font-size: var(--text-xs); color: var(--color-text-muted); margin: 3px 0; }
+.ari-action { font-size: var(--text-sm); color: var(--color-herb-700); font-weight: 500; }
+
+/* ─── Buttons ─── */
+.btn-primary {
+  height: 40px; padding: 0 var(--space-5); border-radius: var(--radius-button); border: none;
+  background: var(--color-herb-600); color: #fff; font-family: var(--font-sans);
+  font-size: var(--text-sm); font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-primary:hover { opacity: 0.88; }
+.btn-primary:active { transform: scale(0.97); }
+.btn-secondary {
+  height: 40px; padding: 0 var(--space-4); border-radius: var(--radius-button);
+  border: 1px solid var(--color-border-default); background: #fff;
+  color: var(--color-text-secondary); font-family: var(--font-sans);
+  font-size: var(--text-sm); font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-secondary:hover { background: var(--color-neutral-50); }
+.btn-sm { height: 32px; padding: 0 var(--space-3); font-size: var(--text-xs); }
+
+/* ─── Empty State ─── */
+.empty-state { text-align: center; padding: var(--space-12) var(--space-6); }
+.empty-icon { display: flex; justify-content: center; margin-bottom: var(--space-4); color: var(--color-neutral-300); }
+.empty-title { font-size: var(--text-base); font-weight: 700; color: var(--color-text-secondary); margin-bottom: var(--space-1); }
+.empty-sub { font-size: var(--text-sm); color: var(--color-text-muted); }
+
+/* ─── Responsive ─── */
+@media (max-width: 1100px) {
+  .cards-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .grid-2 { grid-template-columns: 1fr; }
+  .report-layout { grid-template-columns: 1fr; }
+  .kpi-detail-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .cards-grid-4 { grid-template-columns: 1fr 1fr; }
+  .topbar-kpi-stat { display: none; }
+  .topbar-divider { display: none; }
+  .hbar-label { width: 100px; }
+  .page-content { padding: var(--space-4); }
+}
+/* ─── Admin Login ─── */
+.admin-login-wrap {
+  min-height: 100%; display: flex; align-items: center; justify-content: center;
+  background: var(--color-bg-base); padding: var(--space-8);
+}
+.admin-login-card {
+  width: 100%; max-width: 400px; background: #fff;
+  border-radius: var(--radius-xl); box-shadow: var(--shadow-lg);
+  padding: var(--space-10) var(--space-8);
+}
+.alc-logo { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-8); }
+.alc-mark {
+  width: 44px; height: 44px; border-radius: var(--radius-lg);
+  background: var(--color-herb-600); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: var(--text-xl);
+}
+.alc-title { font-weight: 800; font-size: var(--text-base); color: var(--color-herb-800); letter-spacing: 0.04em; }
+.alc-sub { font-size: var(--text-xs); color: var(--color-text-muted); font-weight: 500; }
+.alc-heading { font-size: var(--text-2xl); font-weight: 800; margin-bottom: var(--space-1); }
+.alc-desc { font-size: var(--text-sm); color: var(--color-text-muted); margin-bottom: var(--space-6); }
+.alc-form { display: flex; flex-direction: column; gap: var(--space-4); }
+.alc-field { display: flex; flex-direction: column; gap: var(--space-1-5); }
+.alc-field label { font-size: var(--text-sm); font-weight: 600; color: var(--color-text-secondary); }
+.alc-input-wrap { position: relative; display: flex; align-items: center; }
+.alc-input-icon { position: absolute; left: var(--space-3); color: var(--color-text-muted); pointer-events: none; display: flex; }
+.alc-input {
+  width: 100%; padding: var(--space-3) var(--space-3) var(--space-3) var(--space-9);
+  border: 1.5px solid var(--color-border-default); border-radius: var(--radius-md);
+  font-family: var(--font-sans); font-size: var(--text-sm); outline: none;
+  transition: border-color 0.15s;
+}
+.alc-input:focus { border-color: var(--color-herb-600); box-shadow: 0 0 0 3px rgba(45,106,79,0.15); }
+.alc-eye-btn {
+  position: absolute; right: var(--space-3); background: none; border: none;
+  color: var(--color-text-muted); cursor: pointer; display: flex; padding: 2px;
+}
+.alc-eye-btn:hover { color: var(--color-text-secondary); }
+.alc-error {
+  display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4);
+  background: #FEF2F2; border: 1px solid #FECACA; border-radius: var(--radius-md);
+  color: #991B1B; font-size: var(--text-sm); font-weight: 500;
+}
+.alc-submit {
+  padding: var(--space-3) var(--space-6); border-radius: var(--radius-button);
+  border: none; background: var(--color-herb-600); color: #fff;
+  font-family: var(--font-sans); font-size: var(--text-sm); font-weight: 700;
+  cursor: pointer; transition: opacity 0.15s; margin-top: var(--space-2);
+  height: 48px;
+}
+.alc-submit:hover { opacity: 0.88; }
+.alc-submit:active { transform: scale(0.97); }
+
+/* ─── Admin Panel ─── */
+.admin-shell { padding: var(--space-6); max-width: 1200px; }
+.admin-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: var(--space-5); padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border-default);
+}
+.admin-header-left { display: flex; align-items: center; gap: var(--space-4); }
+.admin-badge {
+  display: inline-flex; align-items: center; gap: var(--space-1-5);
+  padding: var(--space-1) var(--space-3); border-radius: var(--radius-full);
+  background: var(--color-herb-50); color: var(--color-herb-700);
+  font-size: var(--text-xs); font-weight: 700; border: 1px solid var(--color-herb-200);
+}
+.admin-header-title { font-size: var(--text-base); font-weight: 600; color: var(--color-text-secondary); }
+.admin-header-right { display: flex; align-items: center; gap: var(--space-4); }
+.admin-user-chip {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-2) var(--space-4); background: var(--color-neutral-50);
+  border: 1px solid var(--color-border-default); border-radius: var(--radius-lg);
+}
+.auc-avatar {
+  width: 32px; height: 32px; border-radius: 50%; background: var(--color-herb-600);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: var(--text-sm); flex-shrink: 0;
+}
+.auc-name { font-size: var(--text-sm); font-weight: 700; }
+.auc-role { font-size: 11px; color: var(--color-text-muted); }
+.admin-logout-btn {
+  display: flex; align-items: center; gap: var(--space-1-5); padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md); border: 1px solid #FECACA; background: #FEF2F2;
+  color: #991B1B; font-family: var(--font-sans); font-size: var(--text-sm);
+  font-weight: 600; cursor: pointer; transition: all 0.15s;
+}
+.admin-logout-btn:hover { background: #FEE2E2; }
+
+/* ─── Admin Tabs ─── */
+.admin-tabs {
+  display: flex; gap: var(--space-1); margin-bottom: var(--space-6);
+  background: var(--color-neutral-100); padding: var(--space-1);
+  border-radius: var(--radius-lg); width: fit-content; flex-wrap: wrap;
+}
+.admin-tab {
+  display: flex; align-items: center; gap: var(--space-1-5);
+  padding: var(--space-2) var(--space-4); border-radius: var(--radius-md);
+  border: none; background: transparent; font-family: var(--font-sans);
+  font-size: var(--text-sm); font-weight: 500; cursor: pointer;
+  color: var(--color-text-secondary); transition: all 0.15s; white-space: nowrap;
+}
+.admin-tab:hover { background: rgba(255,255,255,0.7); color: var(--color-text-primary); }
+.admin-tab.active { background: #fff; color: var(--color-herb-700); font-weight: 700; box-shadow: var(--shadow-sm); }
+
+/* ─── Admin Body ─── */
+.admin-body { }
+.admin-section { background: #fff; border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: var(--space-card-pad); }
+.admin-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); }
+.admin-section-title { font-size: var(--text-base); font-weight: 700; margin-bottom: var(--space-5); color: var(--color-text-primary); padding-bottom: var(--space-3); border-bottom: 2px solid var(--color-herb-100); }
+.admin-desc { font-size: var(--text-sm); color: var(--color-text-muted); margin-top: calc(-1 * var(--space-3)); margin-bottom: var(--space-5); }
+.admin-form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-5); margin-bottom: var(--space-2); }
+.admin-field { display: flex; flex-direction: column; gap: var(--space-1-5); }
+.admin-label { font-size: var(--text-sm); font-weight: 600; color: var(--color-text-secondary); }
+.admin-input {
+  padding: var(--space-2-5) var(--space-3); border: 1.5px solid var(--color-border-default);
+  border-radius: var(--radius-md); font-family: var(--font-sans); font-size: var(--text-sm);
+  outline: none; background: #fff; transition: border-color 0.15s;
+}
+.admin-input:focus { border-color: var(--color-herb-600); box-shadow: 0 0 0 3px rgba(45,106,79,0.12); }
+.admin-select {
+  padding: var(--space-2-5) var(--space-3); border: 1.5px solid var(--color-border-default);
+  border-radius: var(--radius-md); font-family: var(--font-sans); font-size: var(--text-sm);
+  outline: none; background: #fff; cursor: pointer;
+}
+.admin-select:focus { border-color: var(--color-herb-600); }
+.admin-input-with-unit { display: flex; align-items: center; gap: 0; }
+.admin-input-with-unit .admin-input { border-radius: var(--radius-md) 0 0 var(--radius-md); flex: 1; }
+.input-unit {
+  padding: var(--space-2-5) var(--space-3); background: var(--color-neutral-100);
+  border: 1.5px solid var(--color-border-default); border-left: none;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0; font-size: var(--text-sm); font-weight: 600;
+  color: var(--color-text-muted);
+}
+.field-hint { font-size: 11px; color: var(--color-text-muted); }
+
+/* ─── Admin Info Grid ─── */
+.admin-info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); margin-bottom: var(--space-6); }
+.admin-info-item { padding: var(--space-4); background: var(--color-neutral-50); border-radius: var(--radius-md); border: 1px solid var(--color-border-subtle); }
+.aii-label { font-size: 11px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: var(--space-1); }
+.aii-value { font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary); }
+
+/* ─── Admin Table ─── */
+.admin-table-wrap { overflow-x: auto; margin-top: var(--space-2); }
+.admin-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.admin-table thead tr { border-bottom: 2px solid var(--color-border-default); }
+.admin-table th { padding: var(--space-2-5) var(--space-3); text-align: left; font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+.admin-table td { padding: var(--space-3) var(--space-3); border-bottom: 1px solid var(--color-border-subtle); vertical-align: middle; }
+.admin-table tr:last-child td { border-bottom: none; }
+.admin-table tr:hover td { background: var(--color-neutral-50); }
+.td-muted { color: var(--color-text-muted); font-size: var(--text-xs); }
+.code-tag { background: var(--color-neutral-100); padding: 2px 6px; border-radius: var(--radius-sm); font-size: 12px; font-family: monospace; color: var(--color-herb-700); }
+.td-actions { display: flex; gap: var(--space-1-5); }
+.icon-btn { width: 30px; height: 30px; border-radius: var(--radius-md); border: 1px solid var(--color-border-default); background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; color: var(--color-text-muted); }
+.icon-btn.edit:hover { border-color: var(--color-herb-600); color: var(--color-herb-600); background: var(--color-herb-50); }
+.icon-btn.delete:hover { border-color: #FECACA; color: #DC2626; background: #FEF2F2; }
+.role-badge { display: inline-block; padding: 2px 8px; border-radius: var(--radius-full); background: var(--color-herb-50); color: var(--color-herb-700); font-size: 11px; font-weight: 600; border: 1px solid var(--color-herb-200); }
+.status-dot-row { display: flex; align-items: center; gap: var(--space-1-5); font-size: var(--text-sm); }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ─── Admin Edit Card ─── */
+.admin-edit-card { background: var(--color-herb-50); border: 1.5px solid var(--color-herb-200); border-radius: var(--radius-lg); padding: var(--space-5); margin-bottom: var(--space-5); }
+.aec-title { font-size: var(--text-sm); font-weight: 700; color: var(--color-herb-800); margin-bottom: var(--space-4); }
+.aec-actions { display: flex; gap: var(--space-3); justify-content: flex-end; margin-top: var(--space-4); }
+
+/* ─── Threshold Preview ─── */
+.threshold-preview { display: flex; gap: var(--space-4); margin-bottom: var(--space-6); }
+.tp-item { flex: 1; padding: var(--space-5); border-radius: var(--radius-lg); text-align: center; }
+.tp-example { font-size: var(--text-3xl); font-weight: 800; }
+.tp-label { font-size: var(--text-sm); font-weight: 700; margin: var(--space-1) 0; }
+.tp-range { font-size: 11px; color: var(--color-text-muted); }
+
+/* ─── Admin Buttons & Actions ─── */
+.admin-add-btn {
+  display: flex; align-items: center; gap: var(--space-1-5); padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md); border: 1.5px solid var(--color-herb-600);
+  background: var(--color-herb-600); color: #fff; font-family: var(--font-sans);
+  font-size: var(--text-sm); font-weight: 600; cursor: pointer;
+}
+.admin-add-btn:hover { opacity: 0.88; }
+.admin-cancel-btn {
+  padding: var(--space-2) var(--space-5); border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-default); background: #fff;
+  color: var(--color-text-secondary); font-family: var(--font-sans);
+  font-size: var(--text-sm); font-weight: 600; cursor: pointer;
+}
+.admin-cancel-btn:hover { background: var(--color-neutral-50); }
+.admin-save-btn {
+  padding: var(--space-2-5) var(--space-6); border-radius: var(--radius-button);
+  border: none; background: var(--color-herb-600); color: #fff;
+  font-family: var(--font-sans); font-size: var(--text-sm); font-weight: 700; cursor: pointer;
+}
+.admin-save-btn:hover { opacity: 0.88; }
+.admin-save-btn:active { transform: scale(0.97); }
+.admin-action-row { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-4); margin-top: var(--space-6); padding-top: var(--space-5); border-top: 1px solid var(--color-border-subtle); }
+.admin-save-msg { display: flex; align-items: center; gap: var(--space-1-5); color: #065F46; font-size: var(--text-sm); font-weight: 600; }
+.admin-mapping-tip {
+  display: flex; align-items: flex-start; gap: var(--space-2); padding: var(--space-3) var(--space-4);
+  background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: var(--radius-md);
+  color: #1E40AF; font-size: var(--text-sm); margin-top: var(--space-2);
+}
+.admin-note {
+  display: flex; align-items: flex-start; gap: var(--space-2); padding: var(--space-3) var(--space-4);
+  background: #FFFBEB; border: 1px solid #FDE68A; border-radius: var(--radius-md);
+  color: #92400E; font-size: var(--text-sm); margin-top: var(--space-5);
+}
+
+/* ─── Sidebar admin indicator ─── */
+.nav-item[data-id="admin"] { margin-top: auto; border-top: 1px solid rgba(255,255,255,0.08); padding-top: var(--space-2); }
+
+@media (max-width: 768px) {
+  .admin-form-grid { grid-template-columns: 1fr; }
+  .admin-info-grid { grid-template-columns: repeat(2, 1fr); }
+  .threshold-preview { flex-direction: column; }
+  .admin-tabs { gap: 2px; }
+  .admin-tab { padding: var(--space-2) var(--space-3); font-size: 12px; }
+}
+
+.hm-total-col { background: var(--color-neutral-50) !important; font-weight: 700 !important; border-left: 2px solid var(--color-border-default); }
+.hm-total-cell { border-left: 2px solid var(--color-border-default); }
+.hm-total-val { font-weight: 800; font-size: 11px; }
+.hm-status-cell { text-align: center; }
+.hm-pass { color: #059669; font-weight: 800; font-size: 13px; }
+.hm-fail { color: #DC2626; font-weight: 800; font-size: 13px; }
+
+@media print {
+  .sidebar, .topbar, .filter-card, .back-btn, .report-toolbar,
+  .quick-questions, .ai-disclaimer, .qq-btn { display: none !important; }
+  .main-area { overflow: visible; }
+  .main-content { overflow: visible; }
+  .card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+  .page-content { padding: 0; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script>
+/*
+ * KPI HUNTER — Supabase Configuration
+ */
+window.KPIHUNTER_CONFIG = {
+  supabaseUrl: 'YOUR_SUPABASE_URL',
+  supabaseKey: 'YOUR_SUPABASE_ANON_KEY',
+};
+</script>
+<script>
+/* KPI HUNTER — Supabase Client */
+(function () {
+  var cfg = window.KPIHUNTER_CONFIG;
+  if (!cfg || !cfg.supabaseUrl || cfg.supabaseUrl.indexOf('YOUR_') === 0) {
+    console.info('[KPI Hunter] Supabase not configured — using localStorage only');
+    window.KPIHUNTER_DB = null;
+    return;
+  }
+  if (typeof supabase === 'undefined') {
+    console.warn('[KPI Hunter] Supabase SDK not loaded');
+    window.KPIHUNTER_DB = null;
+    return;
+  }
+  var db = supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey);
+  window.KPIHUNTER_DB = {
+    loadResults: function () {
+      return db.from('kpi_results').select('kpi_id, result, passfail, updated_at')
+        .then(function (res) { if (res.error) throw res.error; return res.data || []; });
+    },
+    saveResult: function (kpiId, result, passfail) {
+      return db.from('kpi_results').upsert({ kpi_id: kpiId, result: result, passfail: passfail, updated_at: new Date().toISOString() }, { onConflict: 'kpi_id' })
+        .then(function (res) { if (res.error) throw res.error; });
+    },
+    saveAllResults: function (kpis) {
+      var rows = kpis.filter(function (k) { return k.passfail !== ''; }).map(function (k) { return { kpi_id: k.id, result: k.result, passfail: k.passfail, updated_at: new Date().toISOString() }; });
+      if (!rows.length) return Promise.resolve();
+      return db.from('kpi_results').upsert(rows, { onConflict: 'kpi_id' }).then(function (res) { if (res.error) throw res.error; });
+    },
+    saveUploadSession: function (meta) {
+      return db.from('upload_sessions').insert({ file_name: meta.fileName, upload_date: meta.uploadDate, rows_count: meta.rows }).then(function (res) { if (res.error) throw res.error; });
+    },
+    getLastUpload: function () {
+      return db.from('upload_sessions').select('*').order('created_at', { ascending: false }).limit(1)
+        .then(function (res) {
+          if (res.error || !res.data || !res.data.length) return null;
+          var row = res.data[0];
+          return { fileName: row.file_name, uploadDate: row.upload_date, rows: row.rows_count };
+        });
+    }
+  };
+  console.info('[KPI Hunter] Supabase connected:', cfg.supabaseUrl);
+})();
+</script>
+<script src="app/data.js"></script>
+<script src="app/csv-parser.js"></script>
+<script type="text/babel">
+/* KPI HUNTER — Shared UI Components (no emoji, SVG icons only) */
+const { useState, useEffect, useRef, useMemo } = React;
+const D = window.KPIHUNTER;
+
+function Icon({ path, path2, size, color, strokeWidth }) {
+  return React.createElement('svg', { width: size || 16, height: size || 16, viewBox: '0 0 24 24', fill: 'none', stroke: color || 'currentColor', strokeWidth: strokeWidth || 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' },
+    React.createElement('path', { d: path }),
+    path2 && React.createElement('path', { d: path2 })
+  );
+}
+function IconCircle({ size }) {
+  return React.createElement('svg', { width: size||16, height: size||16, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:1.5 },
+    React.createElement('circle', { cx:12, cy:12, r:10 }),
+    React.createElement('path', { d:'M12 16v-4M12 8h.01' })
+  );
+}
+function riskColor(risk) {
+  var map = { critical: { bg:'#FEF2F2', text:'#991B1B', border:'#FECACA', label:'วิกฤต' }, high: { bg:'#FFF7ED', text:'#9A3412', border:'#FED7AA', label:'เสี่ยงสูง' }, medium: { bg:'#FFFBEB', text:'#92400E', border:'#FDE68A', label:'เสี่ยง' }, low: { bg:'#F0FDF4', text:'#166534', border:'#BBF7D0', label:'เฝ้าระวัง' }, pass: { bg:'#ECFDF5', text:'#065F46', border:'#A7F3D0', label:'ผ่าน' }, none: { bg:'#F9FAFB', text:'#9CA3AF', border:'#E5E7EB', label:'ไม่มีข้อมูล' } };
+  return map[risk] || map.none;
+}
+function typeLabel(type) {
+  if (type === 'sso')  return { text:'สสอ./รพ.สต.', bg:'#DBEAFE', color:'#1E40AF' };
+  if (type === 'both') return { text:'ร่วมกัน', bg:'#D1FAE5', color:'#065F46' };
+  return { text:'โรงพยาบาล', bg:'#FEE2E2', color:'#991B1B' };
+}
+function SummaryCard({ iconPath, label, value, sub, color, onClick }) {
+  return React.createElement('div', { className: 'summary-card', onClick: onClick, style: { cursor: onClick ? 'pointer' : 'default', borderTopColor: color || 'var(--color-herb-600)' } },
+    React.createElement('div', { className: 'sc-header' },
+      React.createElement('div', { className: 'sc-icon', style: { background: color || 'var(--color-herb-600)' } },
+        React.createElement(Icon, { path: iconPath || 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', size: 18, color: '#fff', strokeWidth: 2 })
+      ),
+      React.createElement('span', { className: 'sc-label' }, label)
+    ),
+    React.createElement('div', { className: 'sc-value', style: { color: color || 'var(--color-text-primary)' } }, value),
+    sub && React.createElement('div', { className: 'sc-sub' }, sub)
+  );
+}
+function KPIBadge({ passfail }) {
+  if (!passfail) return React.createElement('span', { className: 'badge badge-neutral' }, '—');
+  if (passfail === 'ผ่าน') return React.createElement('span', { className: 'badge badge-pass' }, 'ผ่าน');
+  return React.createElement('span', { className: 'badge badge-fail' }, 'ไม่ผ่าน');
+}
+function RiskBadge({ risk }) {
+  var rc = riskColor(risk);
+  return React.createElement('span', { className: 'badge', style: { background: rc.bg, color: rc.text, border: '1px solid ' + rc.border } }, rc.label);
+}
+function TypeBadge({ type }) {
+  var tl = typeLabel(type);
+  return React.createElement('span', { className: 'badge', style: { background: tl.bg, color: tl.color } }, tl.text);
+}
+function MiniDonut({ value, max, color, size }) {
+  var sz = size || 60, r = sz * 0.38, c = sz / 2, circ = 2 * Math.PI * r;
+  var pct = Math.min(parseFloat(value) || 0, max || 100) / (max || 100);
+  var fill = circ * pct;
+  return React.createElement('svg', { width: sz, height: sz, viewBox: '0 0 ' + sz + ' ' + sz },
+    React.createElement('circle', { cx: c, cy: c, r: r, fill: 'none', stroke: '#E5E7EB', strokeWidth: sz * 0.12 }),
+    React.createElement('circle', { cx: c, cy: c, r: r, fill: 'none', stroke: color || '#2D6A4F', strokeWidth: sz * 0.12, strokeDasharray: fill + ' ' + (circ - fill), strokeLinecap: 'round', transform: 'rotate(-90 ' + c + ' ' + c + ')' })
+  );
+}
+function Sparkline({ data, color, width, height }) {
+  var w = width || 100, h = height || 28;
+  if (!data || data.length < 2) return null;
+  var max = Math.max.apply(null, data), min = Math.min.apply(null, data), range = (max - min) || 1;
+  var pts = data.map(function(v, i) { return (i / (data.length - 1) * (w - 8) + 4) + ',' + (h - 4 - (v - min) / range * (h - 8)); }).join(' ');
+  var lastX = (data.length - 1) / (data.length - 1) * (w - 8) + 4;
+  var lastY = h - 4 - (data[data.length - 1] - min) / range * (h - 8);
+  return React.createElement('svg', { width: w, height: h, style: { display: 'block' } },
+    React.createElement('polyline', { points: pts, fill: 'none', stroke: color || '#2D6A4F', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+    React.createElement('circle', { cx: lastX, cy: lastY, r: 2.5, fill: color || '#2D6A4F' })
+  );
+}
+function ProgressBar({ value, target, showLabel }) {
+  var pct = target ? Math.min(100, (value / target) * 100) : Math.min(100, value);
+  var barColor = pct >= 100 ? '#10B981' : pct >= 80 ? '#F59E0B' : '#EF4444';
+  return React.createElement('div', { className: 'progress-wrap' },
+    React.createElement('div', { className: 'progress-bar' },
+      React.createElement('div', { className: 'progress-fill', style: { width: pct + '%', background: barColor } })
+    ),
+    showLabel && React.createElement('span', { className: 'progress-label', style: { color: barColor } }, pct.toFixed(0) + '%')
+  );
+}
+function HBarChart({ items, maxVal }) {
+  var mx = maxVal || Math.max.apply(null, items.map(function(i) { return i.value || 0; })) || 100;
+  return React.createElement('div', { className: 'hbar-chart' },
+    items.map(function(item, idx) {
+      var pct = (item.value / mx) * 100, tgt = item.target || 80;
+      var barColor = item.color || (item.value >= tgt ? '#10B981' : item.value >= tgt * 0.8 ? '#F59E0B' : '#EF4444');
+      return React.createElement('div', { key: idx, className: 'hbar-row' },
+        React.createElement('div', { className: 'hbar-label', title: item.label }, item.label),
+        React.createElement('div', { className: 'hbar-track' },
+          React.createElement('div', { className: 'hbar-fill', style: { width: Math.min(100, pct) + '%', background: barColor } })
+        ),
+        React.createElement('div', { className: 'hbar-value', style: { color: barColor } }, typeof item.value === 'number' ? item.value.toFixed(1) + '%' : item.value)
+      );
+    })
+  );
+}
+function SearchInput({ value, onChange, placeholder }) {
+  return React.createElement('div', { className: 'search-wrap' },
+    React.createElement(Icon, { path: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z', size: 15 }),
+    React.createElement('input', { type: 'text', value: value, onChange: function(e) { onChange(e.target.value); }, placeholder: placeholder || 'ค้นหา...', className: 'search-input' }),
+    value && React.createElement('button', { style: { background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex', padding: 0 }, onClick: function() { onChange(''); } }, React.createElement(Icon, { path: 'M6 18L18 6M6 6l12 12', size: 14 }))
+  );
+}
+function FilterPills({ options, value, onChange, multi }) {
+  return React.createElement('div', { className: 'filter-pills' },
+    options.map(function(opt) {
+      var isActive = multi ? (value || []).indexOf(opt.value) >= 0 : value === opt.value;
+      return React.createElement('button', { key: opt.value, className: 'pill' + (isActive ? ' pill-active' : ''), onClick: function() { if (multi) { var arr = (value || []).slice(), idx = arr.indexOf(opt.value); if (idx >= 0) arr.splice(idx, 1); else arr.push(opt.value); onChange(arr); } else { onChange(isActive ? '' : opt.value); } } }, opt.label + (opt.count !== undefined ? ' (' + opt.count + ')' : ''));
+    })
+  );
+}
+function EmptyState({ title, sub }) {
+  return React.createElement('div', { className: 'empty-state' },
+    React.createElement('div', { className: 'empty-icon' }, React.createElement(Icon, { path: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', size: 48 })),
+    React.createElement('div', { className: 'empty-title' }, title || 'ไม่พบข้อมูล'),
+    sub && React.createElement('div', { className: 'empty-sub' }, sub)
+  );
+}
+function SectionHeader({ title, sub, action }) {
+  return React.createElement('div', { className: 'section-header' },
+    React.createElement('div', null,
+      React.createElement('h2', { className: 'section-title' }, title),
+      sub && React.createElement('p', { className: 'section-sub' }, sub)
+    ),
+    action
+  );
+}
+Object.assign(window, { Icon, IconCircle, riskColor, typeLabel, SummaryCard, KPIBadge, RiskBadge, TypeBadge, MiniDonut, Sparkline, ProgressBar, HBarChart, SearchInput, FilterPills, EmptyState, SectionHeader });
+</script>
+<script type="text/babel">
+/* KPI HUNTER — Dashboard Page */
+const D2 = window.KPIHUNTER;
+const ICONS = {
+  chart:  'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+  check:  'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+  xmark:  'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z',
+  alert:  'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
+};
+function DashboardPage() {
+  const summary   = useMemo(() => D2.getSummary(), []);
+  const failedKPIs = useMemo(() => D2.kpis.filter(k => k.passfail.indexOf('ไม่ผ่าน') >= 0).sort((a, b) => a.result - b.result), []);
+  const criticalKPIs = useMemo(() => D2.kpis.filter(k => k.risk === 'critical' || k.risk === 'high'), []);
+  const unitRank  = useMemo(() => D2.getUnitRankings(), []);
+  const pmSummary = useMemo(() => D2.getPMSummary(), []);
+  return React.createElement('div', { className: 'page-content' },
+    React.createElement('div', { className: 'cards-grid-4' },
+      React.createElement(SummaryCard, { iconPath: ICONS.chart, label: 'KPI ทั้งหมด', value: summary.total, sub: 'ประเมินแล้ว ' + summary.evaluated + ' รายการ', color: '#2D6A4F' }),
+      React.createElement(SummaryCard, { iconPath: ICONS.check, label: 'ผ่านเกณฑ์', value: summary.passed, sub: 'อัตราผ่าน ' + summary.passRate + '%', color: '#059669' }),
+      React.createElement(SummaryCard, { iconPath: ICONS.xmark, label: 'ไม่ผ่านเกณฑ์', value: summary.failed, sub: 'ต้องเร่งรัดดำเนินการ', color: '#DC2626' }),
+      React.createElement(SummaryCard, { iconPath: ICONS.alert, label: 'เสี่ยงสูง / วิกฤต', value: summary.critical + summary.highRisk, sub: criticalKPIs.length > 0 ? (criticalKPIs[0].name.length > 32 ? criticalKPIs[0].name.substring(0, 32) + '...' : criticalKPIs[0].name) : 'ไม่พบรายการเสี่ยง', color: '#D97706' })
+    ),
+    React.createElement('div', { className: 'grid-2' },
+      React.createElement('div', { className: 'card' },
+        React.createElement(SectionHeader, { title: 'อัตราผ่านเกณฑ์ภาพรวม', sub: 'ปีงบประมาณ 2569 · ณ เดือนมีนาคม' }),
+        React.createElement('div', { style: { display:'flex', alignItems:'center', gap:'var(--space-8)', paddingBottom:'var(--space-2)' } },
+          React.createElement('div', { style: { position:'relative', flexShrink:0 } },
+            React.createElement(MiniDonut, { value: summary.passRate, max: 100, color: '#2D6A4F', size: 144 }),
+            React.createElement('div', { style: { position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' } },
+              React.createElement('div', { style: { fontSize:'var(--text-3xl)', fontWeight:800, color:'#2D6A4F', lineHeight:1 } }, summary.passRate + '%'),
+              React.createElement('div', { style: { fontSize:'var(--text-xs)', color:'var(--color-text-muted)', marginTop:4 } }, 'อัตราผ่าน')
+            )
+          ),
+          React.createElement('div', { style: { flex:1 } },
+            React.createElement('div', { className: 'stat-row' }, React.createElement('span', { className: 'stat-dot', style: { background:'#10B981' } }), React.createElement('span', null, 'ผ่านเกณฑ์'), React.createElement('span', { className: 'stat-num green' }, summary.passed)),
+            React.createElement('div', { className: 'stat-row' }, React.createElement('span', { className: 'stat-dot', style: { background:'#EF4444' } }), React.createElement('span', null, 'ไม่ผ่านเกณฑ์'), React.createElement('span', { className: 'stat-num red' }, summary.failed)),
+            React.createElement('div', { className: 'stat-row' }, React.createElement('span', { className: 'stat-dot', style: { background:'#D1D5DB' } }), React.createElement('span', null, 'ยังไม่ประเมิน'), React.createElement('span', { className: 'stat-num' }, summary.total - summary.evaluated))
+          )
+        )
+      ),
+      React.createElement('div', { className: 'card' },
+        React.createElement(SectionHeader, { title: 'แยกตามหน่วยรับผิดชอบ', sub: 'สัดส่วน KPI รายประเภทหน่วยบริการ' }),
+        React.createElement('div', { style: { display:'flex', gap:'var(--space-3)', paddingBottom:'var(--space-2)' } },
+          [{ type:'sso', count:summary.sso }, { type:'rph', count:summary.rph }, { type:'both', count:summary.both }].map(function(t) {
+            var tl = typeLabel(t.type), items = D2.kpis.filter(function(k) { return k.type === t.type; });
+            var p = items.filter(function(k) { return k.passfail === 'ผ่าน'; }).length;
+            var f = items.filter(function(k) { return k.passfail.indexOf('ไม่ผ่าน') >= 0; }).length;
+            var rate = (p + f) > 0 ? (p / (p + f) * 100).toFixed(0) : '—';
+            return React.createElement('div', { key: t.type, className: 'type-card', style: { borderTopColor: tl.color } },
+              React.createElement('div', { style: { fontSize:'11px', fontWeight:700, color:tl.color, marginBottom:4, textTransform:'uppercase', letterSpacing:'0.05em' } }, tl.text),
+              React.createElement('div', { style: { fontSize:'var(--text-2xl)', fontWeight:800, marginBottom:4 } }, t.count),
+              React.createElement('div', { style: { fontSize:'11px', color:'var(--color-text-muted)', marginBottom:6 } }, React.createElement('span', { style:{color:'#059669',fontWeight:700} }, p), ' ผ่าน · ', React.createElement('span', { style:{color:'#DC2626',fontWeight:700} }, f), ' ไม่ผ่าน'),
+              React.createElement(ProgressBar, { value: parseFloat(rate) || 0, target: 100 })
+            );
+          })
+        )
+      )
+    ),
+    React.createElement('div', { className: 'grid-2' },
+      React.createElement('div', { className: 'card' },
+        React.createElement(SectionHeader, { title: 'KPI ที่ต้องเร่งรัด', sub: 'เรียงตามผลงานต่ำสุด ' + failedKPIs.length + ' รายการ' }),
+        React.createElement('div', { className: 'table-wrap' },
+          React.createElement('table', { className: 'data-table compact' },
+            React.createElement('thead', null, React.createElement('tr', null, React.createElement('th', null, '#'), React.createElement('th', null, 'ตัวชี้วัด'), React.createElement('th', { style:{textAlign:'right'} }, 'ผลงาน'), React.createElement('th', null, 'ระดับ'))),
+            React.createElement('tbody', null,
+              failedKPIs.slice(0, 9).map(function(k, i) {
+                return React.createElement('tr', { key: k.id },
+                  React.createElement('td', { className: 'td-num' }, i + 1),
+                  React.createElement('td', { className: 'td-name', style:{maxWidth:200} }, k.name.length > 42 ? k.name.substring(0, 42) + '…' : k.name),
+                  React.createElement('td', { className: 'td-result red' }, typeof k.result === 'number' ? k.result.toFixed(1) + '%' : '—'),
+                  React.createElement('td', null, React.createElement(RiskBadge, { risk: k.risk }))
+                );
+              })
+            )
+          )
+        )
+      ),
+      React.createElement('div', { className: 'card' },
+        React.createElement(SectionHeader, { title: 'อันดับหน่วยบริการ', sub: 'เรียงตามคะแนนเฉลี่ย ' + D2.units.length + ' หน่วย' }),
+        React.createElement('div', { className: 'table-wrap' },
+          React.createElement('table', { className: 'data-table compact' },
+            React.createElement('thead', null, React.createElement('tr', null, React.createElement('th', null, '#'), React.createElement('th', null, 'หน่วยบริการ'), React.createElement('th', { style:{textAlign:'right'} }, 'คะแนน'), React.createElement('th', { style:{minWidth:100} }, 'อัตราผ่าน'))),
+            React.createElement('tbody', null,
+              unitRank.map(function(r, i) {
+                var scoreColor = r.avgScore >= 80 ? '#059669' : r.avgScore >= 60 ? '#D97706' : '#DC2626';
+                return React.createElement('tr', { key: r.unit.id },
+                  React.createElement('td', { className: 'td-num' }, i + 1),
+                  React.createElement('td', null, r.unit.short),
+                  React.createElement('td', { className: 'td-result', style:{color:scoreColor} }, r.avgScore.toFixed(1) + '%'),
+                  React.createElement('td', null, React.createElement(ProgressBar, { value: parseFloat(r.passRate), target: 100, showLabel: true }))
+                );
+              })
+            )
+          )
+        )
+      )
+    ),
+    React.createElement('div', { className: 'card' },
+      React.createElement(SectionHeader, { title: 'ผลงานรายกลุ่มงาน (PM)', sub: 'อัตราผ่านเกณฑ์แยกตามกลุ่มงานที่รับผิดชอบ' }),
+      React.createElement(HBarChart, {
+        items: pmSummary.filter(function(p) { return p.total >= 2; }).map(function(p) {
+          var rate = (p.passed + p.failed) > 0 ? (p.passed / (p.passed + p.failed)) * 100 : 0;
+          return { label: p.name.length > 28 ? p.name.substring(0, 28) + '...' : p.name, value: Math.round(rate * 10) / 10, target: 80 };
+        }), maxVal: 100
+      })
+    )
+  );
+}
+Object.assign(window, { DashboardPage });
+</script>
+<script type="text/babel">
+/* KPI HUNTER — KPI Explorer Page */
+function ExplorerPage({ onNavigate }) {
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [catFilter, setCatFilter] = useState('');
+  const [riskFilter, setRiskFilter] = useState('');
+  const [selectedKPI, setSelectedKPI] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editResult, setEditResult] = useState('');
+  const [editPassfail, setEditPassfail] = useState('');
+  const [saveMsg, setSaveMsg] = useState('');
+  const D3 = window.KPIHUNTER;
+
+  function startEdit(e, k) { e.stopPropagation(); setEditingId(k.id); setEditResult(typeof k.result === 'number' ? k.result : ''); setEditPassfail(k.passfail || 'ผ่าน'); setSaveMsg(''); }
+  function cancelEdit(e) { e && e.stopPropagation(); setEditingId(null); setSaveMsg(''); }
+  function saveEdit(e, kpiId) { e.stopPropagation(); D3.updateKPI(kpiId, editResult, editPassfail); setEditingId(null); setSaveMsg('บันทึกแล้ว'); setTimeout(() => setSaveMsg(''), 2500); }
+
+  const filtered = useMemo(() => D3.kpis.filter(k => {
+    if (search && k.name.toLowerCase().indexOf(search.toLowerCase()) < 0 && k.num.indexOf(search) < 0) return false;
+    if (statusFilter === 'pass' && k.passfail !== 'ผ่าน') return false;
+    if (statusFilter === 'fail' && k.passfail.indexOf('ไม่ผ่าน') < 0) return false;
+    if (statusFilter === 'none' && k.passfail !== '') return false;
+    if (typeFilter && k.type !== typeFilter) return false;
+    if (catFilter && k.category !== catFilter) return false;
+    if (riskFilter && k.risk !== riskFilter) return false;
+    return true;
+  }), [search, statusFilter, typeFilter, catFilter, riskFilter]);
+
+  if (selectedKPI) {
+    const k = selectedKPI, trend = D3.trends[k.id], unitData = D3.unitPerformance[k.id];
+    return React.createElement('div', { className: 'page-content' },
+      React.createElement('button', { className: 'back-btn', onClick: () => setSelectedKPI(null) }, '← กลับไปรายการ KPI'),
+      React.createElement('div', { className: 'card kpi-detail-card' },
+        React.createElement('div', { className: 'kpi-detail-header' },
+          React.createElement('div', null,
+            React.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 } }, React.createElement(TypeBadge, { type: k.type }), React.createElement(KPIBadge, { passfail: k.passfail }), React.createElement(RiskBadge, { risk: k.risk })),
+            React.createElement('h2', { className: 'kpi-detail-name' }, k.num + '. ' + k.name),
+            React.createElement('div', { className: 'kpi-detail-meta' }, React.createElement('span', null, 'กลุ่มงาน: ' + (k.pm || '-')), React.createElement('span', null, 'หมวด: ' + (k.category || '-')))
+          ),
+          React.createElement('div', { className: 'kpi-detail-score', style:{position:'relative'} },
+            React.createElement(MiniDonut, { value: k.result, max: k.targetNum || 100, color: k.passfail === 'ผ่าน' ? '#10B981' : '#EF4444', size: 100 }),
+            React.createElement('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+              React.createElement('div', { style: { fontSize: 'var(--text-xl)', fontWeight: 800 } }, typeof k.result === 'number' ? k.result.toFixed(1) : '-'),
+              React.createElement('div', { style: { fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' } }, 'ผลงาน')
+            )
+          )
+        ),
+        React.createElement('div', { className: 'kpi-detail-grid' },
+          React.createElement('div', { className: 'detail-stat' }, React.createElement('div', { className: 'detail-stat-label' }, 'เป้าหมาย'), React.createElement('div', { className: 'detail-stat-value' }, k.target || '-')),
+          React.createElement('div', { className: 'detail-stat' }, React.createElement('div', { className: 'detail-stat-label' }, 'ผลงาน'), React.createElement('div', { className: 'detail-stat-value' }, typeof k.result === 'number' ? k.result.toFixed(2) : '-')),
+          React.createElement('div', { className: 'detail-stat' }, React.createElement('div', { className: 'detail-stat-label' }, 'ผลการประเมิน'), React.createElement('div', { className: 'detail-stat-value' }, React.createElement(KPIBadge, { passfail: k.passfail }))),
+          React.createElement('div', { className: 'detail-stat' }, React.createElement('div', { className: 'detail-stat-label' }, 'หน่วยรับผิดชอบ'), React.createElement('div', { className: 'detail-stat-value' }, React.createElement(TypeBadge, { type: k.type })))
+        )
+      ),
+      trend && React.createElement('div', { className: 'card' },
+        React.createElement(SectionHeader, { title: 'แนวโน้มรายเดือน', sub: 'ปีงบประมาณ 2569' }),
+        React.createElement('div', { className: 'trend-chart' },
+          trend.map((v, i) => {
+            const maxV = Math.max(...trend), pct = maxV > 0 ? (v / maxV) * 100 : 0;
+            const barColor = k.targetNum && v >= k.targetNum ? '#10B981' : v >= (k.targetNum || 80) * 0.8 ? '#F59E0B' : '#EF4444';
+            return React.createElement('div', { key: i, className: 'trend-bar-col' },
+              React.createElement('div', { className: 'trend-value' }, v.toFixed(1)),
+              React.createElement('div', { className: 'trend-bar-wrap' }, React.createElement('div', { className: 'trend-bar', style: { height: Math.max(4, pct) + '%', background: barColor } })),
+              React.createElement('div', { className: 'trend-label' }, D3.monthNames[i])
+            );
+          }),
+          k.targetNum && React.createElement('div', { className: 'trend-target-line', style: { bottom: (k.targetNum / Math.max(...trend) * 100) + '%' } }, React.createElement('span', null, 'เป้า ' + k.targetNum))
+        )
+      ),
+      unitData && React.createElement('div', { className: 'card' },
+        React.createElement(SectionHeader, { title: 'ผลงานรายหน่วยบริการ' }),
+        React.createElement(HBarChart, { items: unitData.sort((a, b) => b.value - a.value).map(u => ({ label: u.unitName, value: u.value, target: k.targetNum || 80 })), maxVal: Math.max(100, ...unitData.map(u => u.value)) })
+      )
+    );
+  }
+
+  return React.createElement('div', { className: 'page-content' },
+    React.createElement(SectionHeader, { title: 'KPI Explorer', sub: 'ค้นหาและกรองตัวชี้วัด — ' + filtered.length + ' รายการ' }),
+    React.createElement('div', { className: 'card filter-card' },
+      React.createElement(SearchInput, { value: search, onChange: setSearch, placeholder: 'ค้นหาตัวชี้วัด...' }),
+      React.createElement('div', { className: 'filter-row' }, React.createElement('span', { className: 'filter-label' }, 'สถานะ:'), React.createElement(FilterPills, { value: statusFilter, onChange: setStatusFilter, options: [{ value: 'pass', label: '✓ ผ่าน', count: D3.kpis.filter(k => k.passfail === 'ผ่าน').length }, { value: 'fail', label: '✗ ไม่ผ่าน', count: D3.kpis.filter(k => k.passfail.indexOf('ไม่ผ่าน') >= 0).length }, { value: 'none', label: 'ไม่มีข้อมูล' }] })),
+      React.createElement('div', { className: 'filter-row' }, React.createElement('span', { className: 'filter-label' }, 'หน่วยงาน:'), React.createElement(FilterPills, { value: typeFilter, onChange: setTypeFilter, options: [{ value: 'sso', label: 'สสอ./รพ.สต.' }, { value: 'rph', label: 'โรงพยาบาล' }, { value: 'both', label: 'ร่วมกัน' }] })),
+      React.createElement('div', { className: 'filter-row' }, React.createElement('span', { className: 'filter-label' }, 'ความเสี่ยง:'), React.createElement(FilterPills, { value: riskFilter, onChange: setRiskFilter, options: [{ value: 'critical', label: 'วิกฤต' }, { value: 'high', label: 'เสี่ยงสูง' }, { value: 'medium', label: 'เสี่ยง' }, { value: 'pass', label: 'ผ่าน' }] }))
+    ),
+    React.createElement('div', { className: 'card' },
+      saveMsg && React.createElement('div', { style: { display:'flex', alignItems:'center', gap:8, padding:'8px 16px', background:'#ECFDF5', borderRadius:8, marginBottom:12, color:'#065F46', fontWeight:600, fontSize:'var(--text-sm)' } }, React.createElement(Icon, { path:'M5 13l4 4L19 7', size:14, color:'#059669' }), saveMsg),
+      filtered.length === 0
+        ? React.createElement(EmptyState, { title: 'ไม่พบตัวชี้วัดที่ตรงกับเงื่อนไข', sub: 'ลองเปลี่ยนเงื่อนไขการค้นหา' })
+        : React.createElement('div', { className: 'table-wrap' },
+            React.createElement('table', { className: 'data-table' },
+              React.createElement('thead', null, React.createElement('tr', null,
+                React.createElement('th', { style: { width: 50 } }, 'ลำดับ'), React.createElement('th', null, 'ตัวชี้วัด'), React.createElement('th', { style: { width: 90 } }, 'หน่วยงาน'),
+                React.createElement('th', { style: { width: 110, textAlign: 'right' } }, 'ผลงาน'), React.createElement('th', { style: { width: 120 } }, 'เป้าหมาย'),
+                React.createElement('th', { style: { width: 90 } }, 'สถานะ'), React.createElement('th', { style: { width: 80 } }, 'ความเสี่ยง'),
+                React.createElement('th', { style: { width: 90 } }, 'แนวโน้ม'), React.createElement('th', { style: { width: 36 } }, '')
+              )),
+              React.createElement('tbody', null,
+                filtered.map(k => {
+                  const trend = D3.trends[k.id], isEditing = editingId === k.id;
+                  if (isEditing) {
+                    return React.createElement('tr', { key: k.id, style: { background: '#F0F9F3' } },
+                      React.createElement('td', { className: 'td-num' }, k.num),
+                      React.createElement('td', { className: 'td-name', colSpan: 2 }, React.createElement('span', { style: { fontSize:'var(--text-xs)', color:'var(--color-herb-700)', fontWeight:600 } }, k.name.length > 55 ? k.name.substring(0, 55) + '…' : k.name)),
+                      React.createElement('td', { style: { textAlign:'right' } }, React.createElement('input', { type: 'number', step: '0.01', min: '0', max: '100', value: editResult, onChange: e => setEditResult(e.target.value), onClick: e => e.stopPropagation(), style: { width: 80, padding: '4px 8px', border: '1.5px solid var(--color-herb-400)', borderRadius: 6, fontSize: 'var(--text-sm)', fontWeight: 700, textAlign: 'right', outline: 'none', background: '#fff' }, autoFocus: true })),
+                      React.createElement('td', { className: 'td-target' }, k.target ? (k.target.length > 15 ? k.target.substring(0, 15) + '...' : k.target) : '-'),
+                      React.createElement('td', null, React.createElement('select', { value: editPassfail, onChange: e => setEditPassfail(e.target.value), onClick: e => e.stopPropagation(), style: { padding: '4px 8px', border: '1.5px solid var(--color-herb-400)', borderRadius: 6, fontSize: 'var(--text-sm)', fontWeight: 600, outline: 'none', background: '#fff', cursor: 'pointer', color: editPassfail === 'ผ่าน' ? '#065F46' : '#991B1B' } }, React.createElement('option', { value: 'ผ่าน' }, 'ผ่าน'), React.createElement('option', { value: 'ไม่ผ่าน' }, 'ไม่ผ่าน'), React.createElement('option', { value: '' }, 'ไม่มีข้อมูล'))),
+                      React.createElement('td', null),
+                      React.createElement('td', null, React.createElement('div', { style: { display:'flex', gap:4 } },
+                        React.createElement('button', { title: 'บันทึก', onClick: e => saveEdit(e, k.id), style: { width:28, height:28, borderRadius:6, border:'none', background:'var(--color-herb-600)', color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' } }, React.createElement(Icon, { path:'M5 13l4 4L19 7', size:13, color:'#fff' })),
+                        React.createElement('button', { title: 'ยกเลิก', onClick: cancelEdit, style: { width:28, height:28, borderRadius:6, border:'1px solid var(--color-border-default)', background:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--color-text-muted)' } }, React.createElement(Icon, { path:'M6 18L18 6M6 6l12 12', size:13 }))
+                      ))
+                    );
+                  }
+                  return React.createElement('tr', { key: k.id, className: 'clickable-row', onClick: () => setSelectedKPI(k) },
+                    React.createElement('td', { className: 'td-num' }, k.num),
+                    React.createElement('td', { className: 'td-name' }, k.name.length > 50 ? k.name.substring(0, 50) + '...' : k.name),
+                    React.createElement('td', null, React.createElement(TypeBadge, { type: k.type })),
+                    React.createElement('td', { className: 'td-result', style: { color: k.passfail === 'ผ่าน' ? '#065F46' : k.passfail.indexOf('ไม่ผ่าน') >= 0 ? '#991B1B' : 'inherit' } }, typeof k.result === 'number' ? k.result.toFixed(1) : '-'),
+                    React.createElement('td', { className: 'td-target' }, k.target ? (k.target.length > 15 ? k.target.substring(0, 15) + '...' : k.target) : '-'),
+                    React.createElement('td', null, React.createElement(KPIBadge, { passfail: k.passfail })),
+                    React.createElement('td', null, React.createElement(RiskBadge, { risk: k.risk })),
+                    React.createElement('td', null, trend ? React.createElement(Sparkline, { data: trend, color: k.passfail === 'ผ่าน' ? '#10B981' : '#EF4444', width: 80, height: 24 }) : '-'),
+                    React.createElement('td', { onClick: e => e.stopPropagation() }, React.createElement('button', { title: 'แก้ไขค่า', onClick: e => startEdit(e, k), style: { width:28, height:28, borderRadius:6, border:'1px solid var(--color-border-default)', background:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--color-text-muted)', transition:'all 0.15s' } }, React.createElement(Icon, { path:'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z', size:13 })))
+                  );
+                })
+              )
+            )
+          )
+    )
+  );
+}
+Object.assign(window, { ExplorerPage });
+</script>
+<script type="text/babel">
+/* KPI HUNTER — Unit Performance Page */
+function UnitPerformancePage() {
+  const D4 = window.KPIHUNTER;
+  const [selectedUnit, setSelectedUnit] = useState(null);
+  const rankings = useMemo(() => D4.getUnitRankings(), []);
+  const heatmapKPIs = useMemo(() => D4.kpis.filter(k => D4.unitPerformance[k.id]).slice(0, 20), []);
+
+  if (selectedUnit) {
+    const unit = D4.units.find(u => u.id === selectedUnit);
+    const rank = rankings.find(r => r.unit.id === selectedUnit);
+    const unitKPIs = [];
+    Object.keys(D4.unitPerformance).forEach(kpiId => {
+      const kpi = D4.kpis.find(k => k.id === kpiId);
+      const ud = D4.unitPerformance[kpiId].find(d => d.unitId === selectedUnit);
+      if (kpi && ud) unitKPIs.push({ ...kpi, unitValue: ud.value, unitPassed: ud.passed });
+    });
+    unitKPIs.sort((a, b) => a.unitValue - b.unitValue);
+    return React.createElement('div', { className: 'page-content' },
+      React.createElement('button', { className: 'back-btn', onClick: () => setSelectedUnit(null) }, '← กลับไปอันดับหน่วยบริการ'),
+      React.createElement('div', { className: 'card' },
+        React.createElement('div', { className: 'unit-detail-header' },
+          React.createElement('div', null, React.createElement('h2', { className: 'section-title' }, unit.name), React.createElement('div', { style: { color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' } }, 'รหัส: ' + unit.code)),
+          React.createElement('div', { className: 'unit-detail-stats' },
+            React.createElement('div', { className: 'uds-item' }, React.createElement('div', { className: 'uds-value green' }, rank.passedKPIs), React.createElement('div', { className: 'uds-label' }, 'ผ่าน')),
+            React.createElement('div', { className: 'uds-item' }, React.createElement('div', { className: 'uds-value red' }, rank.failedKPIs), React.createElement('div', { className: 'uds-label' }, 'ไม่ผ่าน')),
+            React.createElement('div', { className: 'uds-item' }, React.createElement('div', { className: 'uds-value' }, rank.avgScore.toFixed(1) + '%'), React.createElement('div', { className: 'uds-label' }, 'คะแนนเฉลี่ย'))
+          )
+        )
+      ),
+      React.createElement('div', { className: 'grid-2' },
+        React.createElement('div', { className: 'card' },
+          React.createElement(SectionHeader, { title: 'KPI ที่ต้องเร่งรัด', sub: 'ผลงานต่ำสุดของหน่วยนี้' }),
+          React.createElement('div', { className: 'table-wrap' },
+            React.createElement('table', { className: 'data-table compact' },
+              React.createElement('thead', null, React.createElement('tr', null, React.createElement('th', null, 'ตัวชี้วัด'), React.createElement('th', { style: { textAlign: 'right', width: 80 } }, 'ผลงาน'), React.createElement('th', { style: { width: 70 } }, 'สถานะ'))),
+              React.createElement('tbody', null, unitKPIs.filter(k => !k.unitPassed).slice(0, 10).map(k =>
+                React.createElement('tr', { key: k.id }, React.createElement('td', { className: 'td-name' }, k.name.length > 40 ? k.name.substring(0, 40) + '...' : k.name), React.createElement('td', { className: 'td-result red' }, k.unitValue.toFixed(1) + '%'), React.createElement('td', null, React.createElement('span', { className: 'badge badge-fail' }, '✗')))
+              ))
+            )
+          )
+        ),
+        React.createElement('div', { className: 'card' },
+          React.createElement(SectionHeader, { title: 'KPI ที่ผ่านเกณฑ์', sub: 'ผลงานที่ดีของหน่วยนี้' }),
+          React.createElement('div', { className: 'table-wrap' },
+            React.createElement('table', { className: 'data-table compact' },
+              React.createElement('thead', null, React.createElement('tr', null, React.createElement('th', null, 'ตัวชี้วัด'), React.createElement('th', { style: { textAlign: 'right', width: 80 } }, 'ผลงาน'), React.createElement('th', { style: { width: 70 } }, 'สถานะ'))),
+              React.createElement('tbody', null, unitKPIs.filter(k => k.unitPassed).sort((a, b) => b.unitValue - a.unitValue).slice(0, 10).map(k =>
+                React.createElement('tr', { key: k.id }, React.createElement('td', { className: 'td-name' }, k.name.length > 40 ? k.name.substring(0, 40) + '...' : k.name), React.createElement('td', { className: 'td-result green' }, k.unitValue.toFixed(1) + '%'), React.createElement('td', null, React.createElement('span', { className: 'badge badge-pass' }, '✓')))
+              ))
+            )
+          )
+        )
+      ),
+      React.createElement('div', { className: 'card' },
+        React.createElement(SectionHeader, { title: 'ผลงานทุกตัวชี้วัด' }),
+        React.createElement(HBarChart, { items: unitKPIs.sort((a, b) => b.unitValue - a.unitValue).map(k => ({ label: k.name.length > 30 ? k.name.substring(0, 30) + '...' : k.name, value: k.unitValue, target: k.targetNum || 80 })), maxVal: 100 })
+      )
+    );
+  }
+
+  return React.createElement('div', { className: 'page-content' },
+    React.createElement(SectionHeader, { title: 'ผลงานรายหน่วยบริการ', sub: 'อำเภอเขาค้อ — ' + D4.units.length + ' หน่วย' }),
+    React.createElement('div', { className: 'unit-ranking-grid' },
+      D4.units.map((unit, i) => {
+        const r = rankings.find(x => x.unit.id === unit.id);
+        if (!r) return null;
+        const scoreColor = r.avgScore >= 80 ? '#065F46' : r.avgScore >= 60 ? '#92400E' : '#991B1B';
+        return React.createElement('div', { key: unit.id, className: 'unit-rank-card', onClick: () => setSelectedUnit(unit.id) },
+          React.createElement('div', { className: 'urc-rank' }, React.createElement('span', { className: 'urc-rank-num', style:{fontSize:11} }, '#' + (i + 1))),
+          React.createElement('div', { className: 'urc-body' },
+            React.createElement('div', { className: 'urc-name' }, unit.short),
+            React.createElement('div', { className: 'urc-score', style: { color: scoreColor } }, r.avgScore.toFixed(1) + '%'),
+            React.createElement('div', { className: 'urc-meta' }, React.createElement('span', { className: 'green' }, '✓ ' + r.passedKPIs), React.createElement('span', { className: 'red' }, '✗ ' + r.failedKPIs)),
+            React.createElement(ProgressBar, { value: parseFloat(r.passRate), target: 100 })
+          )
+        );
+      })
+    ),
+    React.createElement('div', { className: 'card' },
+      React.createElement(SectionHeader, { title: 'Heatmap: KPI × หน่วยบริการ', sub: 'สีเข้ม = ผลงานสูง | สีอ่อน = ผลงานต่ำ | คอลัมน์สุดท้าย = รวมอำเภอ' }),
+      React.createElement('div', { className: 'heatmap-wrap' },
+        React.createElement('table', { className: 'heatmap-table' },
+          React.createElement('thead', null, React.createElement('tr', null,
+            React.createElement('th', { className: 'hm-kpi-col' }, 'ตัวชี้วัด'),
+            D4.units.map(u => React.createElement('th', { key: u.id, className: 'hm-unit-col' }, u.short)),
+            React.createElement('th', { className: 'hm-unit-col hm-total-col' }, 'รวม %'),
+            React.createElement('th', { className: 'hm-unit-col hm-total-col' }, 'ผล')
+          )),
+          React.createElement('tbody', null,
+            heatmapKPIs.map(kpi => {
+              const data = D4.unitPerformance[kpi.id] || [];
+              const actualResult = typeof kpi.result === 'number' ? kpi.result : null;
+              const allVals = data.map(d => d.value).filter(v => v != null);
+              const avgAll = allVals.length > 0 ? allVals.reduce((s,v) => s+v, 0) / allVals.length : null;
+              const displayTotal = actualResult !== null ? actualResult : avgAll;
+              const totalPassed = kpi.passfail === 'ผ่าน';
+              const totalBg = displayTotal !== null ? (totalPassed ? 'rgba(16,185,129,0.18)' : 'rgba(239,68,68,0.15)') : 'var(--color-neutral-50)';
+              return React.createElement('tr', { key: kpi.id },
+                React.createElement('td', { className: 'hm-kpi-name' }, kpi.name.length > 35 ? kpi.name.substring(0, 35) + '...' : kpi.name),
+                D4.units.map(u => {
+                  const ud = data.find(d => d.unitId === u.id);
+                  if (!ud) return React.createElement('td', { key: u.id, className: 'hm-cell' }, '—');
+                  const intensity = Math.min(1, ud.value / 100);
+                  const bg = ud.passed ? 'rgba(16, 185, 129, ' + (0.12 + intensity * 0.55) + ')' : 'rgba(239, 68, 68, ' + (0.12 + (1 - intensity) * 0.55) + ')';
+                  return React.createElement('td', { key: u.id, className: 'hm-cell', style: { background: bg } }, React.createElement('span', { className: 'hm-val' }, ud.value.toFixed(0)));
+                }),
+                React.createElement('td', { className: 'hm-cell hm-total-cell', style: { background: totalBg } }, React.createElement('span', { className: 'hm-val hm-total-val' }, displayTotal !== null ? displayTotal.toFixed(1) : '—')),
+                React.createElement('td', { className: 'hm-cell hm-status-cell' },
+                  kpi.passfail === 'ผ่าน' ? React.createElement('span', { className: 'hm-pass' }, '✓') : kpi.passfail.indexOf('ไม่ผ่าน') >= 0 ? React.createElement('span', { className: 'hm-fail' }, '✗') : React.createElement('span', { style:{color:'#9CA3AF'} }, '—')
+                )
+              );
+            })
+          )
+        )
+      )
+    )
+  );
+}
+Object.assign(window, { UnitPerformancePage });
+</script>
+<script type="text/babel">
+/* KPI HUNTER — AI Insight Center */
+var AI_ICONS = { summary: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', risk: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z', root: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z', action: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' };
+function AIInsightPage() {
+  const D5 = window.KPIHUNTER;
+  const summary = useMemo(() => D5.getSummary(), []);
+  const failed = useMemo(() => D5.kpis.filter(k => k.passfail.indexOf('ไม่ผ่าน') >= 0).sort((a, b) => a.result - b.result), []);
+  const critical = useMemo(() => D5.kpis.filter(k => k.risk === 'critical' || k.risk === 'high'), []);
+  const unitRank = useMemo(() => D5.getUnitRankings(), []);
+  const worstUnits = useMemo(() => unitRank.slice().sort((a, b) => a.avgScore - b.avgScore).slice(0, 3), []);
+  const [activePanel, setActivePanel] = useState('summary');
+
+  function InsightCard({ id, iconPath, title, accentColor, children }) {
+    const isActive = activePanel === id;
+    return React.createElement('div', { className: 'insight-card' + (isActive ? ' active' : ''), style: { borderLeftColor: accentColor || 'var(--color-herb-600)' } },
+      React.createElement('div', { className: 'insight-header', onClick: () => setActivePanel(isActive ? '' : id) },
+        React.createElement('div', { className: 'insight-icon', style: { color: accentColor || 'var(--color-herb-600)' } }, React.createElement(Icon, { path: iconPath, size: 20 })),
+        React.createElement('span', { className: 'insight-title' }, title),
+        React.createElement('span', { className: 'insight-toggle' }, React.createElement(Icon, { path: isActive ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7', size: 14 }))
+      ),
+      isActive && React.createElement('div', { className: 'insight-body' }, children)
+    );
+  }
+
+  const execSummaryText = [
+    `จากการประเมินตัวชี้วัด ${summary.total} ตัว ของอำเภอเขาค้อ ปีงบประมาณ 2569 (ข้อมูล ณ เดือนมีนาคม) พบว่า ผ่านเกณฑ์ ${summary.passed} ตัว คิดเป็นอัตราผ่าน ${summary.passRate}% และไม่ผ่านเกณฑ์ ${summary.failed} ตัว`,
+    `ตัวชี้วัดที่ผลงานต่ำที่สุด ได้แก่ ${failed.slice(0, 3).map(k => '"' + k.name.substring(0, 38) + '"').join(', ')}`,
+    `หน่วยบริการที่ต้องเร่งรัดมากที่สุด ได้แก่ ${worstUnits.map(u => u.unit.short + ' (คะแนนเฉลี่ย ' + u.avgScore.toFixed(1) + '%)').join(', ')}`
+  ];
+  const actionItems = failed.slice(0, 8).map(k => {
+    let action = k.result === 0 ? 'ตรวจสอบการบันทึกข้อมูลในระบบ HDC และประสานหน่วยบริการที่เกี่ยวข้อง' : k.targetNum && k.result < k.targetNum * 0.3 ? 'จัดประชุมเร่งรัดเฉพาะเรื่อง กำหนดแผนปฏิบัติการระยะ 30 วัน' : k.targetNum && k.result < k.targetNum * 0.7 ? 'ติดตามผลรายสัปดาห์ ให้หน่วยบริการรายงานความก้าวหน้า' : 'เพิ่มความเข้มข้นดำเนินงาน ติดตามผลรายเดือน';
+    return { kpi: k.name, num: k.num, result: k.result, target: k.target, action };
+  });
+
+  const quickQuestions = [{ id: 'summary', iconPath: AI_ICONS.summary, text: 'สรุปภาพรวม' }, { id: 'risk', iconPath: AI_ICONS.risk, text: 'KPI ที่เสี่ยง' }, { id: 'root', iconPath: AI_ICONS.root, text: 'หน่วยน่ากังวล' }, { id: 'action', iconPath: AI_ICONS.action, text: 'Action Plan' }];
+
+  return React.createElement('div', { className: 'page-content' },
+    React.createElement(SectionHeader, { title: 'AI Insight Center', sub: 'วิเคราะห์อัตโนมัติจากข้อมูล KPI อำเภอเขาค้อ' }),
+    React.createElement('div', { className: 'ai-disclaimer' }, React.createElement(Icon, { path: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', size: 16 }), React.createElement('span', null, 'ผลวิเคราะห์จาก AI เป็นข้อเสนอเบื้องต้น ', React.createElement('strong', null, 'ควรตรวจสอบกับข้อมูลจริงและบริบทพื้นที่ก่อนนำไปใช้'))),
+    React.createElement('div', { className: 'quick-questions' }, quickQuestions.map(q => React.createElement('button', { key: q.id, className: 'qq-btn' + (activePanel === q.id ? ' active' : ''), onClick: () => setActivePanel(q.id) }, React.createElement(Icon, { path: q.iconPath, size: 15 }), q.text))),
+    React.createElement(InsightCard, { id: 'summary', iconPath: AI_ICONS.summary, title: 'Executive Summary — สรุปภาพรวมผลงาน', accentColor: '#2D6A4F' },
+      React.createElement('div', { className: 'insight-text' }, execSummaryText.map((t, i) => React.createElement('p', { key: i }, t))),
+      React.createElement('div', { className: 'insight-stats' },
+        React.createElement('div', { className: 'is-item green' }, React.createElement('div', { className: 'is-num' }, summary.passed), React.createElement('div', { className: 'is-label' }, 'ผ่านเกณฑ์')),
+        React.createElement('div', { className: 'is-item red' }, React.createElement('div', { className: 'is-num' }, summary.failed), React.createElement('div', { className: 'is-label' }, 'ไม่ผ่านเกณฑ์')),
+        React.createElement('div', { className: 'is-item amber' }, React.createElement('div', { className: 'is-num' }, summary.critical + summary.highRisk), React.createElement('div', { className: 'is-label' }, 'เสี่ยงสูง')),
+        React.createElement('div', { className: 'is-item blue' }, React.createElement('div', { className: 'is-num' }, summary.passRate + '%'), React.createElement('div', { className: 'is-label' }, 'อัตราผ่าน'))
+      )
+    ),
+    React.createElement(InsightCard, { id: 'risk', iconPath: AI_ICONS.risk, title: 'Risk Alert — ตัวชี้วัดที่มีความเสี่ยงสูง', accentColor: '#DC2626' },
+      critical.length === 0 ? React.createElement('p', { className: 'insight-text' }, 'ไม่พบตัวชี้วัดที่มีความเสี่ยงสูง') :
+      React.createElement('div', { className: 'risk-list' }, critical.slice(0, 8).map((k, i) =>
+        React.createElement('div', { key: i, className: 'risk-item' },
+          React.createElement('div', { className: 'risk-item-header' }, React.createElement(RiskBadge, { risk: k.risk }), React.createElement('span', { className: 'risk-item-name' }, k.name.length > 55 ? k.name.substring(0, 55) + '…' : k.name)),
+          React.createElement('div', { className: 'risk-item-detail' }, 'ผลงาน: ', React.createElement('strong', { style:{color:'#DC2626'} }, typeof k.result === 'number' ? k.result.toFixed(1) + '%' : '—'), ' · เป้าหมาย: ' + (k.target || '—')),
+          React.createElement('div', { className: 'risk-item-reason' }, k.result === 0 ? 'ยังไม่มีผลงาน หรือข้อมูลยังไม่ได้บันทึกในระบบ' : k.targetNum && k.result < k.targetNum * 0.5 ? 'ผลงานต่ำกว่าเป้าหมายมากกว่า 50% — ต้องเร่งรัดเร่งด่วน' : 'ผลงานต่ำกว่าเป้าหมายอย่างมีนัยสำคัญ')
+        )
+      ))
+    ),
+    React.createElement(InsightCard, { id: 'root', iconPath: AI_ICONS.root, title: 'Root Cause Hypothesis — สาเหตุที่เป็นไปได้', accentColor: '#D97706' },
+      React.createElement('div', { className: 'insight-text' },
+        React.createElement('p', null, React.createElement('strong', null, 'หน่วยบริการที่ต้องติดตามเร่งด่วน:')),
+        React.createElement('ul', { className: 'insight-list' }, worstUnits.map((u, i) => React.createElement('li', { key: i }, React.createElement('strong', null, u.unit.name), ' — คะแนนเฉลี่ย ', u.avgScore.toFixed(1), '% · ไม่ผ่าน ', u.failedKPIs, ' ตัวชี้วัด'))),
+        React.createElement('p', null, React.createElement('strong', null, 'สาเหตุที่เป็นไปได้:')),
+        React.createElement('ul', { className: 'insight-list' },
+          React.createElement('li', null, 'การบันทึกข้อมูลใน HDC ไม่ครบถ้วน ทำให้ตัวเลขต่ำกว่าความเป็นจริง'),
+          React.createElement('li', null, 'ตัวชี้วัดบางตัวเพิ่งเริ่มดำเนินการ ผลงานยังสะสมไม่มาก เช่น Smart Hospital, Telemedicine'),
+          React.createElement('li', null, 'หน่วยบริการในพื้นที่ห่างไกลมีข้อจำกัดด้านบุคลากรและอุปกรณ์'),
+          React.createElement('li', null, 'ตัวชี้วัดที่ต้องอาศัยความร่วมมือหลายหน่วยงาน เช่น D-RTI, ไซเบอร์')
+        )
+      )
+    ),
+    React.createElement(InsightCard, { id: 'action', iconPath: AI_ICONS.action, title: 'Recommended Action Plan — แผนปฏิบัติการแนะนำ', accentColor: '#2563EB' },
+      React.createElement('div', { className: 'action-list' }, actionItems.map((a, i) =>
+        React.createElement('div', { key: i, className: 'action-item' },
+          React.createElement('div', { className: 'action-num' }, i + 1),
+          React.createElement('div', { className: 'action-body' },
+            React.createElement('div', { className: 'action-kpi' }, a.num + '. ' + (a.kpi.length > 58 ? a.kpi.substring(0, 58) + '…' : a.kpi)),
+            React.createElement('div', { className: 'action-detail' }, 'ผลงาน: ', React.createElement('strong', { style:{color:'#DC2626'} }, typeof a.result === 'number' ? a.result.toFixed(1) + '%' : '—'), ' · เป้าหมาย: ' + (a.target || '—')),
+            React.createElement('div', { className: 'action-plan' }, a.action)
+          )
+        )
+      )),
+      React.createElement('div', { className: 'meeting-summary' },
+        React.createElement('h4', null, 'ข้อความสรุปสำหรับรายงานประชุม'),
+        React.createElement('div', { className: 'meeting-text' }, `ผลการประเมิน KPI อำเภอเขาค้อ ปีงบประมาณ 2569 (ณ เดือน มี.ค.) จากตัวชี้วัดทั้งหมด ${summary.total} ตัว ประเมินแล้ว ${summary.evaluated} ตัว ผ่านเกณฑ์ ${summary.passed} ตัว (${summary.passRate}%) ไม่ผ่านเกณฑ์ ${summary.failed} ตัว พบตัวชี้วัดเสี่ยงสูง ${summary.critical + summary.highRisk} ตัว ควรเร่งรัดดำเนินการ`),
+        React.createElement('button', { className: 'copy-btn', onClick: () => { const txt = `ผลการประเมิน KPI อำเภอเขาค้อ ปีงบ 2569 (มี.ค.)\nผ่าน ${summary.passed}/${summary.evaluated} ตัว (${summary.passRate}%)\nไม่ผ่าน ${summary.failed} ตัว · เสี่ยงสูง ${summary.critical + summary.highRisk} ตัว`; navigator.clipboard.writeText(txt).catch(() => {}); } }, 'คัดลอกข้อความ')
+      )
+    )
+  );
+}
+Object.assign(window, { AIInsightPage });
+</script>
+<script type="text/babel">
+/* KPI HUNTER — Upload Page (รองรับ HDC .txt และ Excel .xlsx) */
+function UploadPage({ onComplete }) {
+  const [dragOver, setDragOver] = useState(false);
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [parsedRows, setParsedRows] = useState([]);
+  const [quality, setQuality] = useState(null);
+  const [step, setStep] = useState('upload'); // upload | kpi-select | preview | done
+  const [loading, setLoading] = useState(false);
+  const [parseError, setParseError] = useState('');
+  const [doneStats, setDoneStats] = useState(null);
+  const [selectedKPI, setSelectedKPI] = useState('');
+  const D = window.KPIHUNTER;
+  const meta = D.getUploadMeta();
+
+  function detectCols(headers) {
+    var numCol = headers.find(h => /ลำดับ/.test(h));
+    var nameCol = headers.find(h => /ตัวชี้วัด/.test(h));
+    var tgtCol = headers.find(h => /เป้าหมาย/.test(h));
+    var resCol = headers.find(h => (/เขาค้อ/.test(h) || /ผลงาน/.test(h)) && !/ประเมิน/.test(h));
+    var pfCol = headers.find(h => /ประเมิน/.test(h) || /สถานะ/.test(h));
+    return { numCol, nameCol, tgtCol, resCol, pfCol };
+  }
+
+  /* ── ตรวจว่าไฟล์เป็น HDC format (มี a_name,target,result) ── */
+  function isHDCFormat(headers) {
+    return headers.indexOf('a_name') >= 0 && headers.indexOf('result') >= 0;
+  }
+
+  function handleFile(f) {
+    if (!f) return;
+    var isTxt  = /\.(csv|txt)$/i.test(f.name);
+    var isExcel = /\.(xlsx|xls)$/i.test(f.name);
+    if (!isTxt && !isExcel) {
+      setParseError('รองรับไฟล์ .txt/.csv (HDC Export) และ .xlsx/.xls (Excel สสจ.)');
+      return;
+    }
+    setFile(f); setParseError(''); setLoading(true);
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        if (isTxt) {
+          handleHDCFile(f, e.target.result);
+        } else {
+          handleExcelFile(f, e.target.result);
+        }
+      } catch(err) {
+        setParseError('อ่านไฟล์ไม่สำเร็จ: ' + err.message);
+        setStep('upload');
+        setLoading(false);
+      }
+    };
+    reader.onerror = function() { setParseError('ไม่สามารถเปิดไฟล์ได้'); setLoading(false); };
+    if (isTxt) { reader.readAsText(f, 'UTF-8'); }
+    else { reader.readAsArrayBuffer(f); }
+  }
+
+  /* ── อ่านไฟล์ HDC .txt/.csv ── */
+  function handleHDCFile(f, csvText) {
+    var CSV = window.KPIHUNTER_CSV;
+    var parsed = CSV.parseCSV(csvText, ',');
+
+    if (!isHDCFormat(parsed.headers)) {
+      throw new Error('ไฟล์นี้ไม่ใช่ HDC Export (ไม่พบคอลัมน์ a_name, result)');
+    }
+
+    var validation = CSV.validateHDCFormat(parsed.headers, parsed.rows);
+    if (!validation.valid) throw new Error(validation.errors.join(', '));
+
+    var csvUnits = parsed.rows
+      .filter(function(r) { return r['a_name'] && r['a_name'] !== ''; })
+      .map(function(row) { return CSV.extractUnitRow(row, parsed.headers); });
+
+    var mapping = CSV.createUnitMapping(csvUnits, D.units);
+
+    setParsedRows({ sourceType:'csv', csvUnits:csvUnits, matched:mapping.matched, unmatched:mapping.unmatched });
+    setPreview({
+      fileName: f.name, fileSize: (f.size/1024).toFixed(1)+' KB',
+      sourceType:'csv', rows:csvUnits.length,
+      matched:mapping.matched.length, unmatched:mapping.unmatched.length,
+      warnings: validation.warnings
+    });
+    setQuality({
+      completeness: csvUnits.length > 0 ? ((mapping.matched.length/csvUnits.length)*100).toFixed(1) : 0,
+      empty:0, anomalies:0,
+      score: mapping.unmatched.length === 0 ? 'ดีมาก' : mapping.unmatched.length <= 2 ? 'ดี' : 'พอใช้'
+    });
+    setStep('kpi-select');
+    setLoading(false);
+  }
+
+  /* ── อ่านไฟล์ Excel ── */
+  function handleExcelFile(f, arrayBuffer) {
+    const data = new Uint8Array(arrayBuffer), wb = XLSX.read(data, { type:'array' });
+    const sheetName = wb.SheetNames.find(n => /ประเมิน|KPI/i.test(n)) || wb.SheetNames[0];
+    const ws = wb.Sheets[sheetName], rows = XLSX.utils.sheet_to_json(ws, { defval:'' });
+    if (!rows.length) throw new Error('ไม่พบข้อมูลในชีท');
+    const headers = Object.keys(rows[0]), cols = detectCols(headers);
+    if (!cols.numCol) throw new Error('ไม่พบคอลัมน์ "ลำดับ" ในไฟล์');
+    var parsed = [], empty = 0, anomaly = 0;
+    rows.forEach(function(row) {
+      var num = String(row[cols.numCol]||'').trim();
+      if (!num || num==='ลำดับ') return;
+      var result   = cols.resCol  ? String(row[cols.resCol]||'').trim()  : '';
+      var passfail = cols.pfCol   ? String(row[cols.pfCol]||'').trim()   : '';
+      var name     = cols.nameCol ? String(row[cols.nameCol]||'').trim() : '';
+      var target   = cols.tgtCol  ? String(row[cols.tgtCol]||'').trim()  : '';
+      if (result==='') empty++;
+      var numVal = parseFloat(result);
+      if (!isNaN(numVal) && (numVal < 0 || numVal > 100)) anomaly++;
+      parsed.push({ num, name, target, result, passfail });
+    });
+    var withData = parsed.filter(r => r.result!==''), passed = parsed.filter(r => r.passfail==='ผ่าน');
+    var comp = parsed.length > 0 ? ((withData.length/parsed.length)*100).toFixed(1) : 0;
+    setParsedRows(parsed);
+    setPreview({ fileName:f.name, fileSize:(f.size/1024).toFixed(1)+' KB', sourceType:'excel', sheetName, sheets:wb.SheetNames, rows:parsed.length, columns:headers.slice(0,8), colResult:cols.resCol||'(ไม่พบ)', colPassfail:cols.pfCol||'(ไม่พบ)', sampleData:parsed.slice(0,5).map(r=>({num:r.num,name:r.name,target:r.target,result:r.result,status:r.passfail})), withData:withData.length, passed:passed.length });
+    setQuality({ completeness:parseFloat(comp), empty, anomalies:anomaly, score:comp>=90?'ดีมาก':comp>=75?'ดี':comp>=50?'พอใช้':'ต่ำ' });
+    setStep('preview');
+    setLoading(false);
+  }
+
+  function handleDrop(e) { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }
+
+  function confirmImport() {
+    if (preview && preview.sourceType === 'csv') {
+      var CSV = window.KPIHUNTER_CSV;
+      var unitMapping = CSV.csvToUnitQuarterlyMapping(parsedRows.matched);
+      if (selectedKPI) {
+        D.applyCSVUnitData(selectedKPI, unitMapping);
+        D.saveResults();
+      }
+      D.importCSVQuarterlyData(unitMapping, { fileName:file?file.name:'', uploadDate:new Date().toLocaleString('th-TH'), sourceType:'csv', kpiId:selectedKPI, unitsMatched:parsedRows.matched.length, unitsUnmatched:parsedRows.unmatched.length });
+      window.dispatchEvent(new CustomEvent('kpihunter-data-changed'));
+      setDoneStats({ total:parsedRows.matched.length, matched:parsedRows.matched.length, unmatched:parsedRows.unmatched.length, isCSV:true });
+    } else {
+      D.applyBulkResults(parsedRows, { fileName:file?file.name:'', uploadDate:new Date().toLocaleString('th-TH'), rows:parsedRows.length });
+      var passed = D.kpis.filter(k => k.passfail==='ผ่าน');
+      setDoneStats({ total:parsedRows.length, withData:preview.withData, passed:passed.length, isCSV:false });
+    }
+    setStep('done');
+  }
+
+  if (step === 'done') return React.createElement('div', { className:'page-content' },
+    React.createElement('div', { className:'upload-success' },
+      React.createElement('div', { className:'upload-success-check' }, React.createElement('svg', { width:32, height:32, viewBox:'0 0 24 24', fill:'none', stroke:'#10B981', strokeWidth:2.5, strokeLinecap:'round' }, React.createElement('path', { d:'M20 6L9 17l-5-5' }))),
+      React.createElement('h2', null, 'นำเข้าข้อมูลสำเร็จ'),
+      React.createElement('p', null, 'ไฟล์ ' + (file ? file.name : '') + ' ถูกประมวลผลและบันทึกแล้ว'),
+      doneStats && React.createElement('div', { className:'upload-success-stats' },
+        doneStats.isCSV ? [
+          React.createElement('div', { key:'m' }, React.createElement('strong', null, doneStats.matched), ' หน่วยจับคู่สำเร็จ'),
+          doneStats.unmatched > 0 && React.createElement('div', { key:'u' }, React.createElement('strong', null, doneStats.unmatched), ' หน่วยไม่พบคู่')
+        ] : [
+          React.createElement('div', { key:'t' }, React.createElement('strong', null, doneStats.total), ' ตัวชี้วัด'),
+          React.createElement('div', { key:'w' }, React.createElement('strong', null, doneStats.withData), ' มีข้อมูล'),
+          React.createElement('div', { key:'p' }, React.createElement('strong', null, doneStats.passed), ' ผ่านเกณฑ์')
+        ]
+      ),
+      React.createElement('div', { style:{display:'flex', gap:12, justifyContent:'center'} },
+        React.createElement('button', { className:'btn-secondary', onClick: () => { setStep('upload'); setFile(null); setPreview(null); setParsedRows([]); setSelectedKPI(''); } }, 'อัปโหลดไฟล์ใหม่'),
+        React.createElement('button', { className:'btn-primary', onClick: () => onComplete && onComplete('dashboard') }, 'ไปหน้า Dashboard')
+      )
+    )
+  );
+
+  /* ── KPI Select step (สำหรับ HDC เท่านั้น) ── */
+  if (step === 'kpi-select' && preview) {
+    var allKPIs = D.kpis;
+    return React.createElement('div', { className:'page-content' },
+      React.createElement(SectionHeader, { title: 'เลือกตัวชี้วัดสำหรับไฟล์ HDC นี้', sub: file ? file.name : '' }),
+      React.createElement('div', { className:'card', style:{maxWidth:640} },
+        React.createElement('div', { style:{fontWeight:700, marginBottom:6} }, 'ไฟล์ HDC 1 ไฟล์ = 1 ตัวชี้วัด'),
+        React.createElement('div', { style:{fontSize:'var(--text-sm)', color:'var(--color-text-muted)', marginBottom:8} },
+          'พบข้อมูล ' + (preview.matched||0) + ' หน่วยบริการ · กรุณาระบุว่าไฟล์นี้คือตัวชี้วัดใด'
+        ),
+        preview.warnings && preview.warnings.length > 0 && React.createElement('div', { style:{padding:'8px 12px', background:'#FFFBEB', border:'1px solid #FDE68A', borderRadius:6, fontSize:'var(--text-xs)', color:'#92400E', marginBottom:12} },
+          '⚠ ' + preview.warnings.join(' | ')
+        ),
+        React.createElement('select', {
+          value: selectedKPI,
+          onChange: e => setSelectedKPI(e.target.value),
+          style: { width:'100%', padding:'10px 12px', borderRadius:8, border:'1px solid var(--color-border-default)', fontSize:'var(--text-sm)', marginBottom:16 }
+        },
+          React.createElement('option', { value:'' }, '-- เลือกตัวชี้วัด --'),
+          allKPIs.map(k => React.createElement('option', { key:k.id, value:k.id }, k.num + '. ' + k.name))
+        ),
+        React.createElement('div', { style:{display:'flex', gap:12} },
+          React.createElement('button', { className:'btn-secondary', onClick: () => { setStep('upload'); setFile(null); setPreview(null); setParsedRows([]); } }, 'ยกเลิก'),
+          React.createElement('button', { className:'btn-primary', disabled:!selectedKPI, onClick: () => { if(selectedKPI) setStep('preview'); } }, 'ถัดไป: ตรวจสอบข้อมูล')
+        )
+      )
+    );
+  }
+
+  if (step === 'preview' && preview) {
+    var isCSV = preview.sourceType === 'csv';
+    var selKPI = isCSV ? D.kpis.find(k => k.id === selectedKPI) : null;
+    return React.createElement('div', { className:'page-content' },
+      React.createElement(SectionHeader, { title: 'ตรวจสอบข้อมูลก่อนนำเข้า', sub: preview.fileName + (isCSV ? ' (HDC Export)' : ' · ชีท: ' + preview.sheetName) }),
+      isCSV && selKPI && React.createElement('div', { style:{padding:'10px 16px', background:'#EFF6FF', border:'1px solid #BFDBFE', borderRadius:8, marginBottom:12, fontSize:'var(--text-sm)', color:'#1E40AF', fontWeight:600} },
+        'ตัวชี้วัดที่เลือก: ' + selKPI.num + '. ' + selKPI.name
+      ),
+      React.createElement('div', { className:'grid-2' },
+        React.createElement('div', { className:'card' },
+          React.createElement('div', { style:{fontWeight:700, marginBottom:12} }, 'ข้อมูลไฟล์'),
+          React.createElement('div', { className:'file-info-grid' },
+            (isCSV ? [
+              ['ชื่อไฟล์', preview.fileName],
+              ['ขนาดไฟล์', preview.fileSize],
+              ['รูปแบบ', 'HDC Export (.txt)'],
+              ['หน่วยบริการในไฟล์', preview.rows + ' แห่ง'],
+              ['จับคู่สำเร็จ', preview.matched + ' แห่ง'],
+              ['ไม่พบคู่', preview.unmatched + ' แห่ง'],
+            ] : [
+              ['ชื่อไฟล์', preview.fileName],
+              ['ขนาดไฟล์', preview.fileSize],
+              ['ชีทที่ใช้', preview.sheetName],
+              ['จำนวนชีท', preview.sheets.length + ' ชีท'],
+              ['รายการ KPI พบ', preview.rows + ' รายการ'],
+              ['มีข้อมูลผลงาน', preview.withData + ' รายการ'],
+              ['ผ่านเกณฑ์', preview.passed + ' รายการ'],
+              ['คอลัมน์ผลงาน', preview.colResult],
+              ['คอลัมน์ประเมิน', preview.colPassfail],
+            ]).map(([k,v]) => React.createElement('div', { key:k, className:'fi-row' }, React.createElement('span', null, k), React.createElement('span', null, v)))
+          )
+        ),
+        React.createElement('div', { className:'card' },
+          React.createElement('div', { style:{fontWeight:700, marginBottom:12} }, 'Data Quality Score'),
+          React.createElement('div', { style:{display:'flex', alignItems:'center', gap:'var(--space-6)', padding:'var(--space-2) 0'} },
+            React.createElement('div', { style:{position:'relative', flexShrink:0} },
+              React.createElement(MiniDonut, { value:quality.completeness, max:100, color:'#10B981', size:88 }),
+              React.createElement('div', { style:{position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center'} }, React.createElement('div', { style:{fontSize:'var(--text-xl)', fontWeight:800, color:'#059669', lineHeight:1} }, quality.completeness + '%'), React.createElement('div', { style:{fontSize:'9px', color:'var(--color-text-muted)'} }, 'ครบถ้วน'))
+            ),
+            React.createElement('div', null,
+              React.createElement('div', { className:'dq-row' }, React.createElement('span', { className:'dq-dot green' }), 'ข้อมูลครบถ้วน: ', React.createElement('strong', null, quality.completeness + '%')),
+              React.createElement('div', { className:'dq-row' }, React.createElement('span', { className:'dq-dot amber' }), 'ช่องว่าง: ', React.createElement('strong', null, quality.empty + ' รายการ')),
+              React.createElement('div', { className:'dq-row' }, React.createElement('span', { className:'dq-dot red' }), 'ค่าผิดปกติ: ', React.createElement('strong', null, quality.anomalies + ' รายการ')),
+              React.createElement('div', { className:'dq-score' }, 'คุณภาพข้อมูล:', React.createElement('span', { className:'badge badge-pass', style:{marginLeft:8} }, quality.score))
+            )
+          )
+        )
+      ),
+      isCSV ? React.createElement('div', { className:'card' },
+        React.createElement('div', { style:{fontWeight:700, marginBottom:12} }, 'การจับคู่หน่วยบริการ (' + (parsedRows.matched||[]).length + ' แห่ง)'),
+        React.createElement('div', { style:{display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:8} },
+          (parsedRows.matched||[]).map(function(m,i) {
+            var pct = m.csvUnit.overall && m.csvUnit.overall.pct != null ? m.csvUnit.overall.pct : null;
+            var isMerged = !!m.csvUnit.mergedFrom;
+            /* หาชื่อหน่วยจาก appUnit แสดงแทนชื่อดิบ */
+            var displayName = m.appUnit ? m.appUnit.name : (m.csvUnit.unitName||'').substring(0,24);
+            return React.createElement('div', { key:i, style:{fontSize:'var(--text-sm)', padding:'8px 12px', background:'#ECFDF5', border:'1px solid #A7F3D0', borderRadius:6} },
+              React.createElement('div', { style:{display:'flex', justifyContent:'space-between', alignItems:'center'} },
+                React.createElement('span', null, displayName),
+                React.createElement('span', { style:{color:'#059669', fontWeight:700} }, pct != null ? pct.toFixed(2)+'%' : '-')
+              ),
+              isMerged && React.createElement('div', { style:{fontSize:10, color:'#6B7280', marginTop:2} }, '+ รวม ' + m.csvUnit.mergedFrom + ' แล้ว')
+            );
+          })
+        ),
+        (parsedRows.unmatched||[]).length > 0 && React.createElement('div', { style:{marginTop:8} },
+          React.createElement('div', { style:{fontSize:'var(--text-xs)', color:'#92400E', marginBottom:4} }, 'ไม่พบคู่ (' + parsedRows.unmatched.length + ' แห่ง):'),
+          React.createElement('div', { style:{display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:8} },
+            parsedRows.unmatched.map(function(u,i) {
+              return React.createElement('div', { key:i, style:{fontSize:'var(--text-sm)', padding:'8px 12px', background:'#FFF7ED', border:'1px solid #FED7AA', borderRadius:6} },
+                u.csvUnit.unitCode + ': ' + (u.csvUnit.unitName||'').substring(0,22)
+              );
+            })
+          )
+        )
+      ) : React.createElement('div', { className:'card' },
+        React.createElement('div', { style:{fontWeight:700, marginBottom:12} }, 'ตัวอย่างข้อมูล (5 แถวแรก)'),
+        React.createElement('div', { className:'table-wrap' },
+          React.createElement('table', { className:'data-table compact' },
+            React.createElement('thead', null, React.createElement('tr', null, React.createElement('th', null, 'ลำดับ'), React.createElement('th', null, 'ตัวชี้วัด'), React.createElement('th', null, 'เป้าหมาย'), React.createElement('th', { style:{textAlign:'right'} }, 'ผลงาน'), React.createElement('th', null, 'ประเมิน'))),
+            React.createElement('tbody', null, preview.sampleData.map((r,i) => React.createElement('tr', { key:i }, React.createElement('td', { className:'td-num' }, r.num), React.createElement('td', null, r.name||'-'), React.createElement('td', { className:'td-target' }, r.target||'-'), React.createElement('td', { className:'td-result' }, r.result||'-'), React.createElement('td', null, React.createElement(KPIBadge, { passfail:r.status })))))
+          )
+        )
+      ),
+      React.createElement('div', { className:'upload-actions' },
+        React.createElement('button', { className:'btn-secondary', onClick: () => { setStep(isCSV?'kpi-select':'upload'); if(!isCSV){setFile(null);setPreview(null);setParsedRows([]);} } }, isCSV ? '← เปลี่ยนตัวชี้วัด' : 'ยกเลิก'),
+        React.createElement('button', { className:'btn-primary', onClick: confirmImport }, React.createElement(Icon, { path:'M5 13l4 4L19 7', size:14, color:'#fff' }), 'ยืนยันนำเข้าและบันทึก')
+      )
+    );
+  }
+
+  return React.createElement('div', { className:'page-content' },
+    React.createElement(SectionHeader, { title: 'อัปโหลดข้อมูล KPI', sub: 'นำเข้าไฟล์ HDC Export (.txt) หรือ Excel จาก สสจ. — อำเภอเขาค้อ' }),
+    meta && React.createElement('div', { style: { display:'flex', alignItems:'center', gap:12, padding:'12px 16px', background:'#EFF6FF', border:'1px solid #BFDBFE', borderRadius:10, marginBottom:16, fontSize:'var(--text-sm)', color:'#1E40AF' } },
+      React.createElement(Icon, { path:'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', size:16, color:'#3B82F6' }),
+      React.createElement('div', null, React.createElement('strong', null, 'ข้อมูลที่บันทึกล่าสุด: '), meta.fileName + ' · อัปโหลดเมื่อ ' + meta.uploadDate + ' · ' + meta.rows + ' รายการ'),
+      React.createElement('button', { onClick: function() { D.clearAllData(); window.dispatchEvent(new CustomEvent('kpihunter-data-changed')); }, style: { marginLeft:'auto', padding:'4px 12px', borderRadius:6, border:'1px solid #BFDBFE', background:'#fff', color:'#DC2626', fontSize:'var(--text-xs)', fontWeight:600, cursor:'pointer' } }, 'ล้างข้อมูล')
+    ),
+    React.createElement('div', { className:'upload-area-wrap' },
+      parseError && React.createElement('div', { style: { display:'flex', alignItems:'center', gap:8, padding:'10px 16px', background:'#FEF2F2', border:'1px solid #FECACA', borderRadius:8, marginBottom:12, color:'#991B1B', fontSize:'var(--text-sm)', fontWeight:500 } }, React.createElement(Icon, { path:'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z', size:16, color:'#DC2626' }), parseError),
+      React.createElement('div', { className: 'upload-area' + (dragOver ? ' drag-over' : ''), onDragOver: e => { e.preventDefault(); setDragOver(true); }, onDragLeave: () => setDragOver(false), onDrop: handleDrop },
+        React.createElement('input', { type:'file', accept:'.xlsx,.xls,.csv,.txt', className:'upload-input', onChange: e => handleFile(e.target.files[0]) }),
+        loading ? React.createElement('div', { style:{padding:'var(--space-4)'} }, React.createElement('div', { style:{width:40,height:40,border:'3px solid var(--color-herb-200)',borderTopColor:'var(--color-herb-600)',borderRadius:'50%',animation:'spin 0.8s linear infinite',margin:'0 auto var(--space-4)'} }), React.createElement('div', { className:'upload-text' }, 'กำลังอ่านไฟล์...'))
+        : React.createElement(React.Fragment, null,
+            React.createElement('div', { className:'upload-icon' }, React.createElement('svg', { width:52, height:52, viewBox:'0 0 24 24', fill:'none', stroke: dragOver ? '#2D6A4F' : '#9CA3AF', strokeWidth:1.5, strokeLinecap:'round', strokeLinejoin:'round' }, React.createElement('path', { d:'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M16 8l-4-4m0 0L8 8m4-4v12' }))),
+            React.createElement('div', { className:'upload-text' }, 'ลากวางไฟล์ หรือคลิกเพื่อเลือก'),
+            React.createElement('div', { className:'upload-hint' },
+              React.createElement('strong', null, 'HDC Export:'), ' .txt หรือ .csv (ทีละ 1 ตัวชี้วัด)  |  ',
+              React.createElement('strong', null, 'Excel สสจ.:'), ' .xlsx, .xls (ทั้งหมด)'
+            ),
+            React.createElement('div', { className:'upload-tag' }, 'ปีงบประมาณ 2569 · อำเภอเขาค้อ')
+          )
+      ),
+      React.createElement('div', { className:'upload-tips' },
+        React.createElement('h4', null, 'คำแนะนำการอัปโหลด'),
+        React.createElement('ul', null,
+          React.createElement('li', null, React.createElement('strong', null, 'ไฟล์ HDC (.txt/.csv):'), ' ดึงจาก HDC ทีละ 1 ตัวชี้วัด → วางไฟล์ → เลือกตัวชี้วัดที่ตรงกัน → ระบบอัปเดตผลรายหน่วย'),
+          React.createElement('li', null, React.createElement('strong', null, 'ไฟล์ Excel (.xlsx):'), ' ไฟล์ประเมินผลรวมจาก สสจ. — ระบบอ่านคอลัมน์ผลงาน/ประเมินอัตโนมัติ'),
+          React.createElement('li', null, 'ข้อมูลจะถูกบันทึกในเบราว์เซอร์ — ปิดแล้วเปิดใหม่ข้อมูลยังอยู่'),
+          React.createElement('li', null, 'สามารถแก้ไขค่ารายตัวได้เพิ่มเติมในหน้า KPI Explorer'),
+          React.createElement('li', null, 'อัปโหลดหลายครั้งได้ — แต่ละตัวชี้วัดจะ override ข้อมูลเดิม')
+        )
+      )
+    )
+  );
+}
+const uploadStyle = document.createElement('style');
+uploadStyle.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+document.head.appendChild(uploadStyle);
+Object.assign(window, { UploadPage });
+</script>
+<script type="text/babel">
+/* KPI HUNTER — Report Builder */
+var RPT_ICONS = { exec: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', failed: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z', unit: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', action: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', trend: 'M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z' };
+function ReportBuilderPage() {
+  const D6 = window.KPIHUNTER;
+  const summary = useMemo(() => D6.getSummary(), []);
+  const failed = useMemo(() => D6.kpis.filter(k => k.passfail.indexOf('ไม่ผ่าน') >= 0).sort((a, b) => a.result - b.result), []);
+  const [selectedReport, setSelectedReport] = useState(null);
+  const reportTypes = [
+    { id:'exec',   iconPath:RPT_ICONS.exec,   color:'#2D6A4F', title:'รายงานภาพรวมผู้บริหาร',     desc:'สรุป KPI ผ่าน/ไม่ผ่าน อัตราผ่าน ตัวชี้วัดเสี่ยง' },
+    { id:'failed', iconPath:RPT_ICONS.failed, color:'#DC2626', title:'รายงาน KPI ไม่ผ่านเกณฑ์',  desc:'รายละเอียดทุกตัวที่ไม่ผ่าน พร้อมข้อเสนอแนะ' },
+    { id:'unit',   iconPath:RPT_ICONS.unit,   color:'#2563EB', title:'รายงานรายหน่วยบริการ',      desc:'ผลงานแต่ละหน่วย อันดับ จุดแข็ง จุดอ่อน' },
+    { id:'action', iconPath:RPT_ICONS.action, color:'#D97706', title:'รายงาน Action Plan',         desc:'แผนปฏิบัติการเร่งรัดรายตัวชี้วัด' },
+    { id:'trend',  iconPath:RPT_ICONS.trend,  color:'#7C3AED', title:'รายงานเปรียบเทียบรายเดือน', desc:'แนวโน้ม 6 เดือน แยกรายตัวชี้วัด' },
+  ];
+  function renderReport(type) {
+    if (type === 'exec') return React.createElement('div', null,
+      React.createElement('div', { className:'report-header' }, React.createElement('h2', null, 'รายงานภาพรวม KPI — อำเภอเขาค้อ'), React.createElement('p', null, 'ปีงบประมาณ 2569 · ข้อมูล ณ เดือนมีนาคม')),
+      React.createElement('div', { className:'report-stats' },
+        [{ n:summary.total, l:'KPI ทั้งหมด', cls:'' }, { n:summary.passed, l:'ผ่านเกณฑ์', cls:'green' }, { n:summary.failed, l:'ไม่ผ่านเกณฑ์', cls:'red' }, { n:summary.passRate+'%', l:'อัตราผ่าน', cls:'' }].map(s => React.createElement('div', { key:s.l }, React.createElement('div', { className:'rs-num ' + s.cls }, s.n), React.createElement('div', { className:'rs-label' }, s.l)))
+      ),
+      React.createElement('div', { className:'report-section-title' }, 'ตัวชี้วัดที่ไม่ผ่านเกณฑ์ (เรียงตามผลงานต่ำสุด)'),
+      React.createElement('table', { className:'data-table compact' },
+        React.createElement('thead', null, React.createElement('tr', null, React.createElement('th', null, '#'), React.createElement('th', null, 'ตัวชี้วัด'), React.createElement('th', null, 'เป้าหมาย'), React.createElement('th', { style:{textAlign:'right'} }, 'ผลงาน'), React.createElement('th', null, 'ความเสี่ยง'))),
+        React.createElement('tbody', null, failed.slice(0, 15).map((k, i) => React.createElement('tr', { key:k.id }, React.createElement('td', { className:'td-num' }, i + 1), React.createElement('td', null, k.name.length > 50 ? k.name.substring(0,50)+'…' : k.name), React.createElement('td', { className:'td-target' }, k.target || '—'), React.createElement('td', { className:'td-result red' }, typeof k.result==='number' ? k.result.toFixed(1)+'%' : '—'), React.createElement('td', null, React.createElement(RiskBadge, { risk:k.risk })))))
+      )
+    );
+    if (type === 'unit') {
+      const rankings = D6.getUnitRankings();
+      return React.createElement('div', null,
+        React.createElement('div', { className:'report-header' }, React.createElement('h2', null, 'รายงานผลงานรายหน่วยบริการ'), React.createElement('p', null, 'อำเภอเขาค้อ · ปีงบประมาณ 2569')),
+        React.createElement('table', { className:'data-table' },
+          React.createElement('thead', null, React.createElement('tr', null, React.createElement('th', null, '#'), React.createElement('th', null, 'หน่วยบริการ'), React.createElement('th', { style:{textAlign:'right'} }, 'คะแนนเฉลี่ย'), React.createElement('th', { style:{textAlign:'right'} }, 'ผ่าน'), React.createElement('th', { style:{textAlign:'right'} }, 'ไม่ผ่าน'), React.createElement('th', null, 'อัตราผ่าน'))),
+          React.createElement('tbody', null, rankings.map((r, i) => React.createElement('tr', { key:r.unit.id }, React.createElement('td', { className:'td-num' }, i + 1), React.createElement('td', null, r.unit.name), React.createElement('td', { style:{textAlign:'right',fontWeight:700} }, r.avgScore.toFixed(1) + '%'), React.createElement('td', { style:{textAlign:'right',color:'#059669',fontWeight:700} }, r.passedKPIs), React.createElement('td', { style:{textAlign:'right',color:'#DC2626',fontWeight:700} }, r.failedKPIs), React.createElement('td', null, React.createElement(ProgressBar, { value: parseFloat(r.passRate), target:100, showLabel:true })))))
+        )
+      );
+    }
+    if (type === 'action') return React.createElement('div', null,
+      React.createElement('div', { className:'report-header' }, React.createElement('h2', null, 'Action Plan — แผนเร่งรัด KPI ไม่ผ่านเกณฑ์'), React.createElement('p', null, 'ปีงบประมาณ 2569 · ' + failed.length + ' ตัวชี้วัด')),
+      failed.slice(0, 12).map((k, i) => {
+        const action = k.result === 0 ? 'ตรวจสอบการบันทึกข้อมูลในระบบ HDC' : k.targetNum && k.result < k.targetNum * 0.5 ? 'จัดประชุมเร่งรัดเฉพาะเรื่อง 30 วัน' : 'เพิ่มความเข้มข้น ติดตามรายสัปดาห์';
+        return React.createElement('div', { key:k.id, className:'action-report-item' }, React.createElement('div', { className:'ari-num' }, i + 1), React.createElement('div', null, React.createElement('div', { className:'ari-name' }, k.num + '. ' + k.name), React.createElement('div', { className:'ari-meta' }, 'ผลงาน: ', React.createElement('strong', { style:{color:'#DC2626'} }, typeof k.result==='number' ? k.result.toFixed(1)+'%' : '—'), ' · เป้าหมาย: ' + (k.target || '—')), React.createElement('div', { className:'ari-action' }, action)));
+      })
+    );
+    if (type === 'failed') return React.createElement('div', null,
+      React.createElement('div', { className:'report-header' }, React.createElement('h2', null, 'รายงาน KPI ไม่ผ่านเกณฑ์ทั้งหมด'), React.createElement('p', null, 'อำเภอเขาค้อ · ปีงบ 2569 · ' + failed.length + ' รายการ')),
+      React.createElement('table', { className:'data-table compact' },
+        React.createElement('thead', null, React.createElement('tr', null, React.createElement('th', null, '#'), React.createElement('th', null, 'ตัวชี้วัด'), React.createElement('th', null, 'กลุ่มงาน'), React.createElement('th', { style:{textAlign:'right'} }, 'ผลงาน'), React.createElement('th', null, 'เป้าหมาย'), React.createElement('th', null, 'ความเสี่ยง'))),
+        React.createElement('tbody', null, failed.map((k, i) => React.createElement('tr', { key:k.id }, React.createElement('td', { className:'td-num' }, i + 1), React.createElement('td', { style:{maxWidth:200} }, k.name.length>48 ? k.name.substring(0,48)+'…' : k.name), React.createElement('td', { className:'td-target' }, k.pm || '—'), React.createElement('td', { className:'td-result red' }, typeof k.result==='number' ? k.result.toFixed(1)+'%' : '—'), React.createElement('td', { className:'td-target' }, k.target || '—'), React.createElement('td', null, React.createElement(RiskBadge, { risk:k.risk })))))
+      )
+    );
+    return React.createElement('div', { className:'report-header' }, React.createElement('h2', null, 'รายงานเปรียบเทียบรายเดือน'), React.createElement('p', null, 'ฟีเจอร์นี้จะพร้อมใช้งานเมื่อมีข้อมูลหลายเดือน'));
+  }
+  return React.createElement('div', { className: 'page-content' },
+    React.createElement(SectionHeader, { title: 'Report Builder', sub: 'สร้างรายงานสำหรับประชุมและติดตามงาน' }),
+    React.createElement('div', { className:'report-layout' },
+      React.createElement('div', { className:'report-types' },
+        reportTypes.map(rt => React.createElement('div', { key: rt.id, className: 'report-type-card' + (selectedReport === rt.id ? ' active' : ''), onClick: () => setSelectedReport(rt.id) },
+          React.createElement('div', { className:'rtc-icon', style:{color: rt.color} }, React.createElement(Icon, { path:rt.iconPath, size:20 })),
+          React.createElement('div', null, React.createElement('div', { className:'rtc-title' }, rt.title), React.createElement('div', { className:'rtc-desc' }, rt.desc))
+        ))
+      ),
+      React.createElement('div', { className:'report-preview card' },
+        selectedReport
+          ? React.createElement('div', null,
+              React.createElement('div', { className:'report-toolbar' },
+                React.createElement('span', { className:'report-toolbar-title' }, reportTypes.find(r => r.id === selectedReport)?.title || 'รายงาน'),
+                React.createElement('button', { className:'btn-secondary btn-sm', onClick: () => window.print() }, React.createElement(Icon, { path:'M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z', size:14 }), 'พิมพ์'),
+                React.createElement('button', { className:'btn-secondary btn-sm', onClick: () => { const el = document.querySelector('.report-preview'); if (el) navigator.clipboard.writeText(el.innerText).catch(() => {}); } }, React.createElement(Icon, { path:'M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z', size:14 }), 'คัดลอก')
+              ),
+              renderReport(selectedReport)
+            )
+          : React.createElement(EmptyState, { title: 'เลือกประเภทรายงาน', sub: 'คลิกรายงานทางซ้ายเพื่อดูตัวอย่างและส่งออก' })
+      )
+    )
+  );
+}
+Object.assign(window, { ReportBuilderPage });
+</script>
+<script type="text/babel">
+/* KPI HUNTER — Admin Page */
+const ADMIN_CREDS = { user: 'chayanun250841', pass: 'chayanun250841' };
+const SESSION_KEY = 'kpihunter_admin_auth';
+function AdminPage() {
+  const [authed, setAuthed] = useState(() => sessionStorage.getItem(SESSION_KEY) === '1');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [showPass, setShowPass] = useState(false);
+  const [activeTab, setActiveTab] = useState('system');
+  const DA = window.KPIHUNTER;
+  const [year, setYear] = useState(DA.meta.year.toString());
+  const [month, setMonth] = useState(DA.meta.month);
+  const [district, setDistrict] = useState('เขาค้อ');
+  const [province, setProvince] = useState('เพชรบูรณ์');
+  const [passThreshold, setPassThreshold] = useState('80');
+  const [warnThreshold, setWarnThreshold] = useState('60');
+  const [units, setUnits] = useState(DA.units.map(u => ({ ...u })));
+  const [editUnit, setEditUnit] = useState(null);
+  const [saveMsg, setSaveMsg] = useState('');
+  const [colMapping, setColMapping] = useState({ num: 'คอลัมน์ A (ลำดับ)', name: 'คอลัมน์ B (ตัวชี้วัด)', target: 'คอลัมน์ C (เป้าหมาย)', pm: 'คอลัมน์ D (กลุ่มงาน PM)', result: 'คอลัมน์ O (ผลงานเขาค้อ)', status: 'คอลัมน์ AW (สถานะประเมิน)' });
+
+  function AdminIcon({ d, size }) { return React.createElement('svg', { width: size||16, height: size||16, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:1.5, strokeLinecap:'round', strokeLinejoin:'round' }, React.createElement('path', { d })); }
+  function handleLogin(e) { e.preventDefault(); if (username === ADMIN_CREDS.user && password === ADMIN_CREDS.pass) { sessionStorage.setItem(SESSION_KEY, '1'); setAuthed(true); setLoginError(''); } else { setLoginError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'); } }
+  function handleLogout() { sessionStorage.removeItem(SESSION_KEY); setAuthed(false); setUsername(''); setPassword(''); }
+  function showSaved() { setSaveMsg('บันทึกสำเร็จ'); setTimeout(() => setSaveMsg(''), 2500); }
+
+  if (!authed) return React.createElement('div', { className:'admin-login-wrap' },
+    React.createElement('div', { className:'admin-login-card' },
+      React.createElement('div', { className:'alc-logo' }, React.createElement('div', { className:'alc-mark' }, 'K'), React.createElement('div', null, React.createElement('div', { className:'alc-title' }, 'KPI HUNTER'), React.createElement('div', { className:'alc-sub' }, 'Admin Panel'))),
+      React.createElement('h2', { className:'alc-heading' }, 'เข้าสู่ระบบผู้ดูแล'),
+      React.createElement('p', { className:'alc-desc' }, 'สำหรับเจ้าหน้าที่ที่ได้รับสิทธิ์เท่านั้น'),
+      React.createElement('form', { className:'alc-form', onSubmit: handleLogin },
+        React.createElement('div', { className:'alc-field' }, React.createElement('label', null, 'ชื่อผู้ใช้'), React.createElement('div', { className:'alc-input-wrap' }, React.createElement('span', { className:'alc-input-icon' }, React.createElement(AdminIcon, { d:'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' })), React.createElement('input', { type:'text', className:'alc-input', placeholder:'ชื่อผู้ใช้', value: username, onChange: e => setUsername(e.target.value), autoComplete:'username', autoFocus: true }))),
+        React.createElement('div', { className:'alc-field' }, React.createElement('label', null, 'รหัสผ่าน'), React.createElement('div', { className:'alc-input-wrap' }, React.createElement('span', { className:'alc-input-icon' }, React.createElement(AdminIcon, { d:'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' })), React.createElement('input', { type: showPass ? 'text' : 'password', className:'alc-input', placeholder:'รหัสผ่าน', value: password, onChange: e => setPassword(e.target.value), autoComplete:'current-password' }), React.createElement('button', { type:'button', className:'alc-eye-btn', onClick: () => setShowPass(!showPass), tabIndex:-1 }, React.createElement(AdminIcon, { d: showPass ? 'M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21' : 'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z' })))),
+        loginError && React.createElement('div', { className:'alc-error' }, React.createElement(AdminIcon, { d:'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z' }), loginError),
+        React.createElement('button', { type:'submit', className:'alc-submit' }, 'เข้าสู่ระบบ')
+      )
+    )
+  );
+
+  const tabs = [
+    { id:'system', label:'ตั้งค่าระบบ', d:'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
+    { id:'units', label:'หน่วยบริการ', d:'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
+    { id:'threshold', label:'เกณฑ์ผ่าน/ไม่ผ่าน', d:'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3' },
+    { id:'users', label:'ผู้ใช้งาน', d:'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
+  ];
+
+  return React.createElement('div', { className:'admin-shell' },
+    React.createElement('div', { className:'admin-header' },
+      React.createElement('div', { className:'admin-header-left' }, React.createElement('div', { className:'admin-badge' }, React.createElement(AdminIcon, { d:'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', size:16 }), 'Admin Panel'), React.createElement('span', { className:'admin-header-title' }, 'การตั้งค่าและจัดการระบบ')),
+      React.createElement('div', { className:'admin-header-right' },
+        React.createElement('div', { className:'admin-user-chip' }, React.createElement('div', { className:'auc-avatar' }, 'C'), React.createElement('div', null, React.createElement('div', { className:'auc-name' }, username || ADMIN_CREDS.user), React.createElement('div', { className:'auc-role' }, 'ผู้ดูแลระบบ'))),
+        React.createElement('button', { className:'admin-logout-btn', onClick: handleLogout }, React.createElement(AdminIcon, { d:'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1' }), 'ออกจากระบบ')
+      )
+    ),
+    React.createElement('div', { className:'admin-tabs' }, tabs.map(t => React.createElement('button', { key: t.id, className: 'admin-tab' + (activeTab === t.id ? ' active' : ''), onClick: () => setActiveTab(t.id) }, React.createElement(AdminIcon, { d: t.d }), t.label))),
+    React.createElement('div', { className:'admin-body' },
+      activeTab === 'system' && React.createElement('div', { className:'admin-section' },
+        React.createElement('h3', { className:'admin-section-title' }, 'ข้อมูลพื้นที่และปีงบประมาณ'),
+        React.createElement('div', { className:'admin-form-grid' },
+          React.createElement('div', { className:'admin-field' }, React.createElement('label', { className:'admin-label' }, 'ปีงบประมาณ'), React.createElement('select', { className:'admin-select', value: year, onChange: e => setYear(e.target.value) }, ['2567','2568','2569','2570'].map(y => React.createElement('option', { key:y, value:y }, y)))),
+          React.createElement('div', { className:'admin-field' }, React.createElement('label', { className:'admin-label' }, 'เดือนรายงาน'), React.createElement('select', { className:'admin-select', value: month, onChange: e => setMonth(e.target.value) }, ['ตุลาคม','พฤศจิกายน','ธันวาคม','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน'].map(m => React.createElement('option', { key:m, value:m }, m)))),
+          React.createElement('div', { className:'admin-field' }, React.createElement('label', { className:'admin-label' }, 'อำเภอ'), React.createElement('input', { className:'admin-input', value: district, onChange: e => setDistrict(e.target.value) })),
+          React.createElement('div', { className:'admin-field' }, React.createElement('label', { className:'admin-label' }, 'จังหวัด'), React.createElement('input', { className:'admin-input', value: province, onChange: e => setProvince(e.target.value) }))
+        ),
+        React.createElement('div', { className:'admin-action-row' }, saveMsg && React.createElement('span', { className:'admin-save-msg' }, React.createElement(AdminIcon, { d:'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' }), saveMsg), React.createElement('button', { className:'admin-save-btn', onClick: showSaved }, 'บันทึกการตั้งค่า'))
+      ),
+      activeTab === 'units' && React.createElement('div', { className:'admin-section' },
+        React.createElement('div', { className:'admin-section-header' }, React.createElement('h3', { className:'admin-section-title' }, 'หน่วยบริการในอำเภอเขาค้อ (' + units.length + ' หน่วย)'), React.createElement('button', { className:'admin-add-btn', onClick: () => setEditUnit({ id:'', name:'', code:'', short:'', isNew:true }) }, React.createElement(AdminIcon, { d:'M12 4v16m8-8H4' }), 'เพิ่มหน่วยบริการ')),
+        editUnit && React.createElement('div', { className:'admin-edit-card' },
+          React.createElement('h4', { className:'aec-title' }, editUnit.isNew ? 'เพิ่มหน่วยบริการใหม่' : 'แก้ไข: ' + editUnit.name),
+          React.createElement('div', { className:'admin-form-grid' },
+            React.createElement('div', { className:'admin-field' }, React.createElement('label', { className:'admin-label' }, 'ชื่อเต็ม'), React.createElement('input', { className:'admin-input', value: editUnit.name, onChange: e => setEditUnit({...editUnit, name:e.target.value}) })),
+            React.createElement('div', { className:'admin-field' }, React.createElement('label', { className:'admin-label' }, 'รหัสหน่วย'), React.createElement('input', { className:'admin-input', value: editUnit.code, onChange: e => setEditUnit({...editUnit, code:e.target.value}) })),
+            React.createElement('div', { className:'admin-field' }, React.createElement('label', { className:'admin-label' }, 'ชื่อย่อ'), React.createElement('input', { className:'admin-input', value: editUnit.short, onChange: e => setEditUnit({...editUnit, short:e.target.value}) }))
+          ),
+          React.createElement('div', { className:'aec-actions' }, React.createElement('button', { className:'admin-cancel-btn', onClick: () => setEditUnit(null) }, 'ยกเลิก'), React.createElement('button', { className:'admin-save-btn', onClick: () => { if (editUnit.isNew) { setUnits([...units, { id:'U'+(units.length+1), name:editUnit.name, code:editUnit.code, short:editUnit.short }]); } else { setUnits(units.map(u => u.id === editUnit.id ? { ...u, name:editUnit.name, code:editUnit.code, short:editUnit.short } : u)); } setEditUnit(null); showSaved(); } }, 'บันทึก'))
+        ),
+        React.createElement('div', { className:'admin-table-wrap' },
+          React.createElement('table', { className:'admin-table' },
+            React.createElement('thead', null, React.createElement('tr', null, React.createElement('th', null, '#'), React.createElement('th', null, 'รหัส'), React.createElement('th', null, 'ชื่อหน่วยบริการ'), React.createElement('th', null, 'ชื่อย่อ'), React.createElement('th', null, 'จัดการ'))),
+            React.createElement('tbody', null, units.map((u, i) => React.createElement('tr', { key: u.id },
+              React.createElement('td', { className:'td-muted' }, i + 1),
+              React.createElement('td', null, React.createElement('code', { className:'code-tag' }, u.code)),
+              React.createElement('td', { style:{fontWeight:500} }, u.name),
+              React.createElement('td', null, u.short),
+              React.createElement('td', null, React.createElement('div', { className:'td-actions' },
+                React.createElement('button', { className:'icon-btn edit', onClick: () => setEditUnit({...u, isNew:false}), title:'แก้ไข' }, React.createElement(AdminIcon, { d:'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' })),
+                React.createElement('button', { className:'icon-btn delete', onClick: () => { if(window.confirm('ลบ "'+u.name+'" ออกจากระบบ?')) { setUnits(units.filter(x => x.id !== u.id)); showSaved(); } }, title:'ลบ' }, React.createElement(AdminIcon, { d:'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' }))
+              ))
+            )))
+          )
+        )
+      ),
+      activeTab === 'threshold' && React.createElement('div', { className:'admin-section' },
+        React.createElement('h3', { className:'admin-section-title' }, 'เกณฑ์การประเมินผล'),
+        React.createElement('div', { className:'admin-form-grid' },
+          React.createElement('div', { className:'admin-field' }, React.createElement('label', { className:'admin-label' }, 'เกณฑ์ผ่าน (สีเขียว) — ร้อยละ ≥'), React.createElement('div', { className:'admin-input-with-unit' }, React.createElement('input', { className:'admin-input', type:'number', min:0, max:100, value: passThreshold, onChange: e => setPassThreshold(e.target.value) }), React.createElement('span', { className:'input-unit' }, '%'))),
+          React.createElement('div', { className:'admin-field' }, React.createElement('label', { className:'admin-label' }, 'เกณฑ์เสี่ยง (สีเหลือง) — ร้อยละ ≥'), React.createElement('div', { className:'admin-input-with-unit' }, React.createElement('input', { className:'admin-input', type:'number', min:0, max:100, value: warnThreshold, onChange: e => setWarnThreshold(e.target.value) }), React.createElement('span', { className:'input-unit' }, '%')))
+        ),
+        React.createElement('div', { className:'admin-action-row' }, saveMsg && React.createElement('span', { className:'admin-save-msg' }, React.createElement(AdminIcon, { d:'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' }), saveMsg), React.createElement('button', { className:'admin-save-btn', onClick: showSaved }, 'บันทึกเกณฑ์'))
+      ),
+      activeTab === 'users' && React.createElement('div', { className:'admin-section' },
+        React.createElement('h3', { className:'admin-section-title' }, 'ผู้ใช้งานระบบ'),
+        React.createElement('div', { className:'admin-table-wrap' },
+          React.createElement('table', { className:'admin-table' },
+            React.createElement('thead', null, React.createElement('tr', null, React.createElement('th', null, '#'), React.createElement('th', null, 'ชื่อผู้ใช้'), React.createElement('th', null, 'ชื่อ-นามสกุล'), React.createElement('th', null, 'บทบาท'), React.createElement('th', null, 'สถานะ'), React.createElement('th', null, 'เข้าสู่ระบบล่าสุด'))),
+            React.createElement('tbody', null,
+              [{ user:'chayanun250841', name:'ชญานันท์', role:'ผู้ดูแลระบบ', active:true, last:'10 มิ.ย. 2569 09:30' }, { user:'sso_khaokho', name:'เจ้าหน้าที่ สสอ.', role:'ผู้ใช้งาน', active:true, last:'09 มิ.ย. 2569 14:22' }, { user:'report_viewer', name:'ผู้บริหาร', role:'ดูรายงาน', active:false, last:'01 มิ.ย. 2569 08:10' }].map((u, i) =>
+                React.createElement('tr', { key: u.user }, React.createElement('td', { className:'td-muted' }, i + 1), React.createElement('td', null, React.createElement('code', { className:'code-tag' }, u.user)), React.createElement('td', { style:{fontWeight:500} }, u.name), React.createElement('td', null, React.createElement('span', { className:'role-badge' }, u.role)), React.createElement('td', null, React.createElement('span', { className:'status-dot-row' }, React.createElement('span', { className:'status-dot', style:{background: u.active ? '#10B981' : '#9CA3AF'} }), u.active ? 'ใช้งาน' : 'ระงับ')), React.createElement('td', { className:'td-muted' }, u.last))
+              )
+            )
+          )
+        )
+      )
+    )
+  );
+}
+Object.assign(window, { AdminPage });
+</script>
+<script type="text/babel">
+/* KPI HUNTER — Main App Shell */
+function App() {
+  const [page, setPage] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [dataVersion, setDataVersion] = useState(0);
+  const [appReady, setAppReady] = useState(false);
+  const [dbStatus, setDbStatus] = useState('');
+  const D7 = window.KPIHUNTER;
+
+  useEffect(function() {
+    function onChanged() { setDataVersion(function(v) { return v + 1; }); }
+    window.addEventListener('kpihunter-data-changed', onChanged);
+    return function() { window.removeEventListener('kpihunter-data-changed', onChanged); };
+  }, []);
+
+  useEffect(function() {
+    var db = window.KPIHUNTER_DB;
+    if (db) {
+      db.loadResults().then(function(rows) {
+        if (rows && rows.length > 0) {
+          rows.forEach(function(r) {
+            var k = D7.kpis.find(function(x) { return x.id === r.kpi_id; });
+            if (!k) return;
+            if (r.result !== null && r.result !== undefined) k.result = parseFloat(r.result);
+            if (r.passfail !== undefined) k.passfail = r.passfail || '';
+            k.risk = window._kpiRiskLevel ? window._kpiRiskLevel(k.result, k.targetNum, k.passfail) : k.risk;
+            if (D7.trends[k.id]) D7.trends[k.id][5] = k.result;
+          });
+          D7.saveResults();
+          setDbStatus('supabase');
+        } else { D7.loadSavedResults(); setDbStatus('local'); }
+      }).catch(function() { D7.loadSavedResults(); setDbStatus('local'); })
+      .finally(function() { setDataVersion(function(v) { return v + 1; }); setAppReady(true); });
+    } else { setDbStatus('local'); setAppReady(true); }
+  }, []);
+
+  const summary = useMemo(() => D7.getSummary(), [dataVersion]);
+  const navItems = [
+    { id:'dashboard', label:'Dashboard',    d:'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4' },
+    { id:'explorer',  label:'KPI Explorer', d:'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' },
+    { id:'units',     label:'หน่วยบริการ',  d:'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
+    { id:'ai',        label:'AI Insight',   d:'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
+    { id:'reports',   label:'รายงาน',       d:'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+    { id:'upload',    label:'อัปโหลด',      d:'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12' },
+    { id:'admin',     label:'Admin',         d:'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
+  ];
+  function NavIcon({ d }) { return React.createElement('svg', { width:20, height:20, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:1.5, strokeLinecap:'round', strokeLinejoin:'round', style:{ flexShrink:0 } }, React.createElement('path', { d })); }
+  function renderPage() {
+    switch (page) {
+      case 'dashboard': return React.createElement(DashboardPage, null);
+      case 'explorer':  return React.createElement(ExplorerPage,  { onNavigate: setPage });
+      case 'units':     return React.createElement(UnitPerformancePage, null);
+      case 'ai':        return React.createElement(AIInsightPage, null);
+      case 'reports':   return React.createElement(ReportBuilderPage, null);
+      case 'upload':    return React.createElement(UploadPage, { onComplete: setPage });
+      case 'admin':     return React.createElement(AdminPage, null);
+      default:          return React.createElement(DashboardPage, null);
+    }
+  }
+  const currentNav = navItems.find(n => n.id === page);
+  if (!appReady) return React.createElement('div', { style: { height:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'var(--color-bg-base)', gap:16 } },
+    React.createElement('div', { style: { width:48, height:48, border:'4px solid var(--color-herb-100)', borderTopColor:'var(--color-herb-600)', borderRadius:'50%', animation:'spin 0.9s linear infinite' } }),
+    React.createElement('div', { style:{fontWeight:700, fontSize:'var(--text-base)', color:'var(--color-herb-700)'} }, 'KPI HUNTER'),
+    React.createElement('div', { style:{fontSize:'var(--text-sm)', color:'var(--color-text-muted)'} }, window.KPIHUNTER_DB ? 'กำลังโหลดข้อมูลจาก Supabase...' : 'กำลังเตรียมระบบ...')
+  );
+  return React.createElement('div', { className:'app-shell' },
+    React.createElement('aside', { className:'sidebar' + (sidebarOpen ? '' : ' collapsed') },
+      React.createElement('div', { className:'sidebar-header' }, React.createElement('div', { className:'sidebar-logo' }, React.createElement('div', { className:'logo-mark' }, 'K'), sidebarOpen && React.createElement('div', { className:'logo-text' }, React.createElement('div', { className:'logo-title' }, 'KPI HUNTER'), React.createElement('div', { className:'logo-sub' }, 'Command Center')))),
+      React.createElement('nav', { className:'sidebar-nav' },
+        navItems.map(item => React.createElement('button', { key: item.id, className: 'nav-item' + (page === item.id ? ' active' : ''), onClick: () => setPage(item.id), title: item.label }, React.createElement(NavIcon, { d: item.d }), sidebarOpen && React.createElement('span', null, item.label)))
+      ),
+      React.createElement('div', { className:'sidebar-footer' }, sidebarOpen && React.createElement('div', null, React.createElement('div', { className:'sf-district' }, 'สสอ.เขาค้อ'), React.createElement('div', { className:'sf-year' }, 'ปีงบประมาณ ' + D7.meta.year)))
+    ),
+    React.createElement('div', { className:'main-area' },
+      React.createElement('header', { className:'topbar' },
+        React.createElement('div', { className:'topbar-left' },
+          React.createElement('button', { className:'menu-btn', onClick: () => setSidebarOpen(!sidebarOpen), title: 'เปิด/ปิดเมนู' }, React.createElement('svg', { width:20, height:20, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:2, strokeLinecap:'round' }, React.createElement('path', { d:'M4 6h16M4 12h16M4 18h16' }))),
+          React.createElement('div', { className:'topbar-title' },
+            React.createElement('h1', null, currentNav ? currentNav.label : 'Dashboard'),
+            React.createElement('div', { style:{display:'flex', alignItems:'center', gap:8, marginTop:2} },
+              React.createElement('span', { className:'topbar-breadcrumb' }, 'เขาค้อ · ปีงบ ' + D7.meta.year + ' · ' + D7.meta.month),
+              dbStatus === 'supabase' && React.createElement('span', { style:{fontSize:10, fontWeight:700, padding:'1px 7px', borderRadius:999, background:'#ECFDF5', color:'#059669', border:'1px solid #A7F3D0', letterSpacing:'0.03em'} }, '● Supabase'),
+              dbStatus === 'local' && React.createElement('span', { style:{fontSize:10, fontWeight:700, padding:'1px 7px', borderRadius:999, background:'#F9FAFB', color:'#9CA3AF', border:'1px solid #E5E7EB', letterSpacing:'0.03em'} }, '○ Local')
+            )
+          )
+        ),
+        React.createElement('div', { className:'topbar-right' },
+          React.createElement('div', { className:'topbar-kpi-stat' }, React.createElement('span', { className:'ts-label' }, 'อัตราผ่าน'), React.createElement('span', { className:'ts-value', style:{color:'#059669'} }, summary.passRate + '%')),
+          React.createElement('div', { className:'topbar-kpi-stat' }, React.createElement('span', { className:'ts-label' }, 'ไม่ผ่าน'), React.createElement('span', { className:'ts-value', style:{color:'#DC2626'} }, summary.failed)),
+          React.createElement('div', { className:'topbar-divider' }),
+          React.createElement('button', { className:'btn-topbar', onClick: () => setPage('upload') }, React.createElement('svg', { width:14, height:14, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:2, strokeLinecap:'round' }, React.createElement('path', { d:'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12' })), 'อัปโหลด'),
+          React.createElement('button', { className:'btn-topbar ai-btn', onClick: () => setPage('ai') }, React.createElement('svg', { width:14, height:14, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:2, strokeLinecap:'round' }, React.createElement('path', { d:'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' })), 'AI วิเคราะห์')
+        )
+      ),
+      React.createElement('main', { className:'main-content' }, React.createElement(React.Fragment, { key: dataVersion }, renderPage()))
+    )
+  );
+}
+const appRoot = ReactDOM.createRoot(document.getElementById('root'));
+appRoot.render(React.createElement(App));
+</script>
+</body>
+</html>

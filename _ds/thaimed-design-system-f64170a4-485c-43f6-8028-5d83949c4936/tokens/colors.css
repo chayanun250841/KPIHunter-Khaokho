@@ -1,0 +1,123 @@
+/* ThaiMED — Color Tokens
+   Primary palette: Herb Green (เขียวสมุนไพร)
+   Warm palette: Earth / Cream (ดิน / ครีม)
+*/
+
+:root {
+  /* ─── Herb Green Scale ─── */
+  --color-herb-50:  #F0F9F3;
+  --color-herb-100: #D9EFE1;
+  --color-herb-200: #B5DFC5;
+  --color-herb-300: #84C8A1;
+  --color-herb-400: #52AA78;
+  --color-herb-500: #309158;
+  --color-herb-600: #2D6A4F; /* Brand Primary */
+  --color-herb-700: #245740;
+  --color-herb-800: #1E4733;
+  --color-herb-900: #163526;
+  --color-herb-950: #0D2118;
+
+  /* ─── Warm / Earth Scale ─── */
+  --color-warm-50:  #FBF8F4;
+  --color-warm-100: #F5EDE0;
+  --color-warm-200: #EAD8BF;
+  --color-warm-300: #DBBD97;
+  --color-warm-400: #CA9E6E;
+  --color-warm-500: #B98550;
+  --color-warm-600: #9E6E3C;
+  --color-warm-700: #81592F;
+  --color-warm-800: #674826;
+  --color-warm-900: #533A1E;
+  --color-warm-950: #301F0D;
+
+  /* ─── Neutral (Gray) Scale ─── */
+  --color-neutral-0:   #FFFFFF;
+  --color-neutral-50:  #F9FAFB;
+  --color-neutral-100: #F3F4F6;
+  --color-neutral-200: #E5E7EB;
+  --color-neutral-300: #D1D5DB;
+  --color-neutral-400: #9CA3AF;
+  --color-neutral-500: #6B7280;
+  --color-neutral-600: #4B5563;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1F2937;
+  --color-neutral-900: #111827;
+
+  /* ─── Status: รอรับบริการ (Waiting) ─── */
+  --color-status-waiting-bg:     #FFFBEB;
+  --color-status-waiting-border: #FDE68A;
+  --color-status-waiting-text:   #92400E;
+  --color-status-waiting-dot:    #F59E0B;
+
+  /* ─── Status: กำลังให้บริการ (Active) ─── */
+  --color-status-active-bg:     #EFF6FF;
+  --color-status-active-border: #BFDBFE;
+  --color-status-active-text:   #1E40AF;
+  --color-status-active-dot:    #3B82F6;
+
+  /* ─── Status: เสร็จสิ้น (Done) ─── */
+  --color-status-done-bg:     #F0FDF4;
+  --color-status-done-border: #BBF7D0;
+  --color-status-done-text:   #166534;
+  --color-status-done-dot:    #22C55E;
+
+  /* ─── Status: นัดติดตาม (Follow-up) ─── */
+  --color-status-followup-bg:     #FAF5FF;
+  --color-status-followup-border: #E9D5FF;
+  --color-status-followup-text:   #6B21A8;
+  --color-status-followup-dot:    #A855F7;
+
+  /* ─── Status: ส่งต่อ (Referred) ─── */
+  --color-status-referred-bg:     #FFF7ED;
+  --color-status-referred-border: #FED7AA;
+  --color-status-referred-text:   #9A3412;
+  --color-status-referred-dot:    #F97316;
+
+  /* ─── Status: เร่งด่วน (Danger / Urgent) ─── */
+  --color-status-danger-bg:     #FFF1F2;
+  --color-status-danger-border: #FECDD3;
+  --color-status-danger-text:   #BE123C;
+  --color-status-danger-dot:    #F43F5E;
+
+  /* ─── Service Type Colors ─── */
+  --color-service-exam:       #DC2626; /* ตรวจวินิจฉัย */
+  --color-service-medicine:   #2D6A4F; /* จ่ายยาสมุนไพร */
+  --color-service-massage:    #7C3AED; /* นวด */
+  --color-service-compress:   #B45309; /* ประคบ */
+  --color-service-steam:      #0E7490; /* อบสมุนไพร */
+  --color-service-soak:       #1D4ED8; /* แช่สมุนไพร */
+  --color-service-poultice:   #7C2D12; /* พอกยา */
+  --color-service-postpartum: #BE185D; /* หลังคลอด */
+  --color-service-community:  #059669; /* บริการชุมชน */
+  --color-service-advice:     #4338CA; /* ให้คำแนะนำ */
+
+  /* ─── Semantic Surface & Text ─── */
+  --color-bg-base:        #F4FAF6;
+  --color-bg-surface:     #FFFFFF;
+  --color-bg-subtle:      #EAF3EE;
+  --color-bg-muted:       #F9FAFB;
+  --color-bg-sidebar:     #1A3528;
+  --color-bg-sidebar-sub: #122A1F;
+  --color-bg-sidebar-hover: rgba(255,255,255,0.07);
+  --color-bg-sidebar-active: rgba(255,255,255,0.13);
+
+  --color-text-primary:   #111827;
+  --color-text-secondary: #4B5563;
+  --color-text-muted:     #9CA3AF;
+  --color-text-disabled:  #C5CAD3;
+  --color-text-inverse:   #FFFFFF;
+  --color-text-brand:     #2D6A4F;
+  --color-text-warm:      #9E6E3C;
+  --color-text-link:      #2D6A4F;
+
+  --color-border-default:   #E5E7EB;
+  --color-border-subtle:    #F0F2F4;
+  --color-border-emphasis:  #D1D5DB;
+  --color-border-brand:     #2D6A4F;
+  --color-border-danger:    #F43F5E;
+  --color-border-warning:   #F59E0B;
+
+  --color-focus-ring: rgba(45, 106, 79, 0.35);
+  --color-overlay:    rgba(17, 24, 39, 0.5);
+  --color-scrim:      rgba(17, 24, 39, 0.15);
+}
