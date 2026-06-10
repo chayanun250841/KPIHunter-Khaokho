@@ -1330,30 +1330,63 @@ function ExplorerPage({ onNavigate }) {
               )
             ),
             React.createElement('tbody', null,
-              unitData.slice().sort((a,b) => b.value - a.value).map(function(u, idx) {
-                var noTarget = u.target === 0;
-                var barPct = Math.min(100, u.value || 0);
-                var barColor = noTarget ? '#D1D5DB' : u.value >= (k.targetNum||80) ? '#10B981' : u.value >= (k.targetNum||80)*0.8 ? '#F59E0B' : '#EF4444';
-                return React.createElement('tr', { key:u.unitId, style:{borderBottom:'1px solid #E5E7EB', background: idx%2===0?'#FFFFFF':'#F9FAFB'} },
-                  React.createElement('td', { style:{padding:'6px 10px', fontWeight:500} }, u.unitName),
-                  React.createElement('td', { style:{textAlign:'center', padding:'6px 10px', color:'#374151'} },
-                    u.target !== null ? u.target : React.createElement('span', { style:{color:'#9CA3AF'} }, '-')
+              (function(){
+                var sorted = unitData.slice().sort(function(a,b){ return b.value - a.value; });
+                /* คำนวณ summary */
+                var sumTarget = 0, sumResult = 0, validCount = 0;
+                sorted.forEach(function(u){
+                  if (u.target != null && u.result != null) {
+                    sumTarget += u.target;
+                    sumResult += u.result;
+                    validCount++;
+                  }
+                });
+                var avgPct = sumTarget > 0 ? (sumResult / sumTarget * 100) : 0;
+                var avgColor = avgPct >= (k.targetNum||80) ? '#10B981' : avgPct >= (k.targetNum||80)*0.8 ? '#F59E0B' : '#EF4444';
+
+                var rows = sorted.map(function(u, idx) {
+                  var noTarget = u.target === 0;
+                  var barPct = Math.min(100, u.value || 0);
+                  var barColor = noTarget ? '#D1D5DB' : u.value >= (k.targetNum||80) ? '#10B981' : u.value >= (k.targetNum||80)*0.8 ? '#F59E0B' : '#EF4444';
+                  return React.createElement('tr', { key:u.unitId, style:{borderBottom:'1px solid #E5E7EB', background: idx%2===0?'#FFFFFF':'#F9FAFB'} },
+                    React.createElement('td', { style:{padding:'6px 10px', fontWeight:500} }, u.unitName),
+                    React.createElement('td', { style:{textAlign:'center', padding:'6px 10px', color:'#374151'} },
+                      u.target !== null ? u.target : React.createElement('span', { style:{color:'#9CA3AF'} }, '-')
+                    ),
+                    React.createElement('td', { style:{textAlign:'center', padding:'6px 10px', color:'#374151'} },
+                      u.result !== null ? u.result : React.createElement('span', { style:{color:'#9CA3AF'} }, '-')
+                    ),
+                    React.createElement('td', { style:{textAlign:'center', padding:'6px 10px', fontWeight:700, color: noTarget ? '#9CA3AF' : barColor} },
+                      noTarget
+                        ? React.createElement('span', { style:{fontSize:'0.8em', fontWeight:400} }, 'ไม่มีเป้าหมาย')
+                        : (u.value != null ? u.value.toFixed(2)+'%' : '-')
+                    ),
+                    React.createElement('td', { style:{padding:'6px 10px', minWidth:100} },
+                      React.createElement('div', { style:{background:'#E5E7EB', borderRadius:4, height:10, overflow:'hidden'} },
+                        React.createElement('div', { style:{width: barPct+'%', height:'100%', background: barColor, borderRadius:4, transition:'width .3s'} })
+                      )
+                    )
+                  );
+                });
+
+                /* แถวรวม */
+                rows.push(React.createElement('tr', { key:'__total__', style:{borderTop:'2px solid #6B7280', background:'#1F2937'} },
+                  React.createElement('td', { style:{padding:'8px 10px', fontWeight:700, color:'#F9FAFB', fontSize:'0.9rem'} }, '📊 รวมทั้งหมด'),
+                  React.createElement('td', { style:{textAlign:'center', padding:'8px 10px', fontWeight:700, color:'#F9FAFB', fontSize:'0.92rem'} }, sumTarget),
+                  React.createElement('td', { style:{textAlign:'center', padding:'8px 10px', fontWeight:700, color:'#F9FAFB', fontSize:'0.92rem'} }, sumResult),
+                  React.createElement('td', { style:{textAlign:'center', padding:'8px 10px', fontWeight:800, color: avgColor, fontSize:'0.95rem'} },
+                    React.createElement('span', { style:{background: avgColor+'22', padding:'2px 8px', borderRadius:20, border:'1px solid '+avgColor} },
+                      avgPct.toFixed(2)+'%'
+                    )
                   ),
-                  React.createElement('td', { style:{textAlign:'center', padding:'6px 10px', color:'#374151'} },
-                    u.result !== null ? u.result : React.createElement('span', { style:{color:'#9CA3AF'} }, '-')
-                  ),
-                  React.createElement('td', { style:{textAlign:'center', padding:'6px 10px', fontWeight:700, color: noTarget ? '#9CA3AF' : barColor} },
-                    noTarget
-                      ? React.createElement('span', { style:{fontSize:'0.8em', fontWeight:400} }, 'ไม่มีเป้าหมาย')
-                      : (u.value != null ? u.value.toFixed(2)+'%' : '-')
-                  ),
-                  React.createElement('td', { style:{padding:'6px 10px', minWidth:100} },
-                    React.createElement('div', { style:{background:'#E5E7EB', borderRadius:4, height:10, overflow:'hidden'} },
-                      React.createElement('div', { style:{width: barPct+'%', height:'100%', background: barColor, borderRadius:4, transition:'width .3s'} })
+                  React.createElement('td', { style:{padding:'8px 10px'} },
+                    React.createElement('div', { style:{background:'rgba(255,255,255,0.15)', borderRadius:4, height:12, overflow:'hidden'} },
+                      React.createElement('div', { style:{width: Math.min(100,avgPct)+'%', height:'100%', background: avgColor, borderRadius:4} })
                     )
                   )
-                );
-              })
+                ));
+                return rows;
+              })()
             )
           )
         )
