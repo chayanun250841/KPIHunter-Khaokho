@@ -1144,7 +1144,45 @@ function ExplorerPage({ onNavigate }) {
       ),
       unitData && React.createElement('div', { className: 'card' },
         React.createElement(SectionHeader, { title: 'ผลงานรายหน่วยบริการ' }),
-        React.createElement(HBarChart, { items: unitData.sort((a, b) => b.value - a.value).map(u => ({ label: u.unitName, value: u.value, target: k.targetNum || 80 })), maxVal: Math.max(100, ...unitData.map(u => u.value)) })
+        React.createElement('div', { style:{overflowX:'auto'} },
+          React.createElement('table', { style:{width:'100%', borderCollapse:'collapse', fontSize:'0.87rem'} },
+            React.createElement('thead', null,
+              React.createElement('tr', { style:{background:'#F3F4F6'} },
+                React.createElement('th', { style:{textAlign:'left', padding:'6px 10px', fontWeight:600} }, 'หน่วยบริการ'),
+                React.createElement('th', { style:{textAlign:'center', padding:'6px 10px', fontWeight:600, width:80} }, 'เป้าหมาย'),
+                React.createElement('th', { style:{textAlign:'center', padding:'6px 10px', fontWeight:600, width:80} }, 'ผลงาน'),
+                React.createElement('th', { style:{textAlign:'center', padding:'6px 10px', fontWeight:600, width:90} }, 'ร้อยละ'),
+                React.createElement('th', { style:{padding:'6px 10px', fontWeight:600} }, 'กราฟ')
+              )
+            ),
+            React.createElement('tbody', null,
+              unitData.slice().sort((a,b) => b.value - a.value).map(function(u, idx) {
+                var noTarget = u.target === 0;
+                var barPct = Math.min(100, u.value || 0);
+                var barColor = noTarget ? '#D1D5DB' : u.value >= (k.targetNum||80) ? '#10B981' : u.value >= (k.targetNum||80)*0.8 ? '#F59E0B' : '#EF4444';
+                return React.createElement('tr', { key:u.unitId, style:{borderBottom:'1px solid #E5E7EB', background: idx%2===0?'#FFFFFF':'#F9FAFB'} },
+                  React.createElement('td', { style:{padding:'6px 10px', fontWeight:500} }, u.unitName),
+                  React.createElement('td', { style:{textAlign:'center', padding:'6px 10px', color:'#374151'} },
+                    u.target !== null ? u.target : React.createElement('span', { style:{color:'#9CA3AF'} }, '-')
+                  ),
+                  React.createElement('td', { style:{textAlign:'center', padding:'6px 10px', color:'#374151'} },
+                    u.result !== null ? u.result : React.createElement('span', { style:{color:'#9CA3AF'} }, '-')
+                  ),
+                  React.createElement('td', { style:{textAlign:'center', padding:'6px 10px', fontWeight:700, color: noTarget ? '#9CA3AF' : barColor} },
+                    noTarget
+                      ? React.createElement('span', { style:{fontSize:'0.8em', fontWeight:400} }, 'ไม่มีเป้าหมาย')
+                      : (u.value != null ? u.value.toFixed(2)+'%' : '-')
+                  ),
+                  React.createElement('td', { style:{padding:'6px 10px', minWidth:100} },
+                    React.createElement('div', { style:{background:'#E5E7EB', borderRadius:4, height:10, overflow:'hidden'} },
+                      React.createElement('div', { style:{width: barPct+'%', height:'100%', background: barColor, borderRadius:4, transition:'width .3s'} })
+                    )
+                  )
+                );
+              })
+            )
+          )
+        )
       )
     );
   }
@@ -1687,14 +1725,24 @@ function UploadPage({ onComplete }) {
         React.createElement('div', { style:{fontWeight:700, marginBottom:12} }, 'การจับคู่หน่วยบริการ (' + (parsedRows.matched||[]).length + ' แห่ง)'),
         React.createElement('div', { style:{display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:8} },
           (parsedRows.matched||[]).map(function(m,i) {
-            var pct = m.csvUnit.overall && m.csvUnit.overall.pct != null ? m.csvUnit.overall.pct : null;
+            var ov = m.csvUnit.overall || {};
+            var pct = ov.pct != null ? ov.pct : null;
+            var tgt = ov.target != null ? ov.target : null;
+            var res = ov.result != null ? ov.result : null;
             var isMerged = !!m.csvUnit.mergedFrom;
-            /* หาชื่อหน่วยจาก appUnit แสดงแทนชื่อดิบ */
             var displayName = m.appUnit ? m.appUnit.name : (m.csvUnit.unitName||'').substring(0,24);
+            var noTarget = tgt === 0;
+            var pctColor = noTarget ? '#9CA3AF' : pct == null ? '#9CA3AF' : pct >= 80 ? '#059669' : pct >= 60 ? '#D97706' : '#DC2626';
             return React.createElement('div', { key:i, style:{fontSize:'var(--text-sm)', padding:'8px 12px', background:'#ECFDF5', border:'1px solid #A7F3D0', borderRadius:6} },
-              React.createElement('div', { style:{display:'flex', justifyContent:'space-between', alignItems:'center'} },
-                React.createElement('span', null, displayName),
-                React.createElement('span', { style:{color:'#059669', fontWeight:700} }, pct != null ? pct.toFixed(2)+'%' : '-')
+              React.createElement('div', { style:{display:'flex', justifyContent:'space-between', alignItems:'flex-start'} },
+                React.createElement('span', { style:{fontWeight:600} }, displayName),
+                React.createElement('span', { style:{color: pctColor, fontWeight:700, fontSize:'1em', whiteSpace:'nowrap', marginLeft:8} },
+                  noTarget ? 'เป้า=0' : pct != null ? pct.toFixed(2)+'%' : '-'
+                )
+              ),
+              React.createElement('div', { style:{display:'flex', gap:12, marginTop:3, color:'#374151', fontSize:'0.82em'} },
+                tgt !== null && React.createElement('span', null, '🎯 เป้า: ', React.createElement('b', null, tgt)),
+                res !== null && React.createElement('span', null, '✅ ผล: ', React.createElement('b', null, res))
               ),
               isMerged && React.createElement('div', { style:{fontSize:10, color:'#6B7280', marginTop:2} }, '+ รวม ' + m.csvUnit.mergedFrom + ' แล้ว')
             );
@@ -1887,11 +1935,53 @@ function AdminPage() {
     )
   );
 
+  /* ── KPI Manual Entry state ── */
+  const [entryKPI,     setEntryKPI]     = useState('');
+  const [entryData,    setEntryData]    = useState({}); // { unitId: {target:'', result:''} }
+  const [entrySaveMsg, setEntrySaveMsg] = useState('');
+
+  function initEntryData(kpiId) {
+    var kpi = D.kpis.find(k => k.id === kpiId);
+    var init = {};
+    D.units.forEach(function(u) {
+      var existing = D.unitPerformance[kpiId] && D.unitPerformance[kpiId].find(function(d) { return d.unitId === u.id; });
+      init[u.id] = {
+        target: existing ? (existing.target != null ? String(existing.target) : '') : '',
+        result: existing ? (existing.result != null ? String(existing.result) : '') : ''
+      };
+    });
+    setEntryData(init);
+  }
+
+  function handleEntrySave() {
+    if (!entryKPI) return;
+    var unitMapping = {};
+    D.units.forEach(function(u) {
+      var d = entryData[u.id] || {};
+      var tgt = parseFloat(d.target);
+      var res = parseFloat(d.result);
+      if (isNaN(tgt) && isNaN(res)) return;
+      tgt = isNaN(tgt) ? 0 : tgt;
+      res = isNaN(res) ? 0 : res;
+      var pct = tgt > 0 ? Math.round((res / tgt) * 10000) / 100 : (res > 0 ? 100 : 0);
+      unitMapping[u.id] = { overall: { target: tgt, result: res, pct: pct, F: '' }, q1:{}, q2:{}, q3:{}, q4:{} };
+    });
+    D.applyCSVUnitData(entryKPI, unitMapping);
+    D.saveResults();
+    if (window.KPIHUNTER_DB) {
+      window.KPIHUNTER_DB.saveAllResults(D.kpis).catch(function(e){ console.warn(e); });
+    }
+    window.dispatchEvent(new CustomEvent('kpihunter-data-changed'));
+    setEntrySaveMsg('บันทึกสำเร็จ ✓');
+    setTimeout(function() { setEntrySaveMsg(''); }, 3000);
+  }
+
   const tabs = [
-    { id:'system', label:'ตั้งค่าระบบ', d:'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
-    { id:'units', label:'หน่วยบริการ', d:'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
+    { id:'system',    label:'ตั้งค่าระบบ',      d:'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
+    { id:'kpientry',  label:'กรอกข้อมูล KPI',   d:'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' },
+    { id:'units',     label:'หน่วยบริการ',       d:'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
     { id:'threshold', label:'เกณฑ์ผ่าน/ไม่ผ่าน', d:'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3' },
-    { id:'users', label:'ผู้ใช้งาน', d:'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
+    { id:'users',     label:'ผู้ใช้งาน',          d:'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
   ];
 
   return React.createElement('div', { className:'admin-shell' },
@@ -1913,6 +2003,94 @@ function AdminPage() {
           React.createElement('div', { className:'admin-field' }, React.createElement('label', { className:'admin-label' }, 'จังหวัด'), React.createElement('input', { className:'admin-input', value: province, onChange: e => setProvince(e.target.value) }))
         ),
         React.createElement('div', { className:'admin-action-row' }, saveMsg && React.createElement('span', { className:'admin-save-msg' }, React.createElement(AdminIcon, { d:'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' }), saveMsg), React.createElement('button', { className:'admin-save-btn', onClick: showSaved }, 'บันทึกการตั้งค่า'))
+      ),
+      activeTab === 'kpientry' && React.createElement('div', { className:'admin-section' },
+        React.createElement('h3', { className:'admin-section-title' }, 'กรอกข้อมูล KPI ด้วยตนเอง'),
+        React.createElement('p', { style:{fontSize:'0.85rem', color:'#6B7280', marginBottom:'1rem'} }, 'สำหรับตัวชี้วัดที่ไม่มีข้อมูลใน HDC — กรอกเป้าหมายและผลงานของแต่ละหน่วยบริการ แล้วกด "บันทึกข้อมูล"'),
+        React.createElement('div', { className:'admin-field', style:{marginBottom:'1rem', maxWidth:'460px'} },
+          React.createElement('label', { className:'admin-label' }, 'เลือกตัวชี้วัด'),
+          React.createElement('select', {
+            className:'admin-select',
+            value: entryKPI,
+            onChange: function(e) {
+              setEntryKPI(e.target.value);
+              if (e.target.value) initEntryData(e.target.value);
+            }
+          },
+            React.createElement('option', { value:'' }, '-- เลือกตัวชี้วัด --'),
+            D.kpis.map(function(k) {
+              return React.createElement('option', { key:k.id, value:k.id }, k.id + ' · ' + k.name);
+            })
+          )
+        ),
+        entryKPI && React.createElement('div', null,
+          React.createElement('div', { className:'admin-table-wrap' },
+            React.createElement('table', { className:'admin-table' },
+              React.createElement('thead', null,
+                React.createElement('tr', null,
+                  React.createElement('th', null, '#'),
+                  React.createElement('th', null, 'หน่วยบริการ'),
+                  React.createElement('th', { style:{width:'130px'} }, 'เป้าหมาย'),
+                  React.createElement('th', { style:{width:'130px'} }, 'ผลงาน'),
+                  React.createElement('th', { style:{width:'100px'} }, 'ร้อยละ')
+                )
+              ),
+              React.createElement('tbody', null,
+                D.units.map(function(u, i) {
+                  var d = entryData[u.id] || { target:'', result:'' };
+                  var tgt = parseFloat(d.target);
+                  var res = parseFloat(d.result);
+                  var pct = (!isNaN(tgt) && !isNaN(res) && tgt > 0)
+                    ? Math.round((res/tgt)*10000)/100
+                    : (!isNaN(res) && isNaN(tgt) || (!isNaN(res) && res > 0 && tgt === 0) ? 100 : null);
+                  var pctColor = pct === null ? '#9CA3AF' : pct >= 80 ? '#10B981' : pct >= 60 ? '#F59E0B' : '#EF4444';
+                  return React.createElement('tr', { key:u.id },
+                    React.createElement('td', { className:'td-muted' }, i+1),
+                    React.createElement('td', { style:{fontWeight:500} }, u.name),
+                    React.createElement('td', null,
+                      React.createElement('input', {
+                        type:'number', min:'0',
+                        className:'admin-input',
+                        style:{width:'100%', padding:'4px 8px', textAlign:'center'},
+                        value: d.target,
+                        placeholder: '0',
+                        onChange: function(e) {
+                          var nd = Object.assign({}, entryData);
+                          nd[u.id] = Object.assign({}, nd[u.id]||{result:''}, { target: e.target.value });
+                          setEntryData(nd);
+                        }
+                      })
+                    ),
+                    React.createElement('td', null,
+                      React.createElement('input', {
+                        type:'number', min:'0',
+                        className:'admin-input',
+                        style:{width:'100%', padding:'4px 8px', textAlign:'center'},
+                        value: d.result,
+                        placeholder: '0',
+                        onChange: function(e) {
+                          var nd = Object.assign({}, entryData);
+                          nd[u.id] = Object.assign({}, nd[u.id]||{target:''}, { result: e.target.value });
+                          setEntryData(nd);
+                        }
+                      })
+                    ),
+                    React.createElement('td', { style:{textAlign:'center', fontWeight:600, color: pctColor} },
+                      pct !== null ? pct.toFixed(2)+'%' : (tgt === 0 && !isNaN(tgt) ? React.createElement('span', { style:{color:'#9CA3AF', fontSize:'0.8rem'} }, 'ไม่มีเป้า') : '-')
+                    )
+                  );
+                })
+              )
+            )
+          ),
+          React.createElement('div', { className:'admin-action-row', style:{marginTop:'1rem'} },
+            entrySaveMsg && React.createElement('span', { className:'admin-save-msg' },
+              React.createElement(AdminIcon, { d:'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' }),
+              entrySaveMsg
+            ),
+            React.createElement('button', { className:'admin-save-btn', onClick: handleEntrySave }, 'บันทึกข้อมูล KPI')
+          )
+        )
       ),
       activeTab === 'units' && React.createElement('div', { className:'admin-section' },
         React.createElement('div', { className:'admin-section-header' }, React.createElement('h3', { className:'admin-section-title' }, 'หน่วยบริการในอำเภอเขาค้อ (' + units.length + ' หน่วย)'), React.createElement('button', { className:'admin-add-btn', onClick: () => setEditUnit({ id:'', name:'', code:'', short:'', isNew:true }) }, React.createElement(AdminIcon, { d:'M12 4v16m8-8H4' }), 'เพิ่มหน่วยบริการ')),
