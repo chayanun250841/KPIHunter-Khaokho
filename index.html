@@ -46,13 +46,10 @@ html, body, #root { height: 100%; margin: 0; }
 .sidebar-logo { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
 .logo-mark {
   width: 42px; height: 42px; border-radius: 50%;
-  background: #fff;
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; overflow: hidden;
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
-  padding: 2px;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.25);
 }
-.logo-mark img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
 .logo-text { min-width: 0; overflow: hidden; }
 .logo-title { color: #fff; font-weight: 800; font-size: 14px; letter-spacing: 0.08em; white-space: nowrap; }
 .logo-sub { color: rgba(255,255,255,0.55); font-size: 10px; font-weight: 500; margin-top: 1px; letter-spacing: 0.04em; }
@@ -2737,11 +2734,24 @@ function App() {
     React.createElement('aside', { className:'sidebar' + (sidebarOpen ? '' : ' collapsed') },
       React.createElement('div', { className:'sidebar-header' }, React.createElement('div', { className:'sidebar-logo' },
   React.createElement('div', { className:'logo-mark' },
-    React.createElement('img', {
-      src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Seal_of_the_Ministry_of_Public_Health_of_Thailand.svg/200px-Seal_of_the_Ministry_of_Public_Health_of_Thailand.svg.png',
-      alt: 'MOPH',
-      onError: function(e){ e.target.style.display='none'; e.target.parentNode.innerHTML='<span style="font-weight:800;font-size:15px;color:#2D6A4F">K</span>'; }
-    })
+    React.createElement('svg', { viewBox:'0 0 42 42', width:42, height:42, xmlns:'http://www.w3.org/2000/svg' },
+      /* outer circle */
+      React.createElement('circle', { cx:21, cy:21, r:20, fill:'#1B4332', stroke:'#fff', strokeWidth:0.5 }),
+      React.createElement('circle', { cx:21, cy:21, r:17.5, fill:'none', stroke:'rgba(255,255,255,0.35)', strokeWidth:0.8 }),
+      /* caduceus staff */
+      React.createElement('line', { x1:21, y1:10, x2:21, y2:34, stroke:'#D4AF37', strokeWidth:1.6, strokeLinecap:'round' }),
+      /* wings */
+      React.createElement('path', { d:'M21 13 Q14 11 13 14 Q16 14 21 15', fill:'none', stroke:'#D4AF37', strokeWidth:1.2, strokeLinecap:'round' }),
+      React.createElement('path', { d:'M21 13 Q28 11 29 14 Q26 14 21 15', fill:'none', stroke:'#D4AF37', strokeWidth:1.2, strokeLinecap:'round' }),
+      /* snake left */
+      React.createElement('path', { d:'M19.5 15 Q16 17 17.5 20 Q19 23 17 26 Q16 28.5 19 30', fill:'none', stroke:'#52B788', strokeWidth:1.3, strokeLinecap:'round' }),
+      /* snake right */
+      React.createElement('path', { d:'M22.5 15 Q26 17 24.5 20 Q23 23 25 26 Q26 28.5 23 30', fill:'none', stroke:'#52B788', strokeWidth:1.3, strokeLinecap:'round' }),
+      /* top orb */
+      React.createElement('circle', { cx:21, cy:10.5, r:2, fill:'#D4AF37' }),
+      /* text สธ */
+      React.createElement('text', { x:21, y:39, textAnchor:'middle', fontSize:4.5, fill:'rgba(255,255,255,0.7)', fontFamily:'sans-serif', fontWeight:700, letterSpacing:1 }, 'สธ.')
+    )
   ),
   sidebarOpen && React.createElement('div', { className:'logo-text' },
     React.createElement('div', { className:'logo-title' }, 'KPI HUNTER'),
