@@ -1437,11 +1437,31 @@ function UploadPage({ onComplete }) {
   const meta = D.getUploadMeta();
 
   function detectCols(headers) {
-    var numCol = headers.find(h => /ลำดับ/.test(h));
+    var numCol  = headers.find(h => /ลำดับ/.test(h));
     var nameCol = headers.find(h => /ตัวชี้วัด/.test(h));
-    var tgtCol = headers.find(h => /เป้าหมาย/.test(h));
-    var resCol = headers.find(h => (/เขาค้อ/.test(h) || /ผลงาน/.test(h)) && !/ประเมิน/.test(h));
+    var tgtCol  = headers.find(h => /เป้าหมาย/.test(h));
+
+    /* ผลงาน: คอลัมน์ที่มี "เขาค้อ" หรือ "ผลงาน" แต่ไม่ใช่ _1/_2 suffix */
+    var resCol = headers.find(h =>
+      (/เขาค้อ/.test(h) || /ผลงาน/.test(h)) &&
+      !/ประเมิน/.test(h) && !/_\d+$/.test(h)
+    );
+
+    /* ประเมิน: หา explicit ก่อน ถ้าไม่มีให้ใช้ duplicate เขาค้อ_1 หรือ suffix _1 */
     var pfCol = headers.find(h => /ประเมิน/.test(h) || /สถานะ/.test(h));
+    if (!pfCol) {
+      /* กรณีคอลัมน์ชื่อซ้ำ → XLSX เติม _1, _2... */
+      pfCol = headers.find(h => /เขาค้อ.*_\d+/.test(h) || /ผลงาน.*_\d+/.test(h));
+    }
+    if (!pfCol) {
+      /* fallback: คอลัมน์ถัดจาก resCol ที่ชื่อเหมือนกัน */
+      if (resCol) {
+        var resIdx = headers.indexOf(resCol);
+        var nextH  = headers[resIdx + 1];
+        if (nextH && (/เขาค้อ/.test(nextH) || /ผ่าน/.test(nextH))) pfCol = nextH;
+      }
+    }
+
     return { numCol, nameCol, tgtCol, resCol, pfCol };
   }
 
