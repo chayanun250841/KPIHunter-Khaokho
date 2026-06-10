@@ -824,6 +824,36 @@ window.KPIHUNTER_CONFIG = {
           var row = res.data[0];
           return { fileName: row.file_name, uploadDate: row.upload_date, rows: row.rows_count };
         });
+    },
+    /* ─── unitPerformance (ผลงานรายหน่วย) ─── */
+    saveUnitPerf: function (unitPerformance) {
+      var rows = Object.keys(unitPerformance).map(function (kpiId) {
+        return { kpi_id: kpiId, unit_data: unitPerformance[kpiId], updated_at: new Date().toISOString() };
+      });
+      if (!rows.length) return Promise.resolve();
+      return db.from('kpi_unit_perf').upsert(rows, { onConflict: 'kpi_id' })
+        .then(function (res) { if (res.error) throw res.error; });
+    },
+    loadUnitPerf: function () {
+      return db.from('kpi_unit_perf').select('kpi_id, unit_data')
+        .then(function (res) {
+          if (res.error) throw res.error;
+          var out = {};
+          (res.data || []).forEach(function (row) { out[row.kpi_id] = row.unit_data; });
+          return out;
+        });
+    },
+    /* ─── App settings (year/month/district) ─── */
+    saveAppSettings: function (settings) {
+      return db.from('app_settings').upsert({ key: 'meta', value: settings, updated_at: new Date().toISOString() }, { onConflict: 'key' })
+        .then(function (res) { if (res.error) throw res.error; });
+    },
+    loadAppSettings: function () {
+      return db.from('app_settings').select('value').eq('key', 'meta').limit(1)
+        .then(function (res) {
+          if (res.error || !res.data || !res.data.length) return null;
+          return res.data[0].value;
+        });
     }
   };
   console.info('[KPI Hunter] Supabase connected:', cfg.supabaseUrl);
@@ -2118,6 +2148,14 @@ function AdminPage() {
   const [editUnit, setEditUnit] = useState(null);
   const [saveMsg, setSaveMsg] = useState('');
   const [colMapping, setColMapping] = useState({ num: 'คอลัมน์ A (ลำดับ)', name: 'คอลัมน์ B (ตัวชี้วัด)', target: 'คอลัมน์ C (เป้าหมาย)', pm: 'คอลัมน์ D (กลุ่มงาน PM)', result: 'คอลัมน์ O (ผลงานเขาค้อ)', status: 'คอลัมน์ AW (สถานะประเมิน)' });
+  /* ── KPI Edit state (ต้องประกาศก่อน early return ตาม Rules of Hooks) ── */
+  const [kpiEditSearch, setKpiEditSearch] = useState('');
+  const [editingKPI, setEditingKPI]       = useState(null);
+  const [kpiEditMsg, setKpiEditMsg]       = useState('');
+  /* ── KPI Manual Entry state ── */
+  const [entryKPI,     setEntryKPI]     = useState('');
+  const [entryData,    setEntryData]    = useState({});
+  const [entrySaveMsg, setEntrySaveMsg] = useState('');
 
   function AdminIcon({ d, size }) { return React.createElement('svg', { width: size||16, height: size||16, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:1.5, strokeLinecap:'round', strokeLinejoin:'round' }, React.createElement('path', { d })); }
   function handleLogin(e) { e.preventDefault(); if (username === ADMIN_CREDS.user && password === ADMIN_CREDS.pass) { sessionStorage.setItem(SESSION_KEY, '1'); setAuthed(true); setLoginError(''); } else { setLoginError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'); } }
@@ -2142,11 +2180,6 @@ function AdminPage() {
     )
   );
 
-  /* ── KPI Edit state ── */
-  const [kpiEditSearch, setKpiEditSearch] = useState('');
-  const [editingKPI, setEditingKPI]       = useState(null); // { id, name, target, targetNum, category, type }
-  const [kpiEditMsg, setKpiEditMsg]       = useState('');
-
   function handleSaveKPIEdit() {
     if (!editingKPI) return;
     var edits = {};
@@ -2162,11 +2195,6 @@ function AdminPage() {
     setKpiEditMsg('บันทึก KPI สำเร็จ ✓');
     setTimeout(function(){ setKpiEditMsg(''); }, 3000);
   }
-
-  /* ── KPI Manual Entry state ── */
-  const [entryKPI,     setEntryKPI]     = useState('');
-  const [entryData,    setEntryData]    = useState({}); // { unitId: {target:'', result:''} }
-  const [entrySaveMsg, setEntrySaveMsg] = useState('');
 
   function initEntryData(kpiId) {
     var kpi = D.kpis.find(k => k.id === kpiId);

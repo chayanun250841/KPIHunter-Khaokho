@@ -30,9 +30,11 @@ window.KPIHUNTER = window.KPIHUNTER || {};
     if (settings.province) ns.meta.province = settings.province;
     try { localStorage.setItem(LS_SETTINGS, JSON.stringify(ns.meta)); } catch(e) {}
     /* sync settings ขึ้น Supabase */
-    if (window.KPIHUNTER_DB) {
-      window.KPIHUNTER_DB.saveAppSettings(ns.meta).catch(function(e){ console.warn('[Supabase] saveAppSettings:', e); });
-    }
+    try {
+      if (window.KPIHUNTER_DB && typeof window.KPIHUNTER_DB.saveAppSettings === 'function') {
+        window.KPIHUNTER_DB.saveAppSettings(ns.meta).catch(function(e){ console.warn('[Supabase] saveAppSettings:', e); });
+      }
+    } catch(e) { console.warn('[Supabase] saveAppSettings threw:', e); }
     window.dispatchEvent(new CustomEvent('kpihunter-data-changed'));
   };
 
@@ -208,9 +210,11 @@ window.KPIHUNTER = window.KPIHUNTER || {};
       localStorage.setItem(LS_UNIT_PERF, JSON.stringify(ns.unitPerformance));
     } catch(e) {}
     /* ── sync unitPerformance ขึ้น Supabase ── */
-    if (window.KPIHUNTER_DB && Object.keys(ns.unitPerformance).length > 0) {
-      window.KPIHUNTER_DB.saveUnitPerf(ns.unitPerformance).catch(function(e){ console.warn('[Supabase] saveUnitPerf:', e); });
-    }
+    try {
+      if (window.KPIHUNTER_DB && typeof window.KPIHUNTER_DB.saveUnitPerf === 'function' && Object.keys(ns.unitPerformance).length > 0) {
+        window.KPIHUNTER_DB.saveUnitPerf(ns.unitPerformance).catch(function(e){ console.warn('[Supabase] saveUnitPerf:', e); });
+      }
+    } catch(e) { console.warn('[Supabase] saveUnitPerf threw:', e); }
   };
 
   ns.loadSavedResults = function() {
@@ -286,6 +290,30 @@ window.KPIHUNTER = window.KPIHUNTER || {};
     try { var m = localStorage.getItem(LS_META); return m ? JSON.parse(m) : null; } catch(e) { return null; }
   };
 
+  /* ─── คำนวณ overall result/passfail ของ KPI จาก unitPerformance ─── */
+  ns.recomputeOverallFromUnitPerf = function() {
+    Object.keys(ns.unitPerformance).forEach(function(kpiId) {
+      var kpi = ns.kpis.find(function(k){ return k.id === kpiId; });
+      if (!kpi) return;
+      /* ถ้ามีผลงาน overall อยู่แล้ว (จาก kpi_results / localStorage) ไม่ต้องคำนวณซ้ำ */
+      if (kpi.passfail && kpi.passfail !== '') return;
+      var rows = ns.unitPerformance[kpiId] || [];
+      var totalTarget = 0, totalResult = 0, cnt = 0;
+      rows.forEach(function(u) {
+        if (u.target != null && u.result != null) {
+          totalTarget += u.target; totalResult += u.result; cnt++;
+        }
+      });
+      if (cnt > 0 && totalTarget > 0) {
+        var aggPct = Math.round((totalResult / totalTarget) * 10000) / 100;
+        kpi.result   = aggPct;
+        kpi.passfail = kpi.targetNum ? (aggPct >= kpi.targetNum ? 'ผ่าน' : 'ไม่ผ่าน') : '';
+        kpi.risk     = riskLevel(kpi.result, kpi.targetNum, kpi.passfail);
+        if (ns.trends[kpiId]) ns.trends[kpiId][5] = kpi.result;
+      }
+    });
+  };
+
   /* ─── Auto-sync จาก Supabase (เรียกตอน startup) ─── */
   ns.syncFromSupabase = function(onDone) {
     if (!window.KPIHUNTER_DB) {
@@ -293,10 +321,18 @@ window.KPIHUNTER = window.KPIHUNTER || {};
       return;
     }
     var db = window.KPIHUNTER_DB;
+    /* เรียกแบบปลอดภัย: ถ้าฟังก์ชันไม่มีหรือ throw → คืนค่า default */
+    function safeCall(fn, fallback) {
+      try {
+        if (typeof fn !== 'function') return Promise.resolve(fallback);
+        var p = fn();
+        return (p && typeof p.then === 'function') ? p.catch(function(){ return fallback; }) : Promise.resolve(fallback);
+      } catch(e) { return Promise.resolve(fallback); }
+    }
     Promise.all([
-      db.loadResults().catch(function(){ return []; }),
-      db.loadUnitPerf().catch(function(){ return {}; }),
-      db.loadAppSettings().catch(function(){ return null; })
+      safeCall(db.loadResults    && db.loadResults.bind(db),    []),
+      safeCall(db.loadUnitPerf   && db.loadUnitPerf.bind(db),   {}),
+      safeCall(db.loadAppSettings&& db.loadAppSettings.bind(db),null)
     ]).then(function(res) {
       var results   = res[0];
       var unitPerf  = res[1];
@@ -338,6 +374,10 @@ window.KPIHUNTER = window.KPIHUNTER || {};
         });
         try { localStorage.setItem(LS_UNIT_PERF, JSON.stringify(ns.unitPerformance)); } catch(e) {}
       }
+
+      /* ── Fallback: คำนวณ overall result จาก unitPerformance ──
+         (กรณีเปิดเครื่องใหม่ที่ localStorage ว่าง และตาราง kpi_results ไม่มีข้อมูล) */
+      ns.recomputeOverallFromUnitPerf();
 
       window.dispatchEvent(new CustomEvent('kpihunter-data-changed'));
       if (onDone) onDone({ source: 'supabase', kpiCount: results.length });
