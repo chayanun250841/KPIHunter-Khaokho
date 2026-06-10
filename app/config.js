@@ -10,6 +10,6 @@
  * ─────────────────────────────────────────────────────────────
  */
 window.KPIHUNTER_CONFIG = {
-  supabaseUrl: 'YOUR_SUPABASE_URL',
-  supabaseKey: 'YOUR_SUPABASE_ANON_KEY',
+  supabaseUrl: 'https://wemcvwbeqosetievscvd.supabase.co',
+  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlbWN2d2JlcW9zZXRpZXZzY3ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwOTA4NTEsImV4cCI6MjA5NjY2Njg1MX0.zDy-x2rfsfwrQbYnvzxDQGKXBs1Ns3GM0ZVylB5kko4',
 };
