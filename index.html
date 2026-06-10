@@ -971,11 +971,32 @@ const ICONS = {
   alert:  'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
 };
 function DashboardPage() {
-  const [filterUnit, setFilterUnit] = useState('');  // '' = ภาพรวมทั้งอำเภอ
+  // '' = ภาพรวมทั้งอำเภอ, 'HPHT_ALL' = รพ.สต.ทั้งหมด, 'U08' = รพ.เขาค้อ, 'UXX' = รายหน่วย
+  const [filterUnit, setFilterUnit] = useState('');
+
+  /* IDs ของ รพ.สต. 10 แห่ง (ไม่รวม รพ.เขาค้อ U08) */
+  var HPHT_IDS = D2.units.filter(function(u){ return u.id !== 'U08'; }).map(function(u){ return u.id; });
 
   /* ── compute unit-filtered KPI list ── */
   const kpisForUnit = useMemo(function() {
     if (!filterUnit) return D2.kpis;
+
+    /* รพ.สต.ทั้งหมด: เฉลี่ยผลงานของ 10 หน่วย */
+    if (filterUnit === 'HPHT_ALL') {
+      return D2.kpis.filter(function(k) {
+        var ud = D2.unitPerformance[k.id];
+        return ud && ud.some(function(d){ return HPHT_IDS.indexOf(d.unitId) >= 0; });
+      }).map(function(k) {
+        var ud = D2.unitPerformance[k.id];
+        var rows = ud ? ud.filter(function(d){ return HPHT_IDS.indexOf(d.unitId) >= 0 && d.value != null; }) : [];
+        if (rows.length === 0) return k;
+        var avg = Math.round(rows.reduce(function(s,r){ return s+r.value; },0) / rows.length * 10) / 10;
+        var pf = k.targetNum ? (avg >= k.targetNum ? 'ผ่าน' : 'ไม่ผ่าน') : k.passfail;
+        return Object.assign({}, k, { result: avg, passfail: pf });
+      });
+    }
+
+    /* รายหน่วยเดี่ยว */
     return D2.kpis.filter(function(k) {
       var ud = D2.unitPerformance[k.id];
       return ud && ud.some(function(d){ return d.unitId === filterUnit; });
@@ -993,53 +1014,97 @@ function DashboardPage() {
   const summary = useMemo(function() {
     if (!filterUnit) return D2.getSummary();
     var total = kpisForUnit.length;
-    var passed = kpisForUnit.filter(function(k){ return k.passfail === 'ผ่าน'; }).length;
-    var failed = kpisForUnit.filter(function(k){ return k.passfail.indexOf('ไม่ผ่าน') >= 0; }).length;
+    var passed  = kpisForUnit.filter(function(k){ return k.passfail === 'ผ่าน'; }).length;
+    var failed  = kpisForUnit.filter(function(k){ return k.passfail.indexOf('ไม่ผ่าน') >= 0; }).length;
     var evaluated = passed + failed;
-    var passRate = evaluated > 0 ? Math.round(passed / evaluated * 1000) / 10 : 0;
-    var critical = kpisForUnit.filter(function(k){ return k.risk === 'critical'; }).length;
-    var highRisk = kpisForUnit.filter(function(k){ return k.risk === 'high'; }).length;
+    var passRate  = evaluated > 0 ? Math.round(passed / evaluated * 1000) / 10 : 0;
+    var critical  = kpisForUnit.filter(function(k){ return k.risk === 'critical'; }).length;
+    var highRisk  = kpisForUnit.filter(function(k){ return k.risk === 'high'; }).length;
     return { total, passed, failed, evaluated, passRate, critical, highRisk,
-             sso: kpisForUnit.filter(function(k){return k.type==='sso';}).length,
-             rph: kpisForUnit.filter(function(k){return k.type==='rph';}).length,
+             sso:  kpisForUnit.filter(function(k){return k.type==='sso';}).length,
+             rph:  kpisForUnit.filter(function(k){return k.type==='rph';}).length,
              both: kpisForUnit.filter(function(k){return k.type==='both';}).length };
   }, [filterUnit, kpisForUnit]);
 
-  const failedKPIs   = useMemo(() => kpisForUnit.filter(k => k.passfail.indexOf('ไม่ผ่าน') >= 0).sort((a, b) => a.result - b.result), [kpisForUnit]);
-  const criticalKPIs = useMemo(() => kpisForUnit.filter(k => k.risk === 'critical' || k.risk === 'high'), [kpisForUnit]);
-  const unitRank  = useMemo(() => D2.getUnitRankings(), []);
-  const pmSummary = useMemo(() => D2.getPMSummary(), []);
+  const failedKPIs   = useMemo(() => kpisForUnit.filter(k => k.passfail.indexOf('ไม่ผ่าน') >= 0).sort((a,b) => a.result-b.result), [kpisForUnit]);
+  const criticalKPIs = useMemo(() => kpisForUnit.filter(k => k.risk==='critical'||k.risk==='high'), [kpisForUnit]);
+  const unitRank     = useMemo(() => D2.getUnitRankings(), []);
+  const pmSummary    = useMemo(() => D2.getPMSummary(), []);
 
-  var selectedUnitObj = filterUnit ? D2.units.find(function(u){ return u.id === filterUnit; }) : null;
+  var selectedUnitObj = (filterUnit && filterUnit !== 'HPHT_ALL')
+    ? D2.units.find(function(u){ return u.id === filterUnit; }) : null;
+
+  /* helper: chip style */
+  function chipStyle(active, color) {
+    color = color || '#1D4ED8';
+    return {padding:'4px 13px', borderRadius:20, border:'1.5px solid', fontSize:'0.82rem',
+            fontWeight:active?700:400, cursor:'pointer', whiteSpace:'nowrap',
+            background: active ? color : '#F9FAFB',
+            color:      active ? '#fff' : '#374151',
+            borderColor:active ? color  : '#D1D5DB'};
+  }
+
+  /* รพ.สต. 10 แห่ง */
+  var hphtUnits = D2.units.filter(function(u){ return u.id !== 'U08'; });
+  var rphUnit   = D2.units.find(function(u){ return u.id === 'U08'; });
 
   return React.createElement('div', { className: 'page-content' },
     /* ── Unit Filter Bar ── */
     React.createElement('div', { className:'card', style:{padding:'10px 16px', marginBottom:0} },
-      React.createElement('div', { style:{display:'flex', alignItems:'center', gap:8, flexWrap:'wrap'} },
-        React.createElement('span', { style:{fontSize:'0.82rem', fontWeight:600, color:'#374151', whiteSpace:'nowrap'} }, '📍 ดูข้อมูล:'),
+      React.createElement('div', { style:{display:'flex', flexWrap:'wrap', gap:6, alignItems:'center'} },
+        React.createElement('span', { style:{fontSize:'0.78rem', fontWeight:700, color:'#6B7280', marginRight:2, whiteSpace:'nowrap'} }, '📍 ดูข้อมูล:'),
+
+        /* ── ภาพรวมทั้งอำเภอ ── */
+        React.createElement('button', { style:chipStyle(!filterUnit,'#2D6A4F'), onClick:function(){ setFilterUnit(''); } }, 'ภาพรวมทั้งอำเภอ'),
+
+        /* ── Divider ── */
+        React.createElement('span', { style:{width:1, height:22, background:'#D1D5DB', margin:'0 4px'} }),
+
+        /* ── รพ.สต.ทั้งหมด ── */
         React.createElement('button', {
-          style:{padding:'4px 12px', borderRadius:20, border:'1px solid', fontSize:'0.82rem', fontWeight: !filterUnit?700:400,
-                 background: !filterUnit?'#2D6A4F':'#F9FAFB', color: !filterUnit?'#fff':'#374151',
-                 borderColor: !filterUnit?'#2D6A4F':'#D1D5DB', cursor:'pointer'},
-          onClick: function(){ setFilterUnit(''); }
-        }, 'ภาพรวมทั้งอำเภอ'),
-        D2.units.map(function(u) {
+          style: chipStyle(filterUnit==='HPHT_ALL','#0369A1'),
+          onClick: function(){ setFilterUnit('HPHT_ALL'); }
+        }, '🏘️ รพ.สต.ทั้งหมด (10 แห่ง)'),
+
+        /* ── รพ.เขาค้อ ── */
+        rphUnit && React.createElement('button', {
+          style: chipStyle(filterUnit==='U08','#7C3AED'),
+          onClick: function(){ setFilterUnit('U08'); }
+        }, '🏥 '+rphUnit.short),
+
+        /* ── Divider ── */
+        React.createElement('span', { style:{width:1, height:22, background:'#D1D5DB', margin:'0 4px'} }),
+
+        /* ── แต่ละ รพ.สต. ── */
+        hphtUnits.map(function(u) {
           var sel = filterUnit === u.id;
           return React.createElement('button', {
             key: u.id,
-            style:{padding:'4px 12px', borderRadius:20, border:'1px solid', fontSize:'0.82rem', fontWeight: sel?700:400,
-                   background: sel?'#1D4ED8':'#F9FAFB', color: sel?'#fff':'#374151',
-                   borderColor: sel?'#1D4ED8':'#D1D5DB', cursor:'pointer'},
+            style: chipStyle(sel,'#0369A1'),
             onClick: function(){ setFilterUnit(u.id); }
           }, u.short);
         })
       )
     ),
-    selectedUnitObj && React.createElement('div', { style:{background:'#EFF6FF', border:'1px solid #BFDBFE', borderRadius:8, padding:'8px 16px', display:'flex', alignItems:'center', gap:8, fontSize:'0.85rem', color:'#1E40AF'} },
-      React.createElement('span', { style:{fontSize:'1.1em'} }, '🏥'),
+
+    /* ── Info banner เมื่อเลือก ── */
+    (filterUnit === 'HPHT_ALL') && React.createElement('div', {
+      style:{background:'#EFF6FF', border:'1px solid #BFDBFE', borderRadius:8, padding:'8px 16px',
+             display:'flex', alignItems:'center', gap:8, fontSize:'0.85rem', color:'#1E40AF'}
+    },
+      React.createElement('span', null, '🏘️'),
+      React.createElement('b', null, 'รพ.สต.ทั้งหมด 10 แห่ง'),
+      React.createElement('span', { style:{color:'#6B7280'} }, '· ค่าเฉลี่ยผลงานรวม ' + kpisForUnit.length + ' ตัวชี้วัด'),
+      React.createElement('button', { style:{marginLeft:'auto', color:'#6B7280', cursor:'pointer', background:'none', border:'none', fontSize:'1.1em'}, onClick:function(){ setFilterUnit(''); } }, '✕')
+    ),
+    selectedUnitObj && React.createElement('div', {
+      style:{background:'#EFF6FF', border:'1px solid #BFDBFE', borderRadius:8, padding:'8px 16px',
+             display:'flex', alignItems:'center', gap:8, fontSize:'0.85rem', color:'#1E40AF'}
+    },
+      React.createElement('span', { style:{fontSize:'1.1em'} }, selectedUnitObj.id==='U08'?'🏥':'🏘️'),
       React.createElement('b', null, selectedUnitObj.name),
-      React.createElement('span', { style:{color:'#6B7280'} }, '· แสดงเฉพาะตัวชี้วัดที่มีข้อมูลของหน่วยนี้ (' + kpisForUnit.length + ' ตัว)'),
-      React.createElement('button', { style:{marginLeft:'auto', color:'#6B7280', cursor:'pointer', background:'none', border:'none', fontSize:'1.1em'}, onClick: function(){ setFilterUnit(''); } }, '✕')
+      React.createElement('span', { style:{color:'#6B7280'} }, '· ' + kpisForUnit.length + ' ตัวชี้วัดที่มีข้อมูล'),
+      React.createElement('button', { style:{marginLeft:'auto', color:'#6B7280', cursor:'pointer', background:'none', border:'none', fontSize:'1.1em'}, onClick:function(){ setFilterUnit(''); } }, '✕')
     ),
     React.createElement('div', { className: 'cards-grid-4' },
       React.createElement(SummaryCard, { iconPath: ICONS.chart, label: 'KPI ทั้งหมด', value: summary.total, sub: 'ประเมินแล้ว ' + summary.evaluated + ' รายการ', color: '#2D6A4F' }),
@@ -1258,7 +1323,6 @@ function ExplorerPage({ onNavigate }) {
       React.createElement(SearchInput, { value: search, onChange: setSearch, placeholder: 'ค้นหาตัวชี้วัด...' }),
       React.createElement('div', { className: 'filter-row' }, React.createElement('span', { className: 'filter-label' }, 'สถานะ:'), React.createElement(FilterPills, { value: statusFilter, onChange: setStatusFilter, options: [{ value: 'pass', label: '✓ ผ่าน', count: D3.kpis.filter(k => k.passfail === 'ผ่าน').length }, { value: 'fail', label: '✗ ไม่ผ่าน', count: D3.kpis.filter(k => k.passfail.indexOf('ไม่ผ่าน') >= 0).length }, { value: 'none', label: 'ไม่มีข้อมูล' }] })),
       React.createElement('div', { className: 'filter-row' }, React.createElement('span', { className: 'filter-label' }, 'หน่วยงาน:'), React.createElement(FilterPills, { value: typeFilter, onChange: setTypeFilter, options: [{ value: 'sso', label: 'สสอ./รพ.สต.' }, { value: 'rph', label: 'โรงพยาบาล' }, { value: 'both', label: 'ร่วมกัน' }] })),
-      React.createElement('div', { className: 'filter-row' }, React.createElement('span', { className: 'filter-label' }, 'ความเสี่ยง:'), React.createElement(FilterPills, { value: riskFilter, onChange: setRiskFilter, options: [{ value: 'critical', label: 'วิกฤต' }, { value: 'high', label: 'เสี่ยงสูง' }, { value: 'medium', label: 'เสี่ยง' }, { value: 'pass', label: 'ผ่าน' }] }))
     ),
     React.createElement('div', { className: 'card' },
       saveMsg && React.createElement('div', { style: { display:'flex', alignItems:'center', gap:8, padding:'8px 16px', background:'#ECFDF5', borderRadius:8, marginBottom:12, color:'#065F46', fontWeight:600, fontSize:'var(--text-sm)' } }, React.createElement(Icon, { path:'M5 13l4 4L19 7', size:14, color:'#059669' }), saveMsg),
@@ -1269,8 +1333,7 @@ function ExplorerPage({ onNavigate }) {
               React.createElement('thead', null, React.createElement('tr', null,
                 React.createElement('th', { style: { width: 50 } }, 'ลำดับ'), React.createElement('th', null, 'ตัวชี้วัด'), React.createElement('th', { style: { width: 90 } }, 'หน่วยงาน'),
                 React.createElement('th', { style: { width: 110, textAlign: 'right' } }, 'ผลงาน'), React.createElement('th', { style: { width: 120 } }, 'เป้าหมาย'),
-                React.createElement('th', { style: { width: 90 } }, 'สถานะ'), React.createElement('th', { style: { width: 80 } }, 'ความเสี่ยง'),
-                React.createElement('th', { style: { width: 90 } }, 'แนวโน้ม'), React.createElement('th', { style: { width: 36 } }, '')
+                React.createElement('th', { style: { width: 90 } }, 'สถานะ'), React.createElement('th', { style: { width: 36 } }, '')
               )),
               React.createElement('tbody', null,
                 filtered.map(k => {
@@ -1296,8 +1359,6 @@ function ExplorerPage({ onNavigate }) {
                     React.createElement('td', { className: 'td-result', style: { color: k.passfail === 'ผ่าน' ? '#065F46' : k.passfail.indexOf('ไม่ผ่าน') >= 0 ? '#991B1B' : 'inherit' } }, typeof k.result === 'number' ? k.result.toFixed(1) : '-'),
                     React.createElement('td', { className: 'td-target' }, k.target ? (k.target.length > 15 ? k.target.substring(0, 15) + '...' : k.target) : '-'),
                     React.createElement('td', null, React.createElement(KPIBadge, { passfail: k.passfail })),
-                    React.createElement('td', null, React.createElement(RiskBadge, { risk: k.risk })),
-                    React.createElement('td', null, trend ? React.createElement(Sparkline, { data: trend, color: k.passfail === 'ผ่าน' ? '#10B981' : '#EF4444', width: 80, height: 24 }) : '-'),
                     React.createElement('td', { onClick: e => e.stopPropagation() }, React.createElement('button', { title: 'แก้ไขค่า', onClick: e => startEdit(e, k), style: { width:28, height:28, borderRadius:6, border:'1px solid var(--color-border-default)', background:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--color-text-muted)', transition:'all 0.15s' } }, React.createElement(Icon, { path:'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z', size:13 })))
                   );
                 })
