@@ -8,6 +8,60 @@ window.KPIHUNTER = window.KPIHUNTER || {};
     uploadDate: '2569-03-15', fileName: 'ประเมินผล_KPI_2569_เขาค้อ.xlsx'
   };
 
+  /* ─── Settings persistence ─── */
+  var LS_SETTINGS = 'kpihunter_settings_v1';
+  (function() {
+    try {
+      var s = localStorage.getItem(LS_SETTINGS);
+      if (s) {
+        var saved = JSON.parse(s);
+        if (saved.year)     ns.meta.year     = saved.year;
+        if (saved.month)    ns.meta.month    = saved.month;
+        if (saved.district) ns.meta.district = saved.district;
+        if (saved.province) ns.meta.province = saved.province;
+      }
+    } catch(e) {}
+  })();
+
+  ns.saveSettings = function(settings) {
+    if (settings.year)     ns.meta.year     = parseInt(settings.year) || ns.meta.year;
+    if (settings.month)    ns.meta.month    = settings.month;
+    if (settings.district) ns.meta.district = settings.district;
+    if (settings.province) ns.meta.province = settings.province;
+    try { localStorage.setItem(LS_SETTINGS, JSON.stringify(ns.meta)); } catch(e) {}
+    window.dispatchEvent(new CustomEvent('kpihunter-data-changed'));
+  };
+
+  /* ─── KPI name/detail overrides ─── */
+  var LS_KPI_EDITS = 'kpihunter_kpi_edits_v1';
+  (function() {
+    try {
+      var s = localStorage.getItem(LS_KPI_EDITS);
+      if (s) {
+        var edits = JSON.parse(s);
+        ns.kpis && ns.kpis.forEach(function(k) {
+          if (edits[k.id]) Object.assign(k, edits[k.id]);
+        });
+      }
+    } catch(e) {}
+  })();
+
+  ns.saveKPIEdits = function(edits) {
+    // edits = { kpiId: { name, target, targetNum, category, type }, ... }
+    try {
+      var existing = {};
+      try { var s = localStorage.getItem(LS_KPI_EDITS); if(s) existing = JSON.parse(s); } catch(e) {}
+      Object.assign(existing, edits);
+      localStorage.setItem(LS_KPI_EDITS, JSON.stringify(existing));
+      // Apply to live data
+      Object.keys(edits).forEach(function(kpiId) {
+        var k = ns.kpis && ns.kpis.find(function(x){ return x.id === kpiId; });
+        if (k) Object.assign(k, edits[kpiId]);
+      });
+    } catch(e) {}
+    window.dispatchEvent(new CustomEvent('kpihunter-data-changed'));
+  };
+
   ns.units = [
     { id:'U08', name:'รพ.เขาค้อ',         code:'11272', short:'รพ.เขาค้อ' },
     { id:'U04', name:'รพ.สต.เข็กน้อย',    code:'07853', short:'เข็กน้อย' },
