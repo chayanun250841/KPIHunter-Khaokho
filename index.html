@@ -2314,6 +2314,250 @@ function AdminPage() {
 Object.assign(window, { AdminPage });
 </script>
 <script type="text/babel">
+/* ═══════════════════════════════════════════════════════
+   KPI HUNTER — District Analysis Page
+   Radar Chart (4 มิติ) + District Ranking (11 อำเภอ)
+   ข้อมูลจาก: ประเมินผลการดำเนินงานตามตัวชี้วัด ปี 2569
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Static province-level data (from Excel analysis) ── */
+const DISTRICT_DATA = {
+  ranking: [
+    { district:'น้ำหนาว',    pass:68, fail:27, total:95,  rate:71.6 },
+    { district:'หล่มเก่า',   pass:62, fail:35, total:97,  rate:63.9 },
+    { district:'วังโป่ง',    pass:59, fail:36, total:95,  rate:62.1 },
+    { district:'หนองไผ่',    pass:58, fail:39, total:97,  rate:59.8 },
+    { district:'หล่มสัก',    pass:60, fail:43, total:103, rate:58.3 },
+    { district:'วิเชียรบุรี',pass:60, fail:43, total:103, rate:58.3 },
+    { district:'บึงสามพัน',  pass:55, fail:40, total:95,  rate:57.9 },
+    { district:'ศรีเทพ',     pass:54, fail:41, total:95,  rate:56.8 },
+    { district:'ชนแดน',      pass:54, fail:42, total:96,  rate:56.2 },
+    { district:'เมือง',      pass:54, fail:49, total:103, rate:52.4 },
+    { district:'เขาค้อ',     pass:46, fail:49, total:95,  rate:48.4 },
+  ],
+  radar: {
+    'เขาค้อ':    { 'PP&P':50.0, 'Service':47.6, 'People':null, 'Governance':40.0 },
+    'จว.เฉลี่ย':{ 'PP&P':60.2, 'Service':50.5, 'People':null, 'Governance':54.5 },
+  },
+  radarLabels: ['PP&P\n(ส่งเสริม/ป้องกัน)', 'Service\n(บริการเป็นเลิศ)', 'Governance\n(บริหารเป็นเลิศ)'],
+  radarKeys:   ['PP&P', 'Service', 'Governance'],
+};
+
+/* ── SVG Radar Chart ── */
+function RadarChart({ data, labels, size }) {
+  size = size || 260;
+  const cx = size / 2, cy = size / 2, R = size * 0.36;
+  const N = labels.length;
+  const angleStep = (2 * Math.PI) / N;
+  const startAngle = -Math.PI / 2;
+
+  function polar(angle, r) {
+    return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
+  }
+  function toPoints(values, maxVal) {
+    return values.map(function(v, i) {
+      var a = startAngle + i * angleStep;
+      var r = ((v || 0) / maxVal) * R;
+      return polar(a, r);
+    });
+  }
+  function pts2str(points) {
+    return points.map(function(p) { return p.x + ',' + p.y; }).join(' ');
+  }
+
+  var gridLevels = [25, 50, 75, 100];
+  var colors = { 'เขาค้อ': '#2D6A4F', 'จว.เฉลี่ย': '#94A3B8' };
+  var fills  = { 'เขาค้อ': 'rgba(45,106,79,0.18)', 'จว.เฉลี่ย': 'rgba(148,163,184,0.1)' };
+
+  return React.createElement('svg', { width: size, height: size, style: { overflow:'visible' } },
+    /* grid circles */
+    gridLevels.map(function(lvl) {
+      var r = (lvl / 100) * R;
+      return React.createElement('circle', { key:lvl, cx, cy, r, fill:'none', stroke:'#E5E7EB', strokeWidth:1 });
+    }),
+    /* grid labels */
+    gridLevels.map(function(lvl) {
+      var r = (lvl / 100) * R;
+      return React.createElement('text', { key:'lbl'+lvl, x: cx+r+2, y: cy-2, fontSize:8, fill:'#9CA3AF' }, lvl+'%');
+    }),
+    /* axis lines */
+    labels.map(function(_, i) {
+      var a = startAngle + i * angleStep;
+      var tip = polar(a, R);
+      return React.createElement('line', { key:'ax'+i, x1:cx, y1:cy, x2:tip.x, y2:tip.y, stroke:'#D1D5DB', strokeWidth:1 });
+    }),
+    /* data polygons */
+    Object.keys(data).reverse().map(function(dName) {
+      var vals = DISTRICT_DATA.radarKeys.map(function(k) { return data[dName][k] || 0; });
+      var pts = toPoints(vals, 100);
+      return React.createElement('g', { key: dName },
+        React.createElement('polygon', { points: pts2str(pts), fill: fills[dName], stroke: colors[dName], strokeWidth: dName==='เขาค้อ'?2.5:1.5, strokeDasharray: dName==='จว.เฉลี่ย'?'5,3':null }),
+        pts.map(function(p, i) {
+          return React.createElement('circle', { key:i, cx:p.x, cy:p.y, r: dName==='เขาค้อ'?4:3, fill: colors[dName] });
+        })
+      );
+    }),
+    /* axis labels */
+    labels.map(function(label, i) {
+      var a = startAngle + i * angleStep;
+      var tip = polar(a, R + 26);
+      var lines = label.split('\n');
+      var lineH = 12;
+      var totalH = lines.length * lineH;
+      return React.createElement('g', { key:'label'+i },
+        lines.map(function(line, li) {
+          return React.createElement('text', { key:li,
+            x: tip.x, y: tip.y - totalH/2 + li*lineH + 10,
+            textAnchor:'middle', fontSize:10, fontWeight:600, fill:'#374151'
+          }, line);
+        })
+      );
+    })
+  );
+}
+
+/* ── DistrictAnalysisPage ── */
+function DistrictAnalysisPage() {
+  var data = DISTRICT_DATA;
+  var kkRank = data.ranking.findIndex(function(r){ return r.district==='เขาค้อ'; }) + 1;
+  var maxRate = data.ranking[0].rate;
+
+  var sectionColors = { 'PP&P':'#059669', 'Service':'#3B82F6', 'Governance':'#7C3AED' };
+  var sectionDesc   = { 'PP&P':'ส่งเสริมสุขภาพ ป้องกันโรค', 'Service':'บริการเป็นเลิศ', 'Governance':'บริหารเป็นเลิศ' };
+
+  return React.createElement('div', { className:'page-content' },
+    React.createElement(SectionHeader, {
+      title: 'เปรียบเทียบระดับจังหวัด',
+      sub:   'ปีงบประมาณ 2569 · จ.เพชรบูรณ์ · ข้อมูล ณ เดือนมิถุนายน'
+    }),
+
+    /* ── Summary Chips ── */
+    React.createElement('div', { style:{display:'flex', gap:12, flexWrap:'wrap', marginBottom:4} },
+      React.createElement('div', { style:{background:'#FEF3C7', border:'1px solid #FCD34D', borderRadius:10, padding:'10px 18px', textAlign:'center'} },
+        React.createElement('div', { style:{fontSize:'1.8rem', fontWeight:800, color:'#92400E'} }, '#'+kkRank),
+        React.createElement('div', { style:{fontSize:'0.78rem', color:'#78350F', fontWeight:600} }, 'อันดับเขาค้อ'),
+        React.createElement('div', { style:{fontSize:'0.72rem', color:'#9CA3AF'} }, 'จาก 11 อำเภอ')
+      ),
+      React.createElement('div', { style:{background:'#ECFDF5', border:'1px solid #A7F3D0', borderRadius:10, padding:'10px 18px', textAlign:'center'} },
+        React.createElement('div', { style:{fontSize:'1.8rem', fontWeight:800, color:'#065F46'} }, data.radar['เขาค้อ']['PP&P']+'%'),
+        React.createElement('div', { style:{fontSize:'0.78rem', color:'#065F46', fontWeight:600} }, 'PP&P'),
+        React.createElement('div', { style:{fontSize:'0.72rem', color:'#9CA3AF'} }, 'ส่งเสริม/ป้องกัน')
+      ),
+      React.createElement('div', { style:{background:'#EFF6FF', border:'1px solid #BFDBFE', borderRadius:10, padding:'10px 18px', textAlign:'center'} },
+        React.createElement('div', { style:{fontSize:'1.8rem', fontWeight:800, color:'#1E40AF'} }, data.radar['เขาค้อ']['Service']+'%'),
+        React.createElement('div', { style:{fontSize:'0.78rem', color:'#1E40AF', fontWeight:600} }, 'Service'),
+        React.createElement('div', { style:{fontSize:'0.72rem', color:'#9CA3AF'} }, 'บริการเป็นเลิศ')
+      ),
+      React.createElement('div', { style:{background:'#F5F3FF', border:'1px solid #DDD6FE', borderRadius:10, padding:'10px 18px', textAlign:'center'} },
+        React.createElement('div', { style:{fontSize:'1.8rem', fontWeight:800, color:'#5B21B6'} }, data.radar['เขาค้อ']['Governance']+'%'),
+        React.createElement('div', { style:{fontSize:'0.78rem', color:'#5B21B6', fontWeight:600} }, 'Governance'),
+        React.createElement('div', { style:{fontSize:'0.72rem', color:'#9CA3AF'} }, 'บริหารเป็นเลิศ')
+      )
+    ),
+
+    /* ── Main Grid: Radar + Ranking ── */
+    React.createElement('div', { className:'grid-2', style:{alignItems:'start'} },
+
+      /* ── Radar Chart Card ── */
+      React.createElement('div', { className:'card' },
+        React.createElement(SectionHeader, { title:'ผลงานรายมิติ (Radar)', sub:'เขาค้อ vs ค่าเฉลี่ยจังหวัด' }),
+        React.createElement('div', { style:{display:'flex', justifyContent:'center', paddingBottom:8} },
+          React.createElement(RadarChart, {
+            data: { 'จว.เฉลี่ย': data.radar['จว.เฉลี่ย'], 'เขาค้อ': data.radar['เขาค้อ'] },
+            labels: data.radarLabels,
+            size: 280
+          })
+        ),
+        /* legend */
+        React.createElement('div', { style:{display:'flex', gap:20, justifyContent:'center', marginTop:8, flexWrap:'wrap'} },
+          [['เขาค้อ','#2D6A4F','solid'], ['จว.เฉลี่ย','#94A3B8','dashed']].map(function(l) {
+            return React.createElement('div', { key:l[0], style:{display:'flex', alignItems:'center', gap:6, fontSize:'0.82rem'} },
+              React.createElement('div', { style:{width:22, height:3, background:l[1], borderRadius:2,
+                backgroundImage: l[2]==='dashed' ? 'repeating-linear-gradient(90deg,'+l[1]+' 0,'+l[1]+' 4px,transparent 4px,transparent 7px)' : 'none'} }),
+              React.createElement('span', { style:{fontWeight:600, color:'#374151'} }, l[0])
+            );
+          })
+        ),
+        /* section score table */
+        React.createElement('div', { style:{marginTop:16, borderTop:'1px solid #E5E7EB', paddingTop:12} },
+          React.createElement('table', { style:{width:'100%', fontSize:'0.82rem', borderCollapse:'collapse'} },
+            React.createElement('thead', null,
+              React.createElement('tr', { style:{background:'#F9FAFB'} },
+                React.createElement('th', { style:{textAlign:'left', padding:'6px 8px', fontWeight:600, color:'#374151'} }, 'มิติ'),
+                React.createElement('th', { style:{textAlign:'center', padding:'6px 8px', fontWeight:600, color:'#2D6A4F'} }, 'เขาค้อ'),
+                React.createElement('th', { style:{textAlign:'center', padding:'6px 8px', fontWeight:600, color:'#94A3B8'} }, 'จว.เฉลี่ย'),
+                React.createElement('th', { style:{textAlign:'center', padding:'6px 8px', fontWeight:600} }, 'ต่าง')
+              )
+            ),
+            React.createElement('tbody', null,
+              data.radarKeys.map(function(k) {
+                var kk  = data.radar['เขาค้อ'][k];
+                var avg = data.radar['จว.เฉลี่ย'][k];
+                var diff = kk != null && avg != null ? (kk - avg).toFixed(1) : null;
+                var diffColor = diff == null ? '#9CA3AF' : parseFloat(diff) >= 0 ? '#059669' : '#DC2626';
+                return React.createElement('tr', { key:k, style:{borderBottom:'1px solid #F3F4F6'} },
+                  React.createElement('td', { style:{padding:'6px 8px'} },
+                    React.createElement('span', { style:{background: sectionColors[k]+'22', color: sectionColors[k], borderRadius:4, padding:'2px 7px', fontWeight:700, fontSize:'0.75rem'} }, k),
+                    React.createElement('span', { style:{color:'#6B7280', marginLeft:6} }, sectionDesc[k])
+                  ),
+                  React.createElement('td', { style:{textAlign:'center', padding:'6px 8px', fontWeight:700, color:'#2D6A4F'} }, kk != null ? kk+'%' : '-'),
+                  React.createElement('td', { style:{textAlign:'center', padding:'6px 8px', color:'#6B7280'} }, avg != null ? avg+'%' : '-'),
+                  React.createElement('td', { style:{textAlign:'center', padding:'6px 8px', fontWeight:700, color: diffColor} },
+                    diff != null ? (parseFloat(diff)>=0?'▲':'▼') + Math.abs(parseFloat(diff))+'%' : '-'
+                  )
+                );
+              })
+            )
+          )
+        )
+      ),
+
+      /* ── District Ranking Card ── */
+      React.createElement('div', { className:'card' },
+        React.createElement(SectionHeader, { title:'อันดับภาพรวม 11 อำเภอ', sub:'เรียงตามอัตราผ่านเกณฑ์ KPI รวมทุกมิติ' }),
+        React.createElement('div', { style:{display:'flex', flexDirection:'column', gap:6} },
+          data.ranking.map(function(r, idx) {
+            var isKK = r.district === 'เขาค้อ';
+            var barW = Math.round((r.rate / maxRate) * 100);
+            var barColor = isKK ? '#2D6A4F' : r.rate >= 65 ? '#10B981' : r.rate >= 55 ? '#3B82F6' : '#94A3B8';
+            var bgColor  = isKK ? '#ECFDF5' : '#F9FAFB';
+            var border   = isKK ? '2px solid #2D6A4F' : '1px solid #E5E7EB';
+            return React.createElement('div', { key:r.district,
+              style:{background:bgColor, border:border, borderRadius:8, padding:'8px 12px', position:'relative'}
+            },
+              React.createElement('div', { style:{display:'flex', alignItems:'center', gap:8, marginBottom:4} },
+                React.createElement('span', { style:{
+                  width:24, height:24, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center',
+                  fontSize:'0.72rem', fontWeight:800, flexShrink:0,
+                  background: idx===0?'#F59E0B': idx===1?'#9CA3AF': idx===2?'#B45309': isKK?'#2D6A4F':'#E5E7EB',
+                  color: idx<3||isKK ? '#fff' : '#6B7280'
+                } }, idx+1),
+                React.createElement('span', { style:{fontWeight: isKK?700:500, fontSize:'0.87rem', flex:1, color: isKK?'#065F46':'#111827'} }, r.district),
+                isKK && React.createElement('span', { style:{fontSize:'0.7rem', background:'#2D6A4F', color:'#fff', borderRadius:4, padding:'1px 6px'} }, 'อำเภอเรา'),
+                React.createElement('span', { style:{fontWeight:800, fontSize:'0.92rem', color: isKK?'#2D6A4F': barColor} }, r.rate+'%')
+              ),
+              React.createElement('div', { style:{background:'#E5E7EB', borderRadius:4, height:8, overflow:'hidden'} },
+                React.createElement('div', { style:{width:barW+'%', height:'100%', background:barColor, borderRadius:4, transition:'width .4s'} })
+              ),
+              React.createElement('div', { style:{display:'flex', gap:12, marginTop:3, fontSize:'0.72rem', color:'#6B7280'} },
+                React.createElement('span', null, '✅ ผ่าน: ', React.createElement('b', null, r.pass)),
+                React.createElement('span', null, '❌ ไม่ผ่าน: ', React.createElement('b', null, r.fail)),
+                React.createElement('span', null, '📊 มีข้อมูล: ', React.createElement('b', null, r.total, ' ตัว'))
+              )
+            );
+          })
+        ),
+        /* note */
+        React.createElement('div', { style:{marginTop:12, padding:'10px 12px', background:'#FFF7ED', border:'1px solid #FED7AA', borderRadius:8, fontSize:'0.78rem', color:'#92400E'} },
+          '💡 หมายเหตุ: อันดับเขาค้อ #11 (ท้ายสุด) — ยังมีโอกาสพัฒนาได้อีกมาก โดยเฉพาะด้าน Governance (40%) และ Service (47.6%) ซึ่งต่ำกว่าค่าเฉลี่ยจังหวัด'
+        )
+      )
+    )
+  );
+}
+Object.assign(window, { DistrictAnalysisPage });
+</script>
+<script type="text/babel">
 /* KPI HUNTER — Main App Shell */
 function App() {
   const [page, setPage] = useState('dashboard');
@@ -2354,6 +2598,7 @@ function App() {
   const navItems = [
     { id:'dashboard', label:'Dashboard',    d:'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4' },
     { id:'explorer',  label:'KPI Explorer', d:'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' },
+    { id:'district',  label:'เปรียบเทียบจังหวัด', d:'M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' },
     { id:'units',     label:'หน่วยบริการ',  d:'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
     { id:'ai',        label:'AI Insight',   d:'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
     { id:'reports',   label:'รายงาน',       d:'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
@@ -2365,6 +2610,7 @@ function App() {
     switch (page) {
       case 'dashboard': return React.createElement(DashboardPage, null);
       case 'explorer':  return React.createElement(ExplorerPage,  { onNavigate: setPage });
+      case 'district':  return React.createElement(DistrictAnalysisPage, null);
       case 'units':     return React.createElement(UnitPerformancePage, null);
       case 'ai':        return React.createElement(AIInsightPage, null);
       case 'reports':   return React.createElement(ReportBuilderPage, null);
