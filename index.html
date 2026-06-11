@@ -2335,7 +2335,7 @@ function AdminPage() {
           },
             React.createElement('option', { value:'' }, '-- เลือกตัวชี้วัด --'),
             D.kpis.map(function(k) {
-              return React.createElement('option', { key:k.id, value:k.id }, k.id + ' · ' + k.name);
+              return React.createElement('option', { key:k.id, value:k.id }, k.num + ' · ' + k.name);
             })
           )
         ),
@@ -2488,7 +2488,7 @@ function AdminPage() {
           React.createElement('table', { className:'admin-table' },
             React.createElement('thead', null,
               React.createElement('tr', null,
-                React.createElement('th', null, 'ID'),
+                React.createElement('th', null, 'ลำดับ'),
                 React.createElement('th', null, 'ชื่อตัวชี้วัด'),
                 React.createElement('th', null, 'เป้าหมาย'),
                 React.createElement('th', null, 'หน่วย'),
@@ -2499,10 +2499,10 @@ function AdminPage() {
               DA.kpis.filter(function(k){
                 if (!kpiEditSearch) return true;
                 var q = kpiEditSearch.toLowerCase();
-                return k.id.toLowerCase().indexOf(q) >= 0 || k.name.toLowerCase().indexOf(q) >= 0;
+                return String(k.num).toLowerCase().indexOf(q) >= 0 || k.name.toLowerCase().indexOf(q) >= 0;
               }).map(function(k) {
                 return React.createElement('tr', { key:k.id },
-                  React.createElement('td', null, React.createElement('code', { className:'code-tag' }, k.id)),
+                  React.createElement('td', null, React.createElement('code', { className:'code-tag' }, k.num)),
                   React.createElement('td', { style:{fontWeight:500, maxWidth:360} }, k.name),
                   React.createElement('td', { style:{color:'#6B7280', fontSize:'0.85rem'} }, k.target||'-'),
                   React.createElement('td', null,
