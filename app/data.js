@@ -195,9 +195,11 @@ window.KPIHUNTER = window.KPIHUNTER || {};
   ];
 
   /* ─── localStorage helpers ─── */
-  var LS_RESULTS   = 'kpihunter_results_v1';
-  var LS_META      = 'kpihunter_upload_meta';
-  var LS_UNIT_PERF = 'kpihunter_unit_perf_v1';
+  var LS_RESULTS      = 'kpihunter_results_v1';
+  var LS_META         = 'kpihunter_upload_meta';
+  var LS_UNIT_PERF    = 'kpihunter_unit_perf_v1';
+  var LS_DELETED_KPIS = 'kpihunter_deleted_kpis_v1';
+  var LS_CUSTOM_KPIS  = 'kpihunter_custom_kpis_v1';
 
   ns.saveResults = function() {
     try {
@@ -388,6 +390,7 @@ window.KPIHUNTER = window.KPIHUNTER || {};
   };
 
   ns.clearAllData = function() {
+    /* ล้างเฉพาะข้อมูลผลงาน — ไม่แตะ KPI list (deleted/custom) */
     localStorage.removeItem(LS_RESULTS);
     localStorage.removeItem(LS_META);
     localStorage.removeItem(LS_UNIT_PERF);
@@ -543,6 +546,22 @@ window.KPIHUNTER = window.KPIHUNTER || {};
     };
   });
 
+  // Filter out admin-deleted KPIs
+  (function() {
+    try {
+      var deleted = JSON.parse(localStorage.getItem(LS_DELETED_KPIS) || '[]');
+      if (deleted.length) ns.kpis = ns.kpis.filter(function(k) { return deleted.indexOf(k.id) < 0; });
+    } catch(e) {}
+  })();
+
+  // Append admin-created custom KPIs
+  (function() {
+    try {
+      var custom = JSON.parse(localStorage.getItem(LS_CUSTOM_KPIS) || '[]');
+      custom.forEach(function(k) { ns.kpis.push(k); });
+    } catch(e) {}
+  })();
+
   // Unit-level data storage (from CSV imports)
   ns.unitQuarterlyData = {};
   ns.unitPerformance = {};
@@ -556,6 +575,54 @@ window.KPIHUNTER = window.KPIHUNTER || {};
 
   // Apply saved data (must come after trends are built)
   ns.loadSavedResults();
+
+  /* ─── เพิ่ม KPI ใหม่ (admin) ─── */
+  ns.addKPI = function(kpiData) {
+    var newId = 'C' + Date.now();
+    var tNum = parseTarget(kpiData.target);
+    var kpi = {
+      id: newId,
+      num: kpiData.num || '',
+      name: kpiData.name || '',
+      target: kpiData.target || '',
+      targetNum: tNum,
+      pm: kpiData.pm || '',
+      result: 0,
+      passfail: '',
+      category: kpiData.category || CAT.PPP,
+      type: kpiData.type || 'sso',
+      risk: 'none'
+    };
+    ns.kpis.push(kpi);
+    ns.trends[newId] = [0, 0, 0, 0, 0, 0];
+    try {
+      var custom = JSON.parse(localStorage.getItem(LS_CUSTOM_KPIS) || '[]');
+      custom.push(kpi);
+      localStorage.setItem(LS_CUSTOM_KPIS, JSON.stringify(custom));
+    } catch(e) {}
+    window.dispatchEvent(new CustomEvent('kpihunter-data-changed'));
+    return kpi;
+  };
+
+  /* ─── ลบ KPI (admin) ─── */
+  ns.deleteKPI = function(kpiId) {
+    ns.kpis = ns.kpis.filter(function(k) { return k.id !== kpiId; });
+    delete ns.trends[kpiId];
+    delete ns.unitPerformance[kpiId];
+    /* บันทึก ID ที่ลบ (สำหรับ built-in KPIs) */
+    try {
+      var deleted = JSON.parse(localStorage.getItem(LS_DELETED_KPIS) || '[]');
+      if (deleted.indexOf(kpiId) < 0) deleted.push(kpiId);
+      localStorage.setItem(LS_DELETED_KPIS, JSON.stringify(deleted));
+    } catch(e) {}
+    /* ลบออกจาก custom list ด้วย (ถ้าเป็น KPI ที่สร้างเอง) */
+    try {
+      var custom = JSON.parse(localStorage.getItem(LS_CUSTOM_KPIS) || '[]');
+      localStorage.setItem(LS_CUSTOM_KPIS, JSON.stringify(custom.filter(function(k){ return k.id !== kpiId; })));
+    } catch(e) {}
+    ns.saveResults();
+    window.dispatchEvent(new CustomEvent('kpihunter-data-changed'));
+  };
 
   // Summary calculations
   ns.getSummary = function() {

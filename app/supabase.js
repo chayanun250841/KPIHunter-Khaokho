@@ -116,6 +116,17 @@
           if (res.error || !res.data || !res.data.length) return null;
           return res.data[0].value;
         });
+    },
+
+    /* ─── ล้างข้อมูลผลงาน KPI ทั้งหมดใน Supabase ─── */
+    clearAllResults: function () {
+      return db.from('kpi_results').delete().neq('kpi_id', '__placeholder__')
+        .then(function(res) { if (res.error) throw res.error; });
+    },
+
+    clearUnitPerf: function () {
+      return db.from('kpi_unit_perf').delete().neq('kpi_id', '__placeholder__')
+        .then(function(res) { if (res.error) throw res.error; });
     }
   };
 
