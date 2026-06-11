@@ -2200,6 +2200,15 @@ function AdminPage() {
     });
   }
 
+  function suggestNextKpiNum() {
+    var max = 0;
+    DA.kpis.forEach(function(k) {
+      var m = String(k.num || '').match(/^(\d+)/);
+      if (m) { var n = parseInt(m[1], 10); if (n > max) max = n; }
+    });
+    return String(max + 1);
+  }
+
   function handleAddKPI() {
     if (!addingKPI || !addingKPI.name.trim()) { window.alert('กรุณากรอกชื่อตัวชี้วัด'); return; }
     DA.addKPI(addingKPI);
@@ -2413,7 +2422,7 @@ function AdminPage() {
         React.createElement('p', { style:{fontSize:'0.85rem', color:'#6B7280', marginBottom:'1rem'} }, 'แก้ไขชื่อ เป้าหมาย หมวดหมู่ หรือหน่วยรับผิดชอบ — รวมถึงเพิ่มหรือลบตัวชี้วัดได้ที่นี่'),
         kpiEditMsg && React.createElement('div', { style:{background:'#ECFDF5', border:'1px solid #A7F3D0', borderRadius:6, padding:'8px 14px', marginBottom:12, color:'#065F46', fontWeight:600, fontSize:'0.87rem'} }, kpiEditMsg),
         React.createElement('div', { style:{marginBottom:12} },
-          React.createElement('button', { className:'admin-add-btn', onClick: () => setAddingKPI(addingKPI ? null : { num:'', name:'', target:'', pm:'', category: (DA.CATEGORIES ? Object.values(DA.CATEGORIES)[0] : '') }) },
+          React.createElement('button', { className:'admin-add-btn', onClick: () => setAddingKPI(addingKPI ? null : { num: suggestNextKpiNum(), name:'', target:'', pm:'', category: (DA.CATEGORIES ? Object.values(DA.CATEGORIES)[0] : '') }) },
             React.createElement(AdminIcon, { d:'M12 4v16m8-8H4' }), addingKPI ? 'ปิดฟอร์มเพิ่ม' : 'เพิ่มตัวชี้วัดใหม่'
           )
         ),
