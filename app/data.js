@@ -64,8 +64,27 @@ window.KPIHUNTER = window.KPIHUNTER || {};
         var k = ns.kpis && ns.kpis.find(function(x){ return x.id === kpiId; });
         if (k) Object.assign(k, edits[kpiId]);
       });
+      /* sync ขึ้น Supabase (cross-device) */
+      if (window.KPIHUNTER_DB && typeof window.KPIHUNTER_DB.saveKPIEdits === 'function') {
+        window.KPIHUNTER_DB.saveKPIEdits(existing).catch(function(e){ console.warn('[Supabase] saveKPIEdits:', e); });
+      }
     } catch(e) {}
     window.dispatchEvent(new CustomEvent('kpihunter-data-changed'));
+  };
+
+  /* นำค่าที่แก้ไข (ชื่อ/เป้า/หน่วย/หมวด) กลับมาใช้กับ ns.kpis — เรียกทุกครั้งหลัง build */
+  ns.applyKPIEdits = function() {
+    try {
+      var s = localStorage.getItem(LS_KPI_EDITS);
+      if (!s) return;
+      var edits = JSON.parse(s);
+      (ns.kpis || []).forEach(function(k) {
+        if (edits[k.id]) {
+          Object.assign(k, edits[k.id]);
+          k.risk = riskLevel(k.result, k.targetNum, k.passfail);
+        }
+      });
+    } catch(e) {}
   };
 
   ns.units = [
@@ -333,19 +352,27 @@ window.KPIHUNTER = window.KPIHUNTER || {};
       safeCall(db.loadResults    && db.loadResults.bind(db),    []),
       safeCall(db.loadUnitPerf   && db.loadUnitPerf.bind(db),   {}),
       safeCall(db.loadAppSettings&& db.loadAppSettings.bind(db),null),
-      safeCall(db.loadCustomKpi  && db.loadCustomKpi.bind(db),  null)
+      safeCall(db.loadCustomKpi  && db.loadCustomKpi.bind(db),  null),
+      safeCall(db.loadKPIEdits   && db.loadKPIEdits.bind(db),   null)
     ]).then(function(res) {
       var results   = res[0];
       var unitPerf  = res[1];
       var settings  = res[2];
       var customKpi = res[3];
+      var kpiEdits  = res[4];
+
+      /* ── Apply KPI edits (ชื่อ/เป้า/หน่วย/หมวด) จาก cloud ลง localStorage ── */
+      if (kpiEdits && typeof kpiEdits === 'object') {
+        try { localStorage.setItem(LS_KPI_EDITS, JSON.stringify(kpiEdits)); } catch(e) {}
+      }
 
       /* ── Apply custom KPI add/delete (rebuild list ก่อน apply ผลงาน) ── */
       if (customKpi && Array.isArray(customKpi.added) && Array.isArray(customKpi.deleted)) {
         ns._customKpi = customKpi;
         try { localStorage.setItem(LS_KPI_CUSTOM, JSON.stringify(ns._customKpi)); } catch(e) {}
-        ns.rebuildKpis();
       }
+      /* rebuild เสมอ เพื่อ apply ทั้ง custom add/delete และ kpi edits ที่เพิ่งโหลดมา */
+      ns.rebuildKpis();
 
       /* ── Apply settings ── */
       if (settings) {
@@ -481,6 +508,8 @@ window.KPIHUNTER = window.KPIHUNTER || {};
     ns.kpis = list;
     ns.trends = ns.trends || {};
     list.forEach(function(k) { if (!ns.trends[k.id]) ns.trends[k.id] = [0, 0, 0, 0, 0, 0]; });
+    /* นำค่าที่แก้ไขไว้ (ชื่อ/เป้า/หน่วย/หมวด) กลับมาทับ — ไม่งั้นถูก classifyType รีเซ็ต */
+    if (typeof ns.applyKPIEdits === 'function') ns.applyKPIEdits();
   };
 
   ns.addKPI = function(data) {

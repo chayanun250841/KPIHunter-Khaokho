@@ -881,12 +881,24 @@ window.KPIHUNTER_CONFIG = {
           if (res.error || !res.data || !res.data.length) return null;
           return res.data[0].value;
         });
+    },
+    /* ─── การแก้ไขชื่อ/เป้า/หน่วย/หมวดของ KPI (cross-device) ─── */
+    saveKPIEdits: function (edits) {
+      return db.from('app_settings').upsert({ key: 'kpi_edits', value: edits, updated_at: new Date().toISOString() }, { onConflict: 'key' })
+        .then(function (res) { if (res.error) throw res.error; });
+    },
+    loadKPIEdits: function () {
+      return db.from('app_settings').select('value').eq('key', 'kpi_edits').limit(1)
+        .then(function (res) {
+          if (res.error || !res.data || !res.data.length) return null;
+          return res.data[0].value;
+        });
     }
   };
   console.info('[KPI Hunter] Supabase connected:', cfg.supabaseUrl);
 })();
 </script>
-<script src="app/data.js?v=20260611a"></script>
+<script src="app/data.js?v=20260611b"></script>
 <script src="app/csv-parser.js?v=20260610b"></script>
 <script type="text/babel">
 /* KPI HUNTER — Shared UI Components (no emoji, SVG icons only) */

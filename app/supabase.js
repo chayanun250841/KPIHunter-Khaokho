@@ -153,6 +153,21 @@
           if (res.error || !res.data || !res.data.length) return null;
           return res.data[0].value;
         });
+    },
+
+    /* ─── เก็บการแก้ไขชื่อ/เป้า/หน่วย/หมวดของ KPI (cross-device) ─── */
+    saveKPIEdits: function (edits) {
+      return db.from('app_settings').upsert(
+        { key: 'kpi_edits', value: edits, updated_at: new Date().toISOString() },
+        { onConflict: 'key' }
+      ).then(function(res) { if (res.error) throw res.error; });
+    },
+    loadKPIEdits: function () {
+      return db.from('app_settings').select('value').eq('key', 'kpi_edits').limit(1)
+        .then(function(res) {
+          if (res.error || !res.data || !res.data.length) return null;
+          return res.data[0].value;
+        });
     }
   };
 
