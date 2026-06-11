@@ -16,7 +16,12 @@
       "Bash(Get-ChildItem \"G:\\\\Other computers\\\\My Laptop\\\\งานของชยานันต์\\\\AI\\\\ChayanunOperating\\\\KPI Hunter\" -Recurse -Filter \"*.txt\")",
       "Bash(Select-Object FullName, LastWriteTime)",
       "Bash(Sort-Object LastWriteTime -Descending)",
-      "PowerShell(Get-ChildItem \"G:\\\\Other computers\\\\My Laptop\\\\งานของชยานันต์\\\\AI\\\\ChayanunOperating\\\\KPI Hunter\" -Recurse | Where-Object { -not $_.PSIsContainer } | Sort-Object LastWriteTime -Descending | Select-Object -First 20 | Select-Object Name, LastWriteTime)"
+      "PowerShell(Get-ChildItem \"G:\\\\Other computers\\\\My Laptop\\\\งานของชยานันต์\\\\AI\\\\ChayanunOperating\\\\KPI Hunter\" -Recurse | Where-Object { -not $_.PSIsContainer } | Sort-Object LastWriteTime -Descending | Select-Object -First 20 | Select-Object Name, LastWriteTime)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(echo \"exit:$?\")",
+      "Bash(GIT_EDITOR=true git rebase --continue)",
+      "Bash(git -c core.editor=true rebase --continue)"
     ]
   }
 }

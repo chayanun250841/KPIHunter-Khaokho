@@ -118,15 +118,41 @@
         });
     },
 
-    /* ─── ล้างข้อมูลผลงาน KPI ทั้งหมดใน Supabase ─── */
-    clearAllResults: function () {
-      return db.from('kpi_results').delete().neq('kpi_id', '__placeholder__')
-        .then(function(res) { if (res.error) throw res.error; });
+    /* ─── ลบ KPI เดียวออกจากผลงาน ─── */
+    deleteResult: function (kpiId) {
+      return Promise.all([
+        db.from('kpi_results').delete().eq('kpi_id', kpiId),
+        db.from('kpi_unit_perf').delete().eq('kpi_id', kpiId)
+      ]).then(function(res) {
+        res.forEach(function(r) { if (r && r.error) throw r.error; });
+      });
     },
 
-    clearUnitPerf: function () {
-      return db.from('kpi_unit_perf').delete().neq('kpi_id', '__placeholder__')
-        .then(function(res) { if (res.error) throw res.error; });
+    /* ─── ล้างผลงานทั้งหมด (รีเซตระบบ) ─── */
+    clearAll: function () {
+      return Promise.all([
+        db.from('kpi_results').delete().neq('kpi_id', '__none__'),
+        db.from('kpi_unit_perf').delete().neq('kpi_id', '__none__'),
+        db.from('upload_sessions').delete().not('id', 'is', null)
+      ]).then(function(res) {
+        res.forEach(function(r) { if (r && r.error) throw r.error; });
+      });
+    },
+
+    /* ─── เก็บรายการ KPI ที่เพิ่ม/ลบเอง (cross-device) ─── */
+    saveCustomKpi: function (custom) {
+      return db.from('app_settings').upsert(
+        { key: 'kpi_custom', value: custom, updated_at: new Date().toISOString() },
+        { onConflict: 'key' }
+      ).then(function(res) { if (res.error) throw res.error; });
+    },
+
+    loadCustomKpi: function () {
+      return db.from('app_settings').select('value').eq('key', 'kpi_custom').limit(1)
+        .then(function(res) {
+          if (res.error || !res.data || !res.data.length) return null;
+          return res.data[0].value;
+        });
     }
   };
 

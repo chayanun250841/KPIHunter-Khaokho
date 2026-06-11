@@ -854,12 +854,39 @@ window.KPIHUNTER_CONFIG = {
           if (res.error || !res.data || !res.data.length) return null;
           return res.data[0].value;
         });
+    },
+    /* ─── ลบ KPI เดียวออกจากผลงาน ─── */
+    deleteResult: function (kpiId) {
+      return Promise.all([
+        db.from('kpi_results').delete().eq('kpi_id', kpiId),
+        db.from('kpi_unit_perf').delete().eq('kpi_id', kpiId)
+      ]).then(function (res) { res.forEach(function (r) { if (r && r.error) throw r.error; }); });
+    },
+    /* ─── ล้างผลงานทั้งหมด (รีเซตระบบ) ─── */
+    clearAll: function () {
+      return Promise.all([
+        db.from('kpi_results').delete().neq('kpi_id', '__none__'),
+        db.from('kpi_unit_perf').delete().neq('kpi_id', '__none__'),
+        db.from('upload_sessions').delete().not('id', 'is', null)
+      ]).then(function (res) { res.forEach(function (r) { if (r && r.error) throw r.error; }); });
+    },
+    /* ─── เก็บรายการ KPI ที่เพิ่ม/ลบเอง (cross-device) ─── */
+    saveCustomKpi: function (custom) {
+      return db.from('app_settings').upsert({ key: 'kpi_custom', value: custom, updated_at: new Date().toISOString() }, { onConflict: 'key' })
+        .then(function (res) { if (res.error) throw res.error; });
+    },
+    loadCustomKpi: function () {
+      return db.from('app_settings').select('value').eq('key', 'kpi_custom').limit(1)
+        .then(function (res) {
+          if (res.error || !res.data || !res.data.length) return null;
+          return res.data[0].value;
+        });
     }
   };
   console.info('[KPI Hunter] Supabase connected:', cfg.supabaseUrl);
 })();
 </script>
-<script src="app/data.js?v=20260610b"></script>
+<script src="app/data.js?v=20260611a"></script>
 <script src="app/csv-parser.js?v=20260610b"></script>
 <script type="text/babel">
 /* KPI HUNTER — Shared UI Components (no emoji, SVG icons only) */
@@ -2136,8 +2163,9 @@ function AdminPage() {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [showPass, setShowPass] = useState(false);
-  const [activeTab, setActiveTab] = useState('system');
+  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('kpihunter_admin_tab') || 'system');
   const DA = window.KPIHUNTER;
+  function selectTab(id) { setActiveTab(id); try { sessionStorage.setItem('kpihunter_admin_tab', id); } catch(e) {} }
   const [year, setYear] = useState(DA.meta.year.toString());
   const [month, setMonth] = useState(DA.meta.month);
   const [district, setDistrict] = useState('เขาค้อ');
@@ -2156,6 +2184,27 @@ function AdminPage() {
   const [entryKPI,     setEntryKPI]     = useState('');
   const [entryData,    setEntryData]    = useState({});
   const [entrySaveMsg, setEntrySaveMsg] = useState('');
+  /* ── Reset + Add KPI state ── */
+  const [resetting,  setResetting]  = useState(false);
+  const [resetMsg,   setResetMsg]   = useState('');
+  const [addingKPI,  setAddingKPI]  = useState(null); // null = ปิดฟอร์ม
+
+  function handleResetSystem() {
+    if (resetting) return;
+    if (!window.confirm('ยืนยันการรีเซตระบบ?\nผลงาน KPI ทุกตัวจะกลายเป็น 0 พร้อมกรอกใหม่\nล้างทั้งในเครื่องและบนคลาวด์ (Supabase) — ไม่สามารถกู้คืนได้')) return;
+    setResetting(true);
+    setResetMsg('กำลังรีเซตระบบ...');
+    DA.resetAllData(function() {
+      setResetting(false);
+      setResetMsg('รีเซตระบบเรียบร้อยแล้ว — ทุกค่าเป็น 0 พร้อมกรอกใหม่');
+    });
+  }
+
+  function handleAddKPI() {
+    if (!addingKPI || !addingKPI.name.trim()) { window.alert('กรุณากรอกชื่อตัวชี้วัด'); return; }
+    DA.addKPI(addingKPI);
+    setAddingKPI(null);
+  }
 
   function AdminIcon({ d, size }) { return React.createElement('svg', { width: size||16, height: size||16, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', strokeWidth:1.5, strokeLinecap:'round', strokeLinejoin:'round' }, React.createElement('path', { d })); }
   function handleLogin(e) { e.preventDefault(); if (username === ADMIN_CREDS.user && password === ADMIN_CREDS.pass) { sessionStorage.setItem(SESSION_KEY, '1'); setAuthed(true); setLoginError(''); } else { setLoginError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'); } }
@@ -2249,7 +2298,7 @@ function AdminPage() {
         React.createElement('button', { className:'admin-logout-btn', onClick: handleLogout }, React.createElement(AdminIcon, { d:'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1' }), 'ออกจากระบบ')
       )
     ),
-    React.createElement('div', { className:'admin-tabs' }, tabs.map(t => React.createElement('button', { key: t.id, className: 'admin-tab' + (activeTab === t.id ? ' active' : ''), onClick: () => setActiveTab(t.id) }, React.createElement(AdminIcon, { d: t.d }), t.label))),
+    React.createElement('div', { className:'admin-tabs' }, tabs.map(t => React.createElement('button', { key: t.id, className: 'admin-tab' + (activeTab === t.id ? ' active' : ''), onClick: () => selectTab(t.id) }, React.createElement(AdminIcon, { d: t.d }), t.label))),
     React.createElement('div', { className:'admin-body' },
       activeTab === 'system' && React.createElement('div', { className:'admin-section' },
         React.createElement('h3', { className:'admin-section-title' }, 'ข้อมูลพื้นที่และปีงบประมาณ'),
@@ -2259,7 +2308,17 @@ function AdminPage() {
           React.createElement('div', { className:'admin-field' }, React.createElement('label', { className:'admin-label' }, 'อำเภอ'), React.createElement('input', { className:'admin-input', value: district, onChange: e => setDistrict(e.target.value) })),
           React.createElement('div', { className:'admin-field' }, React.createElement('label', { className:'admin-label' }, 'จังหวัด'), React.createElement('input', { className:'admin-input', value: province, onChange: e => setProvince(e.target.value) }))
         ),
-        React.createElement('div', { className:'admin-action-row' }, saveMsg && React.createElement('span', { className:'admin-save-msg' }, React.createElement(AdminIcon, { d:'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' }), saveMsg), React.createElement('button', { className:'admin-save-btn', onClick: handleSaveSettings }, 'บันทึกการตั้งค่า'))
+        React.createElement('div', { className:'admin-action-row' }, saveMsg && React.createElement('span', { className:'admin-save-msg' }, React.createElement(AdminIcon, { d:'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' }), saveMsg), React.createElement('button', { className:'admin-save-btn', onClick: handleSaveSettings }, 'บันทึกการตั้งค่า')),
+        React.createElement('h3', { className:'admin-section-title', style:{marginTop:'2rem', color:'#DC2626'} }, 'โซนอันตราย — รีเซตระบบ'),
+        React.createElement('div', { style:{background:'#FEF2F2', border:'1px solid #FECACA', borderRadius:8, padding:16} },
+          React.createElement('div', { style:{fontWeight:600, marginBottom:4, color:'#991B1B'} }, 'รีเซตข้อมูลผลงาน KPI ทั้งหมด'),
+          React.createElement('div', { style:{fontSize:'0.85rem', color:'#7F1D1D', marginBottom:12} }, 'ตั้งค่าผลงานของทุกตัวชี้วัดและทุกหน่วยบริการกลับเป็น 0 พร้อมเริ่มกรอกใหม่ — ล้างทั้งข้อมูลในเครื่องและบนคลาวด์ (Supabase) ไม่สามารถกู้คืนได้'),
+          resetMsg && React.createElement('div', { style:{fontSize:'0.85rem', fontWeight:600, color:'#065F46', marginBottom:10} }, resetMsg),
+          React.createElement('button', { className:'admin-save-btn', style:{background:'#DC2626', borderColor:'#DC2626', opacity: resetting ? 0.6 : 1}, disabled: resetting, onClick: handleResetSystem },
+            React.createElement(AdminIcon, { d:'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16', size:14 }),
+            resetting ? 'กำลังรีเซต...' : 'รีเซตระบบ (ทุกค่าเป็น 0)'
+          )
+        )
       ),
       activeTab === 'kpientry' && React.createElement('div', { className:'admin-section' },
         React.createElement('h3', { className:'admin-section-title' }, 'กรอกข้อมูล KPI ด้วยตนเอง'),
@@ -2351,8 +2410,44 @@ function AdminPage() {
       ),
       activeTab === 'kpiedit' && React.createElement('div', { className:'admin-section' },
         React.createElement('h3', { className:'admin-section-title' }, 'แก้ไขชื่อและข้อมูลตัวชี้วัด'),
-        React.createElement('p', { style:{fontSize:'0.85rem', color:'#6B7280', marginBottom:'1rem'} }, 'แก้ไขชื่อ เป้าหมาย หมวดหมู่ หรือหน่วยรับผิดชอบของแต่ละตัวชี้วัดได้ที่นี่'),
+        React.createElement('p', { style:{fontSize:'0.85rem', color:'#6B7280', marginBottom:'1rem'} }, 'แก้ไขชื่อ เป้าหมาย หมวดหมู่ หรือหน่วยรับผิดชอบ — รวมถึงเพิ่มหรือลบตัวชี้วัดได้ที่นี่'),
         kpiEditMsg && React.createElement('div', { style:{background:'#ECFDF5', border:'1px solid #A7F3D0', borderRadius:6, padding:'8px 14px', marginBottom:12, color:'#065F46', fontWeight:600, fontSize:'0.87rem'} }, kpiEditMsg),
+        React.createElement('div', { style:{marginBottom:12} },
+          React.createElement('button', { className:'admin-add-btn', onClick: () => setAddingKPI(addingKPI ? null : { num:'', name:'', target:'', pm:'', category: (DA.CATEGORIES ? Object.values(DA.CATEGORIES)[0] : '') }) },
+            React.createElement(AdminIcon, { d:'M12 4v16m8-8H4' }), addingKPI ? 'ปิดฟอร์มเพิ่ม' : 'เพิ่มตัวชี้วัดใหม่'
+          )
+        ),
+        addingKPI && React.createElement('div', { className:'admin-edit-card', style:{marginBottom:16} },
+          React.createElement('h4', { className:'aec-title' }, 'เพิ่มตัวชี้วัดใหม่'),
+          React.createElement('div', { className:'admin-form-grid' },
+            React.createElement('div', { className:'admin-field' },
+              React.createElement('label', { className:'admin-label' }, 'ลำดับ / รหัส'),
+              React.createElement('input', { className:'admin-input', placeholder:'เช่น 21 หรือ A-21', value: addingKPI.num, onChange: function(e){ setAddingKPI(Object.assign({},addingKPI,{num:e.target.value})); } })
+            ),
+            React.createElement('div', { className:'admin-field', style:{gridColumn:'1/-1'} },
+              React.createElement('label', { className:'admin-label' }, 'ชื่อตัวชี้วัด *'),
+              React.createElement('input', { className:'admin-input', placeholder:'เช่น ร้อยละของผู้ป่วย...', value: addingKPI.name, onChange: function(e){ setAddingKPI(Object.assign({},addingKPI,{name:e.target.value})); } })
+            ),
+            React.createElement('div', { className:'admin-field' },
+              React.createElement('label', { className:'admin-label' }, 'เป้าหมาย'),
+              React.createElement('input', { className:'admin-input', placeholder:'เช่น ร้อยละ 80', value: addingKPI.target, onChange: function(e){ setAddingKPI(Object.assign({},addingKPI,{target:e.target.value})); } })
+            ),
+            React.createElement('div', { className:'admin-field' },
+              React.createElement('label', { className:'admin-label' }, 'กลุ่มงาน PM'),
+              React.createElement('input', { className:'admin-input', placeholder:'เช่น ส่งเสริมสุขภาพ', value: addingKPI.pm, onChange: function(e){ setAddingKPI(Object.assign({},addingKPI,{pm:e.target.value})); } })
+            ),
+            React.createElement('div', { className:'admin-field' },
+              React.createElement('label', { className:'admin-label' }, 'หมวดหมู่'),
+              React.createElement('select', { className:'admin-select', value: addingKPI.category, onChange: function(e){ setAddingKPI(Object.assign({},addingKPI,{category:e.target.value})); } },
+                (DA.CATEGORIES ? Object.values(DA.CATEGORIES) : []).map(function(c){ return React.createElement('option', { key:c, value:c }, c); })
+              )
+            )
+          ),
+          React.createElement('div', { className:'aec-actions' },
+            React.createElement('button', { className:'admin-cancel-btn', onClick: function(){ setAddingKPI(null); } }, 'ยกเลิก'),
+            React.createElement('button', { className:'admin-save-btn', onClick: handleAddKPI }, 'เพิ่มตัวชี้วัด')
+          )
+        ),
         editingKPI && React.createElement('div', { className:'admin-edit-card', style:{marginBottom:16} },
           React.createElement('h4', { className:'aec-title' }, 'แก้ไข: ' + editingKPI.id),
           React.createElement('div', { className:'admin-form-grid' },
@@ -2416,9 +2511,14 @@ function AdminPage() {
                     )
                   ),
                   React.createElement('td', null,
-                    React.createElement('button', { className:'icon-btn edit', title:'แก้ไข',
-                      onClick: function(){ setEditingKPI({ id:k.id, name:k.name, target:k.target||'', targetNum:k.targetNum!=null?String(k.targetNum):'', category:k.category||'', type:k.type||'sso' }); }
-                    }, React.createElement(AdminIcon, { d:'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' }))
+                    React.createElement('div', { className:'td-actions' },
+                      React.createElement('button', { className:'icon-btn edit', title:'แก้ไข',
+                        onClick: function(){ setEditingKPI({ id:k.id, name:k.name, target:k.target||'', targetNum:k.targetNum!=null?String(k.targetNum):'', category:k.category||'', type:k.type||'sso' }); }
+                      }, React.createElement(AdminIcon, { d:'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' })),
+                      React.createElement('button', { className:'icon-btn delete', title:'ลบ',
+                        onClick: function(){ if(window.confirm('ลบตัวชี้วัด "'+k.name+'" ออกจากระบบ?\n(ผลงานที่บันทึกไว้ของ KPI นี้จะถูกลบด้วย)')) { DA.deleteKPI(k.id); } }
+                      }, React.createElement(AdminIcon, { d:'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' }))
+                    )
                   )
                 );
               })

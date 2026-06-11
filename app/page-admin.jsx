@@ -9,12 +9,17 @@ function AdminPage() {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [showPass, setShowPass] = useState(false);
-  const [activeTab, setActiveTab] = useState('system');
+  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('kpihunter_admin_tab') || 'system');
   const D = window.KPIHUNTER;
-  const [kpiList, setKpiList] = useState(() => D.kpis.map(k => ({ ...k })));
-  const [kpiSearch, setKpiSearch] = useState('');
-  const [showAddKPI, setShowAddKPI] = useState(false);
-  const [newKPI, setNewKPI] = useState({ num:'', name:'', target:'', pm:'', category:'ส่งเสริมสุขภาพ ป้องกันโรค (PP&P)', type:'sso' });
+
+  function selectTab(id) {
+    setActiveTab(id);
+    try { sessionStorage.setItem('kpihunter_admin_tab', id); } catch(e) {}
+  }
+
+  /* ── KPI management state ── */
+  const [kpiForm, setKpiForm] = useState(null); // null = ปิดฟอร์ม
+  const [resetting, setResetting] = useState(false);
 
   /* ── Settings state (local mock) ── */
   const [year, setYear] = useState(D.meta.year.toString());
@@ -132,8 +137,8 @@ function AdminPage() {
   /* ══ ADMIN PANEL ══ */
   const tabs = [
     { id:'system',   label:'ตั้งค่าระบบ',     d:'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
-    { id:'kpi',      label:'จัดการ KPI',        d:'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
     { id:'units',    label:'หน่วยบริการ',       d:'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
+    { id:'kpis',     label:'จัดการ KPI',         d:'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01' },
     { id:'threshold',label:'เกณฑ์ผ่าน/ไม่ผ่าน',  d:'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3' },
     { id:'mapping',  label:'Column Mapping',     d:'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4' },
     { id:'users',    label:'ผู้ใช้งาน',           d:'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
@@ -171,7 +176,7 @@ function AdminPage() {
         React.createElement('button', {
           key: t.id,
           className: 'admin-tab' + (activeTab === t.id ? ' active' : ''),
-          onClick: () => setActiveTab(t.id)
+          onClick: () => selectTab(t.id)
         },
           React.createElement(Icon, { d: t.d }),
           t.label
@@ -235,28 +240,22 @@ function AdminPage() {
           ),
           React.createElement('button', {
             className:'admin-save-btn',
-            style:{background:'#DC2626', borderColor:'#DC2626'},
+            style:{background:'#DC2626', borderColor:'#DC2626', opacity: resetting ? 0.6 : 1},
+            disabled: resetting,
             onClick: function() {
-              if (window.confirm('ยืนยันการรีเซตระบบ?\nข้อมูลผลงาน KPI ทั้งหมดจะถูกล้างเป็น 0\nไม่สามารถกู้คืนได้')) {
-                D.clearAllData();
-                D.kpis.forEach(function(k) { k.result = 0; k.passfail = ''; k.risk = 'none'; });
-                D.unitPerformance = {};
-                D.unitQuarterlyData = {};
-                /* ล้างข้อมูลใน Supabase ด้วย */
-                if (window.KPIHUNTER_DB) {
-                  Promise.all([
-                    window.KPIHUNTER_DB.clearAllResults().catch(function(e){ console.warn('clear results:', e); }),
-                    window.KPIHUNTER_DB.clearUnitPerf().catch(function(e){ console.warn('clear unitperf:', e); })
-                  ]).then(function() { setSaveMsg('รีเซตระบบเรียบร้อยแล้ว'); });
-                } else {
-                  setSaveMsg('รีเซตระบบเรียบร้อยแล้ว');
-                }
-                window.dispatchEvent(new CustomEvent('kpihunter-data-changed'));
+              if (resetting) return;
+              if (window.confirm('ยืนยันการรีเซตระบบ? ผลงาน KPI ทุกตัวจะกลายเป็น 0 พร้อมกรอกใหม่ — ล้างทั้งในเครื่องและบนคลาวด์ (Supabase) ไม่สามารถกู้คืนได้')) {
+                setResetting(true);
+                setSaveMsg('กำลังรีเซตระบบ...');
+                D.resetAllData(function() {
+                  setResetting(false);
+                  setSaveMsg('รีเซตระบบเรียบร้อยแล้ว — ทุกค่าเป็น 0 พร้อมกรอกใหม่');
+                });
               }
             }
           },
             React.createElement(Icon, { d:'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16', size:14 }),
-            'ล้างข้อมูลทั้งหมด'
+            resetting ? 'กำลังรีเซต...' : 'รีเซตระบบ (ทุกค่าเป็น 0)'
           )
         ),
 
@@ -265,132 +264,6 @@ function AdminPage() {
             React.createElement(Icon, { d:'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' }), saveMsg
           ),
           React.createElement('button', { className:'admin-save-btn', onClick: showSaved }, 'บันทึกการตั้งค่า')
-        )
-      ),
-
-      /* ─ KPI Management ─ */
-      activeTab === 'kpi' && React.createElement('div', { className:'admin-section' },
-        React.createElement('div', { className:'admin-section-header' },
-          React.createElement('h3', { className:'admin-section-title' }, 'จัดการตัวชี้วัด KPI (' + kpiList.length + ' ตัว)'),
-          React.createElement('button', {
-            className:'admin-add-btn',
-            onClick: () => { setShowAddKPI(true); setNewKPI({ num:'', name:'', target:'', pm:'', category:'ส่งเสริมสุขภาพ ป้องกันโรค (PP&P)', type:'sso' }); }
-          },
-            React.createElement(Icon, { d:'M12 4v16m8-8H4' }), 'เพิ่ม KPI'
-          )
-        ),
-
-        /* ค้นหา */
-        React.createElement('div', { style:{marginBottom:12} },
-          React.createElement('input', {
-            className:'admin-input',
-            placeholder:'ค้นหาตัวชี้วัด...',
-            value: kpiSearch,
-            onChange: e => setKpiSearch(e.target.value),
-            style:{maxWidth:400}
-          })
-        ),
-
-        /* ฟอร์มเพิ่ม KPI */
-        showAddKPI && React.createElement('div', { className:'admin-edit-card' },
-          React.createElement('h4', { className:'aec-title' }, 'เพิ่มตัวชี้วัดใหม่'),
-          React.createElement('div', { className:'admin-form-grid' },
-            React.createElement('div', { className:'admin-field' },
-              React.createElement('label', { className:'admin-label' }, 'ลำดับ / รหัส KPI'),
-              React.createElement('input', { className:'admin-input', placeholder:'เช่น 1, 2.1, A-21', value: newKPI.num, onChange: e => setNewKPI({...newKPI, num:e.target.value}) })
-            ),
-            React.createElement('div', { className:'admin-field', style:{gridColumn:'span 2'} },
-              React.createElement('label', { className:'admin-label' }, 'ชื่อตัวชี้วัด *'),
-              React.createElement('input', { className:'admin-input', placeholder:'ชื่อ KPI', value: newKPI.name, onChange: e => setNewKPI({...newKPI, name:e.target.value}) })
-            ),
-            React.createElement('div', { className:'admin-field' },
-              React.createElement('label', { className:'admin-label' }, 'เป้าหมาย'),
-              React.createElement('input', { className:'admin-input', placeholder:'เช่น ร้อยละ 80', value: newKPI.target, onChange: e => setNewKPI({...newKPI, target:e.target.value}) })
-            ),
-            React.createElement('div', { className:'admin-field' },
-              React.createElement('label', { className:'admin-label' }, 'กลุ่มงาน PM'),
-              React.createElement('input', { className:'admin-input', placeholder:'เช่น ส่งเสริมสุขภาพ', value: newKPI.pm, onChange: e => setNewKPI({...newKPI, pm:e.target.value}) })
-            ),
-            React.createElement('div', { className:'admin-field' },
-              React.createElement('label', { className:'admin-label' }, 'หมวดหมู่'),
-              React.createElement('select', { className:'admin-select', value: newKPI.category, onChange: e => setNewKPI({...newKPI, category:e.target.value}) },
-                ['ส่งเสริมสุขภาพ ป้องกันโรค (PP&P)','บริการเป็นเลิศ (Service)','บุคลากรเป็นเลิศ (People)','บริหารเป็นเลิศ (Governance)','ตัวชี้วัดเขตสุขภาพ/จังหวัด'].map(c =>
-                  React.createElement('option', { key:c, value:c }, c)
-                )
-              )
-            ),
-            React.createElement('div', { className:'admin-field' },
-              React.createElement('label', { className:'admin-label' }, 'ระดับ'),
-              React.createElement('select', { className:'admin-select', value: newKPI.type, onChange: e => setNewKPI({...newKPI, type:e.target.value}) },
-                React.createElement('option', { value:'sso' }, 'ระดับ สสอ.'),
-                React.createElement('option', { value:'rph' }, 'ระดับ รพ.'),
-                React.createElement('option', { value:'both' }, 'ทั้งสอง')
-              )
-            )
-          ),
-          React.createElement('div', { className:'aec-actions' },
-            React.createElement('button', { className:'admin-cancel-btn', onClick: () => setShowAddKPI(false) }, 'ยกเลิก'),
-            React.createElement('button', {
-              className:'admin-save-btn',
-              onClick: () => {
-                if (!newKPI.name.trim()) { alert('กรุณากรอกชื่อตัวชี้วัด'); return; }
-                D.addKPI(newKPI);
-                setKpiList(D.kpis.map(k => ({ ...k })));
-                setShowAddKPI(false);
-                showSaved();
-              }
-            }, 'บันทึก KPI')
-          )
-        ),
-
-        /* ตาราง KPI */
-        React.createElement('div', { className:'admin-table-wrap' },
-          React.createElement('table', { className:'admin-table' },
-            React.createElement('thead', null,
-              React.createElement('tr', null,
-                React.createElement('th', null, 'ลำดับ'),
-                React.createElement('th', null, 'ชื่อตัวชี้วัด'),
-                React.createElement('th', null, 'เป้าหมาย'),
-                React.createElement('th', null, 'กลุ่มงาน'),
-                React.createElement('th', null, 'หมวด'),
-                React.createElement('th', null, 'ลบ')
-              )
-            ),
-            React.createElement('tbody', null,
-              kpiList
-                .filter(k => !kpiSearch || k.name.toLowerCase().includes(kpiSearch.toLowerCase()) || k.num.includes(kpiSearch))
-                .map((k) =>
-                React.createElement('tr', { key: k.id },
-                  React.createElement('td', { className:'td-muted' }, React.createElement('code', { className:'code-tag' }, k.num || k.id)),
-                  React.createElement('td', { style:{fontWeight:500, maxWidth:340, whiteSpace:'normal', lineHeight:1.4} }, k.name),
-                  React.createElement('td', null, k.target),
-                  React.createElement('td', null, k.pm || '—'),
-                  React.createElement('td', null,
-                    React.createElement('span', { className:'role-badge', style:{fontSize:10} }, k.category ? k.category.split('(')[0].trim() : '—')
-                  ),
-                  React.createElement('td', null,
-                    React.createElement('button', {
-                      className:'icon-btn delete',
-                      title:'ลบตัวชี้วัดนี้',
-                      onClick: () => {
-                        if (window.confirm('ลบตัวชี้วัด "' + k.name + '"?\nข้อมูลผลงานของตัวชี้วัดนี้จะถูกลบทั้งหมด')) {
-                          D.deleteKPI(k.id);
-                          setKpiList(D.kpis.map(x => ({ ...x })));
-                          showSaved();
-                        }
-                      }
-                    },
-                      React.createElement(Icon, { d:'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' })
-                    )
-                  )
-                )
-              )
-            )
-          )
-        ),
-
-        saveMsg && React.createElement('span', { className:'admin-save-msg', style:{marginTop:12, display:'flex'} },
-          React.createElement(Icon, { d:'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' }), saveMsg
         )
       ),
 
@@ -465,6 +338,88 @@ function AdminPage() {
               )
             )
           )
+        )
+      ),
+
+      /* ─ KPI Management ─ */
+      activeTab === 'kpis' && React.createElement('div', { className:'admin-section' },
+        React.createElement('div', { className:'admin-section-header' },
+          React.createElement('h3', { className:'admin-section-title' }, 'รายการตัวชี้วัด KPI (' + D.kpis.length + ' ตัว)'),
+          React.createElement('button', { className:'admin-add-btn', onClick: () => setKpiForm(kpiForm ? null : { num:'', name:'', target:'', pm:'', category: Object.values(D.CATEGORIES)[0] }) },
+            React.createElement(Icon, { d:'M12 4v16m8-8H4' }), 'เพิ่ม KPI'
+          )
+        ),
+
+        /* Add form */
+        kpiForm && React.createElement('div', { className:'admin-edit-card' },
+          React.createElement('h4', { className:'aec-title' }, 'เพิ่มตัวชี้วัดใหม่'),
+          React.createElement('div', { className:'admin-form-grid' },
+            React.createElement('div', { className:'admin-field' },
+              React.createElement('label', { className:'admin-label' }, 'ลำดับ / รหัส'),
+              React.createElement('input', { className:'admin-input', placeholder:'เช่น 21 หรือ A-21', value: kpiForm.num, onChange: e => setKpiForm({...kpiForm, num:e.target.value}) })
+            ),
+            React.createElement('div', { className:'admin-field', style:{gridColumn:'span 2'} },
+              React.createElement('label', { className:'admin-label' }, 'ชื่อตัวชี้วัด *'),
+              React.createElement('input', { className:'admin-input', placeholder:'เช่น ร้อยละของผู้ป่วย...', value: kpiForm.name, onChange: e => setKpiForm({...kpiForm, name:e.target.value}) })
+            ),
+            React.createElement('div', { className:'admin-field' },
+              React.createElement('label', { className:'admin-label' }, 'เป้าหมาย'),
+              React.createElement('input', { className:'admin-input', placeholder:'เช่น ร้อยละ 80', value: kpiForm.target, onChange: e => setKpiForm({...kpiForm, target:e.target.value}) })
+            ),
+            React.createElement('div', { className:'admin-field' },
+              React.createElement('label', { className:'admin-label' }, 'กลุ่มงาน PM'),
+              React.createElement('input', { className:'admin-input', placeholder:'เช่น ส่งเสริมสุขภาพ', value: kpiForm.pm, onChange: e => setKpiForm({...kpiForm, pm:e.target.value}) })
+            ),
+            React.createElement('div', { className:'admin-field' },
+              React.createElement('label', { className:'admin-label' }, 'หมวดหมู่'),
+              React.createElement('select', { className:'admin-select', value: kpiForm.category, onChange: e => setKpiForm({...kpiForm, category:e.target.value}) },
+                Object.values(D.CATEGORIES).map(c => React.createElement('option', { key:c, value:c }, c))
+              )
+            )
+          ),
+          React.createElement('div', { className:'aec-actions' },
+            React.createElement('button', { className:'admin-cancel-btn', onClick: () => setKpiForm(null) }, 'ยกเลิก'),
+            React.createElement('button', { className:'admin-save-btn', onClick: () => {
+              if (!kpiForm.name.trim()) { window.alert('กรุณากรอกชื่อตัวชี้วัด'); return; }
+              D.addKPI(kpiForm);
+              setKpiForm(null);
+            } }, 'เพิ่มตัวชี้วัด')
+          )
+        ),
+
+        React.createElement('div', { className:'admin-table-wrap' },
+          React.createElement('table', { className:'admin-table' },
+            React.createElement('thead', null,
+              React.createElement('tr', null,
+                React.createElement('th', null, 'ลำดับ'),
+                React.createElement('th', null, 'ชื่อตัวชี้วัด'),
+                React.createElement('th', null, 'เป้าหมาย'),
+                React.createElement('th', null, 'กลุ่มงาน PM'),
+                React.createElement('th', null, 'จัดการ')
+              )
+            ),
+            React.createElement('tbody', null,
+              D.kpis.map(k =>
+                React.createElement('tr', { key: k.id },
+                  React.createElement('td', null, React.createElement('code', { className:'code-tag' }, k.num)),
+                  React.createElement('td', { style:{fontWeight:500} }, k.name),
+                  React.createElement('td', { className:'td-muted' }, k.target),
+                  React.createElement('td', { className:'td-muted' }, k.pm),
+                  React.createElement('td', null,
+                    React.createElement('div', { className:'td-actions' },
+                      React.createElement('button', { className:'icon-btn delete', onClick: () => { if(window.confirm('ลบตัวชี้วัด "'+k.name+'" ออกจากระบบ?\n(ผลงานที่บันทึกไว้ของ KPI นี้จะถูกลบด้วย)')) { D.deleteKPI(k.id); } }, title:'ลบ' },
+                        React.createElement(Icon, { d:'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' })
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        ),
+        React.createElement('div', { className:'admin-note', style:{marginTop:16} },
+          React.createElement(Icon, { d:'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' }),
+          'การเพิ่ม/ลบตัวชี้วัดจะถูกบันทึกถาวร (ในเครื่องและบนคลาวด์) และมีผลกับทุกหน้าทันที'
         )
       ),
 
